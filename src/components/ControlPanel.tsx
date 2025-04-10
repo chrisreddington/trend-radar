@@ -40,10 +40,12 @@ export const ControlPanel = () => {
     });
   };
 
+  const omitId = ({ id, ...rest }: Point): Omit<Point, 'id'> => rest;
+
   const handleUpdatePoint = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPoint && editingPoint) {
-      const { id: _, ...pointData } = editingPoint;
+      const pointData = omitId(editingPoint);
       updatePoint(selectedPoint, pointData);
     }
   };
