@@ -33,58 +33,86 @@ export const RingDiagram = () => {
   // Render diagram whenever size or data changes
   useEffect(() => {
     if (!svgRef.current || size === 0) return;
-    
-    const margin = size * 0.08; // Responsive margin
-    const radius = (size / 2) - margin;
-    
-    // Clear existing SVG
-    d3.select(svgRef.current).selectAll('*').remove();
-    
-    // Create SVG with explicit dimensions
-    const svg = d3.select(svgRef.current)
-      .attr('width', size)
-      .attr('height', size)
-      .attr('viewBox', `0 0 ${size} ${size}`)
-      .attr('style', 'max-width: 100%; height: auto;') // Ensure proper scaling
-      .append('g')
+
+    const svg = d3.select(svgRef.current);
+    const width = size;
+    const height = size;
+    const radius = Math.min(width, height) / 2;
+
+    svg
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('width', width)
+      .attr('height', height);
+
+    // Clear existing content
+    svg.selectAll('*').remove();
+
+    // Background circle for click detection
+    svg.append('circle')
+      .attr('cx', width / 2)
+      .attr('cy', height / 2)
+      .attr('r', radius)
+      .attr('fill', 'transparent')
+      .style('cursor', 'default')
+      .on('click', (event) => {
+        // Only deselect if the click was directly on the background
+        if (event.target === event.currentTarget) {
+          selectPoint(null);
+        }
+      });
+
+    const margin = size * 0.08;
+    const diagramRadius = (size / 2) - margin;
+
+    const diagramGroup = svg.append('g')
       .attr('transform', `translate(${size / 2},${size / 2})`);
     
-    // Get arrays of categories and likelihoods
     const categories = Object.values(Category);
-    const likelihoods = Object.values(Likelihood).reverse();  // Keep the reverse for likelihood order
-    const ringWidth = radius / likelihoods.length;
+    const likelihoods = Object.values(Likelihood).reverse();
+    const ringWidth = diagramRadius / likelihoods.length;
     
     // Create rings for each likelihood level
     likelihoods.forEach((_, index) => {
-      const colorIndex = likelihoods.length - 1 - index; // Invert color index
+      const colorIndex = likelihoods.length - 1 - index;
       
-      // Draw the main ring circle with fills and strokes
-      svg.append('circle')
-        .attr('r', radius - (index * ringWidth))
+      // Draw the main ring circle with fills, strokes, and click handler
+      diagramGroup.append('circle')
+        .attr('r', diagramRadius - (index * ringWidth))
         .attr('fill', RING_COLORS[colorIndex].fill)
         .attr('fill-opacity', 1.0)
         .attr('stroke', RING_COLORS[colorIndex].stroke)
-        .attr('stroke-width', size < 500 ? 1 : 1.5);
+        .attr('stroke-width', size < 500 ? 1 : 1.5)
+        .style('cursor', 'default')
+        .on('click', (event) => {
+          // Check if the click was directly on the ring (not on a point)
+          const clickedElement = event.target;
+          const clickedPoint = d3.select(clickedElement).classed('point');
+          if (!clickedPoint) {
+            selectPoint(null);
+          }
+        });
       
       // Draw quadrant lines
       const angleStep = (2 * Math.PI) / categories.length;
       categories.forEach((_, catIndex) => {
         const angle = catIndex * angleStep;
-        const innerRadius = radius - ((index + 1) * ringWidth);
-        const outerRadius = radius - (index * ringWidth);
+        const innerRadius = diagramRadius - ((index + 1) * ringWidth);
+        const outerRadius = diagramRadius - (index * ringWidth);
         
         const startX = Math.cos(angle) * innerRadius;
         const startY = Math.sin(angle) * innerRadius;
         const endX = Math.cos(angle) * outerRadius;
         const endY = Math.sin(angle) * outerRadius;
         
-        svg.append('line')
+        diagramGroup.append('line')
           .attr('x1', startX)
           .attr('y1', startY)
           .attr('x2', endX)
           .attr('y2', endY)
           .attr('stroke', RING_COLORS[colorIndex].stroke)
-          .attr('stroke-width', size < 500 ? 0.8 : 1);
+          .attr('stroke-width', size < 500 ? 0.8 : 1)
+          .style('cursor', 'default')
+          .on('click', () => selectPoint(null));
       });
     });
     
@@ -92,7 +120,7 @@ export const RingDiagram = () => {
     const angleStep = (2 * Math.PI) / categories.length;
     categories.forEach((category, i) => {
       const angle = (i * angleStep) + (angleStep / 2) - Math.PI / 2;
-      const labelRadius = radius + (size < 500 ? 20 : 40);
+      const labelRadius = diagramRadius + (size < 500 ? 20 : 40);
       const x = Math.cos(angle) * labelRadius;
       const y = Math.sin(angle) * labelRadius;
       
@@ -100,7 +128,7 @@ export const RingDiagram = () => {
         category.split(' ').map(word => word.substring(0, 3)).join(' ') : 
         category;
       
-      svg.append('text')
+      diagramGroup.append('text')
         .attr('x', x)
         .attr('y', y)
         .attr('text-anchor', 'middle')
@@ -117,7 +145,7 @@ export const RingDiagram = () => {
       const likelihoodIndex = likelihoods.indexOf(point.likelihood);
       
       const angle = (categoryIndex * angleStep) + (angleStep / 2) - Math.PI / 2;
-      const pointRadius = radius - (likelihoodIndex * ringWidth) - (ringWidth / 2);
+      const pointRadius = diagramRadius - (likelihoodIndex * ringWidth) - (ringWidth / 2);
       
       const pointX = Math.cos(angle) * pointRadius;
       const pointY = Math.sin(angle) * pointRadius;
@@ -132,7 +160,7 @@ export const RingDiagram = () => {
                    PREPAREDNESS_COLORS.low;
       
       // Create point
-      const pointElement = svg.append('circle')
+      const pointElement = diagramGroup.append('circle')
         .attr('cx', pointX)
         .attr('cy', pointY)
         .attr('r', pointSize)
@@ -140,11 +168,12 @@ export const RingDiagram = () => {
         .attr('stroke', selectedPoint === point.id ? 'var(--highlight)' : 'none')
         .attr('stroke-width', size < 500 ? 2 : 3)
         .attr('cursor', 'pointer')
-        .attr('opacity', selectedPoint && selectedPoint !== point.id ? 0.6 : 1);
+        .attr('opacity', selectedPoint && selectedPoint !== point.id ? 0.6 : 1)
+        .classed('point', true); // Add class for point identification
       
       // Add larger touch target for mobile
       if (size < 500) {
-        svg.append('circle')
+        diagramGroup.append('circle')
           .attr('cx', pointX)
           .attr('cy', pointY)
           .attr('r', Math.max(pointSize * 2, 20))

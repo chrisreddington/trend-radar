@@ -1,10 +1,10 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDiagramStore } from '../store/useDiagramStore';
 import { Category, Likelihood, Relevance, Preparedness, Point } from '../types';
 
 export const ControlPanel = () => {
-  const { points, selectedPoint, addPoint, updatePoint, removePoint } = useDiagramStore();
+  const { points, selectedPoint, addPoint, updatePoint, removePoint, selectPoint } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [newPoint, setNewPoint] = useState<Omit<Point, 'id'>>({
     label: '',
@@ -15,8 +15,18 @@ export const ControlPanel = () => {
     x: 0,
     y: 0
   });
+  const [editingPoint, setEditingPoint] = useState<Point | null>(null);
 
-  const selectedPointData = selectedPoint ? points.find(p => p.id === selectedPoint) : null;
+  useEffect(() => {
+    if (selectedPoint) {
+      const pointData = points.find(p => p.id === selectedPoint);
+      if (pointData) {
+        setEditingPoint(pointData);
+      }
+    } else {
+      setEditingPoint(null);
+    }
+  }, [selectedPoint, points]);
 
   const handleAddPoint = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +44,17 @@ export const ControlPanel = () => {
 
   const handleUpdatePoint = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPoint && selectedPointData) {
-      updatePoint(selectedPoint, selectedPointData);
+    if (selectedPoint && editingPoint) {
+      updatePoint(selectedPoint, editingPoint);
     }
   };
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleCloseEdit = () => {
+    selectPoint(null);
   };
 
   const commonInputClasses = "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
@@ -93,7 +107,7 @@ export const ControlPanel = () => {
     }
   };
 
-  const renderPointForm = (point: Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
+  const renderPointForm = (point: Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string, isEditing: boolean = false) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-label">
@@ -104,7 +118,9 @@ export const ControlPanel = () => {
           type="text"
           name="label"
           value={point.label || ''}
-          onChange={e => setNewPoint({ ...newPoint, label: e.target.value })}
+          onChange={e => isEditing && editingPoint 
+            ? setEditingPoint({ ...editingPoint, label: e.target.value })
+            : setNewPoint({ ...newPoint, label: e.target.value })}
           className={commonInputClasses}
           required
         />
@@ -118,7 +134,9 @@ export const ControlPanel = () => {
           id="point-category"
           name="category"
           value={point.category}
-          onChange={e => setNewPoint({ ...newPoint, category: e.target.value as Category })}
+          onChange={e => isEditing && editingPoint 
+            ? setEditingPoint({ ...editingPoint, category: e.target.value as Category })
+            : setNewPoint({ ...newPoint, category: e.target.value as Category })}
           className={commonSelectClasses}
         >
           {Object.values(Category).map(cat => (
@@ -137,7 +155,12 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromLikelihood(point.likelihood)}
-          onChange={e => setNewPoint({ ...newPoint, likelihood: getLikelihoodFromValue(Number(e.target.value)) })}
+          onChange={e => {
+            const newValue = getLikelihoodFromValue(Number(e.target.value));
+            isEditing && editingPoint 
+              ? setEditingPoint({ ...editingPoint, likelihood: newValue })
+              : setNewPoint({ ...newPoint, likelihood: newValue });
+          }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
         />
       </div>
@@ -152,7 +175,12 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromRelevance(point.relevance)}
-          onChange={e => setNewPoint({ ...newPoint, relevance: getRelevanceFromValue(Number(e.target.value)) })}
+          onChange={e => {
+            const newValue = getRelevanceFromValue(Number(e.target.value));
+            isEditing && editingPoint 
+              ? setEditingPoint({ ...editingPoint, relevance: newValue })
+              : setNewPoint({ ...newPoint, relevance: newValue });
+          }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
         />
       </div>
@@ -167,7 +195,12 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromPreparedness(point.preparedness)}
-          onChange={e => setNewPoint({ ...newPoint, preparedness: getPreparednessFromValue(Number(e.target.value)) })}
+          onChange={e => {
+            const newValue = getPreparednessFromValue(Number(e.target.value));
+            isEditing && editingPoint 
+              ? setEditingPoint({ ...editingPoint, preparedness: newValue })
+              : setNewPoint({ ...newPoint, preparedness: newValue });
+          }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
         />
       </div>
@@ -215,16 +248,38 @@ export const ControlPanel = () => {
       >
         <div className="space-y-6">
           <div>
-            {renderPointForm(newPoint, handleAddPoint, 'Add Point')}
+            {renderPointForm(newPoint, handleAddPoint, 'Add Point', false)}
           </div>
 
-          {selectedPointData && (
+          {editingPoint && (
             <div className="border-t border-gray-300 pt-6 dark:border-gray-600">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 dark:text-gray-200">Edit Selected Point</h3>
-              {renderPointForm(selectedPointData, handleUpdatePoint, 'Update Point')}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Edit Selected Point</h3>
+                <button
+                  onClick={handleCloseEdit}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  aria-label="Close edit panel"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              {renderPointForm(editingPoint, handleUpdatePoint, 'Update Point', true)}
               <button
                 onClick={() => selectedPoint && removePoint(selectedPoint)}
-                className="w-full rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400"
+                className="w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400"
               >
                 Delete Point
               </button>
