@@ -58,26 +58,74 @@ describe('PointsTable', () => {
     expect(content).not.toHaveClass('hidden');
   });
 
-  it('sorts points when clicking on column headers', () => {
-    render(<PointsTable />);
-    
-    // Initially sorted by label ascending
-    const rows = screen.getAllByRole('row') as HTMLTableRowElement[];
+  const getColumnHeader = (columnName: string) => {
+    return screen.getByRole('columnheader', {
+      name: new RegExp(`^${columnName}( ↑| ↓)?$`)
+    });
+  };
+
+  const testColumnSorting = (columnName: string, firstValue: string, secondValue: string) => {
+    const getCellIndex = () => {
+      const headers = screen.getAllByRole('columnheader');
+      return headers.findIndex(header => header.textContent?.includes(columnName));
+    };
+
     const getCellText = (row: HTMLTableRowElement, cellIndex: number) => 
       row.cells[cellIndex].textContent;
 
-    // Click label header to sort descending
-    fireEvent.click(screen.getByText('Label ↑'));
+    // Initial click for ascending sort
+    fireEvent.click(getColumnHeader(columnName));
     
-    let sortedRows = screen.getAllByRole('row').slice(1) as HTMLTableRowElement[]; // Skip header row
-    expect(getCellText(sortedRows[0], 0)).toBe('Test Point 2');
-    expect(getCellText(sortedRows[1], 0)).toBe('Test Point 1');
+    let sortedRows = screen.getAllByRole('row').slice(1) as HTMLTableRowElement[];
+    const cellIndex = getCellIndex();
+    expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
+    expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
+    expect(getColumnHeader(columnName)).toHaveTextContent(/↑$/);
 
-    // Click again to sort ascending
-    fireEvent.click(screen.getByText('Label ↓'));
+    // Click again for descending sort
+    fireEvent.click(getColumnHeader(columnName));
     
     sortedRows = screen.getAllByRole('row').slice(1) as HTMLTableRowElement[];
-    expect(getCellText(sortedRows[0], 0)).toBe('Test Point 1');
-    expect(getCellText(sortedRows[1], 0)).toBe('Test Point 2');
+    expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
+    expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
+    expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
+  };
+
+  it('sorts by label', () => {
+    render(<PointsTable />);
+    testColumnSorting('Label', 'Test Point 1', 'Test Point 2');
+  });
+
+  it('sorts by category', () => {
+    render(<PointsTable />);
+    testColumnSorting('Category', 'Economic', 'Technological');
+  });
+
+  it('sorts by relevance', () => {
+    render(<PointsTable />);
+    testColumnSorting('Relevance', 'High', 'Moderate');
+  });
+
+  it('sorts by preparedness', () => {
+    render(<PointsTable />);
+    testColumnSorting('Preparedness', 'Highly Prepared', 'Moderately Prepared');
+  });
+
+  it('sorts by likelihood', () => {
+    render(<PointsTable />);
+    testColumnSorting('Likelihood', 'Highly Likely', 'Likely');
+  });
+
+  it('changes sort field when clicking a different column', () => {
+    render(<PointsTable />);
+    
+    // Start with label sort
+    fireEvent.click(getColumnHeader('Label'));
+    expect(getColumnHeader('Label')).toHaveTextContent(/↑$/);
+    
+    // Change to category sort - should start with ascending sort
+    fireEvent.click(getColumnHeader('Category'));
+    expect(getColumnHeader('Category')).toHaveTextContent(/↑$/);
+    expect(getColumnHeader('Label')).toHaveTextContent(/^Label$/);
   });
 });

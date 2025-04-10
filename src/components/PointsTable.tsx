@@ -10,7 +10,7 @@ export const PointsTable = () => {
   const { points } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>('label');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
