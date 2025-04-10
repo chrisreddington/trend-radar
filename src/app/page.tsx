@@ -5,7 +5,7 @@ import { Legend } from '../components/Legend';
 export default function Home() {
   return (
     <main className="min-h-screen p-4 sm:p-8">      
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="w-full lg:flex-1 flex justify-center">
           <RingDiagram />
         </div>
