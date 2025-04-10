@@ -24,17 +24,20 @@ describe('ControlPanel', () => {
   const mockRemovePoint = jest.fn();
   const mockSelectPoint = jest.fn();
 
+  const getDefaultStore = (selectedPoint: string | null = null) => ({
+    points: [mockPoint],
+    selectedPoint,
+    addPoint: mockAddPoint,
+    updatePoint: mockUpdatePoint,
+    removePoint: mockRemovePoint,
+    selectPoint: mockSelectPoint,
+    getSelectedPoint: () => mockPoint
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue({
-      points: [mockPoint],
-      selectedPoint: null,
-      addPoint: mockAddPoint,
-      updatePoint: mockUpdatePoint,
-      removePoint: mockRemovePoint,
-      selectPoint: mockSelectPoint,
-      getSelectedPoint: () => mockPoint
-    });
+    // set default state with no selected point initially
+    mockedUseDiagramStore.mockReturnValue(getDefaultStore());
   });
 
   it('renders add point form', () => {
@@ -85,15 +88,8 @@ describe('ControlPanel', () => {
 
   describe('when point is selected', () => {
     beforeEach(() => {
-      mockedUseDiagramStore.mockReturnValue({
-        points: [mockPoint],
-        selectedPoint: '1',
-        addPoint: mockAddPoint,
-        updatePoint: mockUpdatePoint,
-        removePoint: mockRemovePoint,
-        selectPoint: mockSelectPoint,
-        getSelectedPoint: () => mockPoint
-      });
+      // override selectedPoint to simulate a selected point
+      mockedUseDiagramStore.mockReturnValue(getDefaultStore('1'));
     });
 
     it('shows edit form for selected point', () => {
