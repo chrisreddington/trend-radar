@@ -10,9 +10,9 @@ export const Legend = () => {
   };
 
   return (
-    <div className="bg-panel-bg rounded-lg shadow-lg border border-panel-border">
-      <div className="panel-header p-4" onClick={toggleCollapse}>
-        <h2 className="text-lg font-semibold text-text-primary">
+    <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button 
             className="w-full flex justify-between items-center focus:outline-none"
             aria-expanded={!isCollapsed}
@@ -29,7 +29,7 @@ export const Legend = () => {
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
-              className={`panel-header-icon ${isCollapsed ? 'rotated' : ''}`}
+              className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
               aria-hidden="true"
             >
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -39,29 +39,29 @@ export const Legend = () => {
       </div>
       <div 
         id="legend-content"
-        className={`collapsible-panel p-6 pt-0 ${isCollapsed ? 'collapsed' : ''}`}
+        className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
       >
         <div className="space-y-6">
           <div>
-            <h3 className="font-semibold text-text-primary mb-3">Size (Relevance)</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Size (Relevance)</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-[14px] h-[14px] rounded-full bg-preparedness-moderate" role="presentation" />
-                <span className="text-sm text-text-primary">High</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200">High</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-[10px] h-[10px] rounded-full bg-preparedness-moderate" role="presentation" />
-                <span className="text-sm text-text-primary">Moderate</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200">Moderate</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-[7px] h-[7px] rounded-full bg-preparedness-moderate" role="presentation" />
-                <span className="text-sm text-text-primary">Low</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200">Low</span>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="font-semibold text-text-primary mb-3">Color (Preparedness)</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Color (Preparedness)</h3>
             <div className="space-y-3">
               {Object.values(Preparedness).map(preparedness => (
                 <div key={preparedness} className="flex items-center space-x-3">
@@ -74,15 +74,15 @@ export const Legend = () => {
                                      'var(--preparedness-low)'
                     }}
                   />
-                  <span className="text-sm text-text-primary">{preparedness}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{preparedness}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="text-sm text-text-secondary space-y-2 border-t border-ring-color pt-4">
-            <p>Click on any point to view and edit its details.</p>
-            <p>Points are positioned based on their category (quadrant) and likelihood (ring).</p>
+          <div className="space-y-2 border-t border-gray-300 dark:border-gray-600 pt-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Click on any point to view and edit its details.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Points are positioned based on their category (quadrant) and likelihood (ring).</p>
           </div>
         </div>
       </div>
