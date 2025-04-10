@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trend Radar Visualisation
+
+This modern web app provides you with an interactive trend radar. It is used to visualise and manage potential threats and opportunities across Political, Economic, Social and Technological dimensions. These strategic points are displayed in a concentric circle diagram.
+
+1. The outer ring represents trends with the lowest likelihood of occurrence, whereas the inner rings represent trends with increasing likelihood.
+2. The size of a point represents its potential impact, with larger points indicating a higher impact.
+3. The colour of a point indicates the preparedness level, ranging from red (low preparedness) to green (high preparedness).
+
+The app was built with Next.js, React, and TypeScript, featuring a responsive design with TailwindCSS.
+
+## Features
+
+- Interactive ring diagram (concentric circles) visualization
+- Dynamic control panel for trend management
+- Real-time trend table updates
+- Responsive design that works on both desktop and mobile
+- Light and Dark mode support (based on system preference)
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org) (React)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [TailwindCSS](https://tailwindcss.com)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Testing**: [Jest](https://jestjs.io/docs/next/getting-started) with [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
+- **Code Quality**: [ESLint](https://eslint.org/)
 
 ## Getting Started
 
-First, run the development server:
+### GitHub Codespaces (Recommended)
+
+1. Click the "Code" button on the repository
+2. Select "Create codespace on main"
+3. Wait for the codespace to initialize
+4. Once the codespace is ready, it will automatically install dependencies using `npm install`.
+5. Start the development server with `npm run dev`
+
+### Local Development
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Development Commands
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run test` - Run tests
+- `npm run lint` - Run ESLint
+
+## Testing
+
+The project uses Jest and React Testing Library for testing. Tests are located in `__tests__` directories next to the components they test. To run tests:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run test        # Run tests
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Test coverage reports are generated in the `coverage` directory.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/src/components` - React components
+- `/src/store` - State management (Zustand)
+- `/src/types` - TypeScript types and interfaces
+- `/src/constants` - Application constants
+- `/..directory/__tests__` - Test files for a given directory.
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+This project is configured for static exports via Next.js. To deploy:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Build the project:
+   ```bash
+   npm run build
+   ```
+2. The static output will be in the `out` directory
+3. Deploy the contents of `out` to any static hosting service
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Please make sure to update tests as appropriate and adhere to the existing code style.
