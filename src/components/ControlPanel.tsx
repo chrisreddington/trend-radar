@@ -17,13 +17,11 @@ export const ControlPanel = () => {
     y: 0
   });
 
-  // Update useEffect to properly initialize form state
   useEffect(() => {
     if (selectedPoint) {
       const point = points.find(p => p.id === selectedPoint);
       if (point) {
-        const { id, ...pointData } = point;
-        setEditingPoint({ ...point }); // Include all properties
+        setEditingPoint({ ...point });
       }
     }
   }, [selectedPoint, points]);
@@ -45,7 +43,8 @@ export const ControlPanel = () => {
   const handleUpdatePoint = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPoint && editingPoint) {
-      const { id, ...pointData } = editingPoint;
+      const pointData = { ...editingPoint };
+      delete pointData.id;
       updatePoint(selectedPoint, pointData);
     }
   };
@@ -146,6 +145,7 @@ export const ControlPanel = () => {
             : setNewPoint({ ...newPoint, category: e.target.value as Category })}
           className={commonSelectClasses}
           role="combobox"
+          aria-label="Category"
         >
           {Object.values(Category).map(cat => (
             <option key={cat} value={cat}>{cat}</option>
@@ -165,9 +165,11 @@ export const ControlPanel = () => {
           value={getValueFromLikelihood(point.likelihood)}
           onChange={e => {
             const newValue = getLikelihoodFromValue(Number(e.target.value));
-            isEditing && editingPoint 
-              ? setEditingPoint({ ...editingPoint, likelihood: newValue })
-              : setNewPoint({ ...newPoint, likelihood: newValue });
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, likelihood: newValue });
+            } else {
+              setNewPoint({ ...newPoint, likelihood: newValue });
+            }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           role="slider"
@@ -190,9 +192,11 @@ export const ControlPanel = () => {
           value={getValueFromRelevance(point.relevance)}
           onChange={e => {
             const newValue = getRelevanceFromValue(Number(e.target.value));
-            isEditing && editingPoint 
-              ? setEditingPoint({ ...editingPoint, relevance: newValue })
-              : setNewPoint({ ...newPoint, relevance: newValue });
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, relevance: newValue });
+            } else {
+              setNewPoint({ ...newPoint, relevance: newValue });
+            }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           role="slider"
@@ -215,9 +219,11 @@ export const ControlPanel = () => {
           value={getValueFromPreparedness(point.preparedness)}
           onChange={e => {
             const newValue = getPreparednessFromValue(Number(e.target.value));
-            isEditing && editingPoint 
-              ? setEditingPoint({ ...editingPoint, preparedness: newValue })
-              : setNewPoint({ ...newPoint, preparedness: newValue });
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, preparedness: newValue });
+            } else {
+              setNewPoint({ ...newPoint, preparedness: newValue });
+            }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           role="slider"

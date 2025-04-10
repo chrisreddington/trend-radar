@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { RingDiagram } from '../RingDiagram';
 import { useDiagramStore } from '../../store/useDiagramStore';
 import { Category, Likelihood, Relevance, Preparedness } from '../../types';

@@ -1,7 +1,6 @@
 "use client";
 import { useState } from 'react';
 import { useDiagramStore } from '../store/useDiagramStore';
-import { Point } from '../types';
 
 type SortField = 'label' | 'category' | 'relevance' | 'preparedness' | 'likelihood';
 type SortDirection = 'asc' | 'desc';
