@@ -101,17 +101,23 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
       const dims = getDiagramDimensions();
       const { categories, likelihoods } = dims;
       
-      // Calculate new position based on category and likelihood
       const categoryIndex = categories.indexOf(updatedPoint.category);
       const likelihoodIndex = likelihoods.indexOf(updatedPoint.likelihood);
       
-      // Calculate position in the ring
-      const angle = (categoryIndex * dims.angleStep) + (dims.angleStep / 2) - Math.PI/2;
-      const radius = dims.diagramRadius - (likelihoodIndex * dims.ringWidth) - (dims.ringWidth / 2);
+      // Calculate angle based on category index (starting from top, clockwise)
+      const baseAngle = -Math.PI/2; // Start from top
+      const angle = baseAngle + (categoryIndex * dims.angleStep);
       
-      // Update coordinates
-      updatedPoint.x = Math.cos(angle) * radius;
-      updatedPoint.y = Math.sin(angle) * radius;
+      // Calculate radius based on likelihood
+      // Add a small offset to ensure it's within the ring
+      const outerRadius = dims.diagramRadius - (likelihoodIndex * dims.ringWidth);
+      const innerRadius = outerRadius - dims.ringWidth;
+      const radius = (outerRadius + innerRadius) / 2;
+      
+      // Update coordinates with a small random offset to prevent overlap
+      const randomOffset = (Math.random() - 0.5) * (dims.ringWidth * 0.5);
+      updatedPoint.x = Math.cos(angle) * (radius + randomOffset);
+      updatedPoint.y = Math.sin(angle) * (radius + randomOffset);
     }
 
     return {

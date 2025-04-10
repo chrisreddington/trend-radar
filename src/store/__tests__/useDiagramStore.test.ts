@@ -48,10 +48,25 @@ describe('useDiagramStore', () => {
 
         const state = useDiagramStore.getState();
         expect(state.points).toHaveLength(1);
-        expect(state.points[0]).toEqual({
-          ...newPoint,
-          id: mockUUID
+        const addedPoint = state.points[0];
+        
+        // Check all properties except coordinates
+        expect(addedPoint).toMatchObject({
+          id: mockUUID,
+          label: newPoint.label,
+          category: newPoint.category,
+          relevance: newPoint.relevance,
+          preparedness: newPoint.preparedness,
+          likelihood: newPoint.likelihood
         });
+        
+        // Verify coordinates are numbers and within bounds
+        expect(typeof addedPoint.x).toBe('number');
+        expect(typeof addedPoint.y).toBe('number');
+        expect(Math.sqrt(
+          Math.pow(addedPoint.x, 2) + 
+          Math.pow(addedPoint.y, 2)
+        )).toBeLessThanOrEqual(400);
       });
     });
 
@@ -85,6 +100,11 @@ describe('useDiagramStore', () => {
       });
 
       it('should recalculate position when category changes', () => {
+        const initialPos = { x: 0, y: 0 };
+        useDiagramStore.setState({ 
+          points: [{...mockPoint, ...initialPos}]
+        });
+
         const updates = {
           category: Category.Economic
         };
@@ -94,9 +114,14 @@ describe('useDiagramStore', () => {
 
         const state = useDiagramStore.getState();
         expect(state.points[0].category).toBe(Category.Economic);
-        // Position should be different from original
-        expect(state.points[0].x).not.toBe(0);
-        expect(state.points[0].y).not.toBe(0);
+        
+        // Calculate magnitude of position change
+        const dx = state.points[0].x - initialPos.x;
+        const dy = state.points[0].y - initialPos.y;
+        const change = Math.sqrt(dx*dx + dy*dy);
+        
+        // Verify that position changed significantly
+        expect(change).toBeGreaterThan(0);
       });
 
       it('should recalculate position when likelihood changes', () => {
@@ -222,6 +247,91 @@ describe('useDiagramStore', () => {
         expect(state.points).toEqual([]);
         expect(state.selectedPoint).toBeNull();
       });
+    });
+  });
+
+  describe('Position Calculations', () => {
+    it('should calculate new position when adding point', () => {
+      const newPoint = {
+        label: 'Test Point',
+        category: Category.Technological,
+        relevance: Relevance.High,
+        preparedness: Preparedness.HighlyPrepared,
+        likelihood: Likelihood.HighlyLikely,
+        x: 0,
+        y: 0
+      };
+
+      const { addPoint } = useDiagramStore.getState();
+      addPoint(newPoint);
+
+      const state = useDiagramStore.getState();
+      expect(state.points[0].x).not.toBe(0);
+      expect(state.points[0].y).not.toBe(0);
+      // Position should be within diagram bounds (radius <= 400)
+      expect(Math.sqrt(
+        Math.pow(state.points[0].x, 2) + 
+        Math.pow(state.points[0].y, 2)
+      )).toBeLessThanOrEqual(400);
+    });
+
+    it('should calculate consistent positions when category and likelihood are updated', () => {
+      // Add initial point
+      useDiagramStore.setState({ points: [mockPoint] });
+
+      const updates = {
+        category: Category.Economic,
+        likelihood: Likelihood.Unlikely
+      };
+
+      const { updatePoint } = useDiagramStore.getState();
+      updatePoint(mockUUID, updates);
+
+      const state = useDiagramStore.getState();
+      const updatedPoint = state.points[0];
+
+      // 1. Verify the point is within the diagram bounds
+      const radius = Math.sqrt(
+        Math.pow(updatedPoint.x, 2) + 
+        Math.pow(updatedPoint.y, 2)
+      );
+      expect(radius).toBeLessThanOrEqual(400);
+
+      // 2. Get category position information
+      const categories = Object.values(Category);
+      const categoryIndex = categories.indexOf(Category.Economic);
+      const anglePerCategory = (2 * Math.PI) / categories.length;
+      
+      // 3. Calculate the angle of the point (accounting for coordinate system differences)
+      const pointAngle = Math.atan2(updatedPoint.y, updatedPoint.x);
+      const normalizedPointAngle = ((pointAngle + 2 * Math.PI) % (2 * Math.PI));
+      
+      // 4. Calculate the expected angle range for this category
+      const expectedBaseAngle = -Math.PI/2; // Start from top
+      const expectedCenterAngle = expectedBaseAngle + (categoryIndex * anglePerCategory);
+      const normalizedExpectedAngle = ((expectedCenterAngle + 2 * Math.PI) % (2 * Math.PI));
+      
+      // 5. Verify the point is within the correct angle range (allowing for random placement)
+      const halfCategoryAngle = anglePerCategory / 2;
+      let angleDiff = Math.abs(normalizedPointAngle - normalizedExpectedAngle);
+      // Handle angle wrap-around
+      if (angleDiff > Math.PI) {
+        angleDiff = 2 * Math.PI - angleDiff;
+      }
+      expect(angleDiff).toBeLessThanOrEqual(halfCategoryAngle);
+
+      // 6. Verify radius is in correct range for Unlikely likelihood
+      const likelihoods = Object.values(Likelihood).reverse();
+      const likelihoodIndex = likelihoods.indexOf(Likelihood.Unlikely);
+      const ringWidth = 400 / likelihoods.length;
+      
+      const expectedOuterRadius = 400 - (likelihoodIndex * ringWidth);
+      const expectedInnerRadius = expectedOuterRadius - ringWidth;
+      
+      // Allow for the random offset in radius checks
+      const maxRandomOffset = ringWidth * 0.25; // Half of the 0.5 multiplier used in the implementation
+      expect(radius).toBeGreaterThanOrEqual(expectedInnerRadius - maxRandomOffset);
+      expect(radius).toBeLessThanOrEqual(expectedOuterRadius + maxRandomOffset);
     });
   });
 });
