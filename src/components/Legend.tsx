@@ -47,15 +47,15 @@ export const Legend = () => {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Size (Relevance)</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <div className="w-[14px] h-[14px] rounded-full bg-preparedness-moderate" role="presentation" />
+                <div className="w-[14px] h-[14px] rounded-full bg-gray-800 dark:bg-gray-200" role="presentation" />
                 <span className="text-sm text-gray-700 dark:text-gray-200">High</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-[10px] h-[10px] rounded-full bg-preparedness-moderate" role="presentation" />
+                <div className="w-[10px] h-[10px] rounded-full bg-gray-800 dark:bg-gray-200" role="presentation" />
                 <span className="text-sm text-gray-700 dark:text-gray-200">Moderate</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-[7px] h-[7px] rounded-full bg-preparedness-moderate" role="presentation" />
+                <div className="w-[7px] h-[7px] rounded-full bg-gray-800 dark:bg-gray-200" role="presentation" />
                 <span className="text-sm text-gray-700 dark:text-gray-200">Low</span>
               </div>
             </div>
