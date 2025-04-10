@@ -23,6 +23,8 @@ export const ControlPanel = () => {
       if (point) {
         setEditingPoint({ ...point });
       }
+    } else {
+      setEditingPoint(null);  // Clear editing state when no point is selected
     }
   }, [selectedPoint, points]);
 
@@ -61,6 +63,7 @@ export const ControlPanel = () => {
 
   const handleCloseEdit = () => {
     selectPoint(null);
+    setEditingPoint(null);  // Add this line to clear editing state
   };
 
   const commonInputClasses = "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";

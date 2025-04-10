@@ -35,41 +35,36 @@ export const RingDiagram = () => {
     if (!svgRef.current || size === 0) return;
 
     const svg = d3.select(svgRef.current);
-    const width = size;
-    const height = size;
-    const radius = Math.min(width, height) / 2;
-
-    svg
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('width', width)
-      .attr('height', height);
-
-    // Clear existing content
     svg.selectAll('*').remove();
 
-    // Background circle for click detection
-    svg.append('circle')
-      .attr('cx', width / 2)
-      .attr('cy', height / 2)
-      .attr('r', radius)
+    // Set up diagram dimensions
+    const width = size;
+    const height = size;
+    const margin = 50;
+
+    // Create main diagram group
+    const diagramGroup = svg
+      .attr('viewBox', `-${width/2} -${height/2} ${width} ${height}`)
+      .append('g');
+
+    // Add background for click handling
+    diagramGroup
+      .append('circle')
+      .attr('r', width / 2)
       .attr('fill', 'transparent')
-      .style('cursor', 'default')
-      .on('click', (event: MouseEvent) => {
-        if (!event) return;
+      .style('cursor', 'pointer')
+      .on('click', (event) => {
         // Only deselect if the click was directly on the background
-        const target = event.target as HTMLElement;
-        const currentTarget = event.currentTarget as HTMLElement;
-        if (target === currentTarget) {
+        if (event.target === event.currentTarget) {
           selectPoint(null);
         }
       });
 
-    const margin = size * 0.08;
-    const diagramRadius = (size / 2) - margin;
+    const radius = Math.min(width, height) / 2;
 
-    const diagramGroup = svg.append('g')
-      .attr('transform', `translate(${size / 2},${size / 2})`);
-    
+    const marginAdjusted = size * 0.08;
+    const diagramRadius = (size / 2) - marginAdjusted;
+
     const categories = Object.values(Category);
     const likelihoods = Object.values(Likelihood).reverse();
     const ringWidth = diagramRadius / likelihoods.length;
