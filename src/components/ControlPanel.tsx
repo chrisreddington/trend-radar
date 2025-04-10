@@ -68,7 +68,8 @@ export const ControlPanel = () => {
 
   const commonInputClasses = "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
   const commonSelectClasses = commonInputClasses;
-  const commonButtonClasses = "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400";
+  const commonButtonClasses = "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
+  const deleteButtonClasses = "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
 
   const getLikelihoodFromValue = (value: number): Likelihood => {
     if (value >= 80) return Likelihood.HighlyLikely;
@@ -249,7 +250,7 @@ export const ControlPanel = () => {
       <div className="p-4 cursor-pointer">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button
-            className="w-full flex justify-between items-center focus:outline-none"
+            className="w-full flex justify-between items-center focus:outline-none cursor-pointer"
             onClick={toggleCollapse}
             aria-expanded={!isCollapsed}
             aria-label="Add New Point Toggle"
@@ -289,7 +290,7 @@ export const ControlPanel = () => {
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Edit Selected Point</h3>
                 <button
                   onClick={handleCloseEdit}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
                   aria-label="Close edit panel"
                 >
                   <svg 
@@ -311,7 +312,7 @@ export const ControlPanel = () => {
               {renderPointForm(editingPoint, handleUpdatePoint, 'Update Point', true)}
               <button
                 onClick={() => selectedPoint && removePoint(selectedPoint)}
-                className="w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400"
+                className={deleteButtonClasses}
               >
                 Delete Point
               </button>

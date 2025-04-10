@@ -15,7 +15,8 @@ export const Legend = () => {
       <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button 
-            className="w-full flex justify-between items-center focus:outline-none"
+            className="w-full flex justify-between items-center cursor-pointer focus:outline-none"
+            onClick={toggleCollapse}
             aria-expanded={!isCollapsed}
             aria-controls="legend-content"
           >

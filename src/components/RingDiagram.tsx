@@ -40,7 +40,6 @@ export const RingDiagram = () => {
     // Set up diagram dimensions
     const width = size;
     const height = size;
-    const margin = 50;
 
     // Create main diagram group
     const diagramGroup = svg
@@ -60,8 +59,6 @@ export const RingDiagram = () => {
         }
       });
 
-    const radius = Math.min(width, height) / 2;
-
     const marginAdjusted = size * 0.08;
     const diagramRadius = (size / 2) - marginAdjusted;
 
@@ -80,7 +77,7 @@ export const RingDiagram = () => {
         .attr('fill-opacity', 1.0)
         .attr('stroke', RING_COLORS[colorIndex].stroke)
         .attr('stroke-width', size < 500 ? 1 : 1.5)
-        .style('cursor', 'default')
+        .style('cursor', 'pointer')
         .on('click', (event) => {
           // Check if the click was directly on the ring (not on a point)
           const clickedElement = event.target;
@@ -109,7 +106,7 @@ export const RingDiagram = () => {
           .attr('y2', endY)
           .attr('stroke', RING_COLORS[colorIndex].stroke)
           .attr('stroke-width', size < 500 ? 0.8 : 1)
-          .style('cursor', 'default')
+          .style('cursor', 'pointer')
           .on('click', () => selectPoint(null));
       });
     });
@@ -165,7 +162,7 @@ export const RingDiagram = () => {
         .attr('fill', color)
         .attr('stroke', selectedPoint === point.id ? 'var(--highlight)' : 'none')
         .attr('stroke-width', size < 500 ? 2 : 3)
-        .attr('cursor', 'pointer')
+        .attr('cursor', 'pointer') // Change cursor for points
         .attr('opacity', selectedPoint && selectedPoint !== point.id ? 0.6 : 1)
         .classed('point', true); // Add class for point identification
       
@@ -178,7 +175,7 @@ export const RingDiagram = () => {
           .attr('fill', 'transparent')
           .attr('stroke', 'none')
           .attr('pointer-events', 'all')
-          .style('cursor', 'pointer')
+          .style('cursor', 'pointer') // Add cursor for mobile touch targets
           .on('click', () => selectPoint(point.id));
       }
       
