@@ -15,7 +15,7 @@ const config: Config = {
     '\\.svg$': '<rootDir>/__mocks__/fileMock.js'
   },
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest'
+    '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { configFile: './babel.config.test.js' }]
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(@testing-library/jest-dom)/)'
