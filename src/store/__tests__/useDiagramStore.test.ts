@@ -2,147 +2,116 @@ import { useDiagramStore } from '../useDiagramStore';
 import { Likelihood, Point, Preparedness, Relevance } from '../../types';
 import { Category } from '../../types';
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  clear: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
-
-// Mock crypto.randomUUID
-const mockUUID = '123e4567-e89b-12d3-a456-426614174000';
-global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
-
 describe('useDiagramStore', () => {
+  // Set up test data and mocks
+  const mockUUID = '123e4567-e89b-12d3-a456-426614174000';
+  const mockPoint: Point = {
+    id: mockUUID,
+    label: 'Test Point',
+    category: Category.Technological,
+    relevance: Relevance.High,
+    preparedness: Preparedness.HighlyPrepared,
+    likelihood: Likelihood.HighlyLikely,
+    x: 0,
+    y: 0
+  };
+
+  const mockLocalStorage = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn(),
+  };
+
   beforeEach(() => {
-    // Clear the store state
+    // Reset store and mocks before each test
     useDiagramStore.setState({ points: [], selectedPoint: null });
-    // Clear localStorage mocks
     jest.clearAllMocks();
+    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+    global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
   });
 
-  describe('addPoint', () => {
-    it('should add a point with a generated UUID', () => {
-      const newPoint: Omit<Point, 'id'> = {
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
+  describe('Point Management', () => {
+    describe('addPoint', () => {
+      it('should generate UUID and add new point to store', () => {
+        const newPoint = {
+          label: 'Test Point',
+          category: Category.Technological,
+          relevance: Relevance.High,
+          preparedness: Preparedness.HighlyPrepared,
+          likelihood: Likelihood.HighlyLikely,
+          x: 0,
+          y: 0
+        };
 
-      const { addPoint } = useDiagramStore.getState();
-      addPoint(newPoint);
+        const { addPoint } = useDiagramStore.getState();
+        addPoint(newPoint);
 
-      const state = useDiagramStore.getState();
-      expect(state.points).toHaveLength(1);
-      expect(state.points[0]).toEqual({
-        ...newPoint,
-        id: mockUUID
+        const state = useDiagramStore.getState();
+        expect(state.points).toHaveLength(1);
+        expect(state.points[0]).toEqual({
+          ...newPoint,
+          id: mockUUID
+        });
+      });
+    });
+
+    describe('updatePoint', () => {
+      beforeEach(() => {
+        useDiagramStore.setState({ points: [mockPoint] });
+      });
+
+      it('should update specified properties of existing point', () => {
+        const updates = {
+          label: 'Updated Point',
+          relevance: Relevance.Low
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates);
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0]).toEqual({
+          ...mockPoint,
+          ...updates
+        });
+      });
+
+      it('should not modify state when point ID does not exist', () => {
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint('non-existent-id', { label: 'Updated' });
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0]).toEqual(mockPoint);
+      });
+    });
+
+    describe('removePoint', () => {
+      it('should remove point and clear selection if it was selected', () => {
+        useDiagramStore.setState({ points: [mockPoint], selectedPoint: mockUUID });
+
+        const { removePoint } = useDiagramStore.getState();
+        removePoint(mockUUID);
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toHaveLength(0);
+        expect(state.selectedPoint).toBeNull();
+      });
+
+      it('should preserve selection when removing unselected point', () => {
+        useDiagramStore.setState({ points: [mockPoint], selectedPoint: 'other-id' });
+
+        const { removePoint } = useDiagramStore.getState();
+        removePoint(mockUUID);
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toHaveLength(0);
+        expect(state.selectedPoint).toBe('other-id');
       });
     });
   });
 
-  describe('updatePoint', () => {
-    it('should update an existing point', () => {
-      // Add a point first
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
-      useDiagramStore.setState({ points: [point] });
-
-      const updates = {
-        label: 'Updated Point',
-        relevance: Relevance.Low
-      };
-
-      const { updatePoint } = useDiagramStore.getState();
-      updatePoint(mockUUID, updates);
-
-      const state = useDiagramStore.getState();
-      expect(state.points[0]).toEqual({
-        ...point,
-        ...updates
-      });
-    });
-
-    it('should not update non-existent points', () => {
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
-      useDiagramStore.setState({ points: [point] });
-
-      const { updatePoint } = useDiagramStore.getState();
-      updatePoint('non-existent-id', { label: 'Updated' });
-
-      const state = useDiagramStore.getState();
-      expect(state.points[0]).toEqual(point);
-    });
-  });
-
-  describe('removePoint', () => {
-    it('should remove a point and clear selection if it was selected', () => {
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
-      useDiagramStore.setState({ points: [point], selectedPoint: mockUUID });
-
-      const { removePoint } = useDiagramStore.getState();
-      removePoint(mockUUID);
-
-      const state = useDiagramStore.getState();
-      expect(state.points).toHaveLength(0);
-      expect(state.selectedPoint).toBeNull();
-    });
-
-    it('should keep selection if removed point was not selected', () => {
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
-      useDiagramStore.setState({ points: [point], selectedPoint: 'other-id' });
-
-      const { removePoint } = useDiagramStore.getState();
-      removePoint(mockUUID);
-
-      const state = useDiagramStore.getState();
-      expect(state.points).toHaveLength(0);
-      expect(state.selectedPoint).toBe('other-id');
-    });
-  });
-
-  describe('selectPoint', () => {
-    it('should set the selected point', () => {
+  describe('Point Selection', () => {
+    it('should update selected point ID', () => {
       const { selectPoint } = useDiagramStore.getState();
       selectPoint(mockUUID);
 
@@ -150,7 +119,7 @@ describe('useDiagramStore', () => {
       expect(state.selectedPoint).toBe(mockUUID);
     });
 
-    it('should clear selection when null is passed', () => {
+    it('should clear selection when passing null', () => {
       useDiagramStore.setState({ selectedPoint: mockUUID });
 
       const { selectPoint } = useDiagramStore.getState();
@@ -161,61 +130,43 @@ describe('useDiagramStore', () => {
     });
   });
 
-  describe('saveState', () => {
-    it('should save points to localStorage', () => {
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: Category.Technological,
-        relevance: Relevance.High,
-        preparedness: Preparedness.HighlyPrepared,
-        likelihood: Likelihood.HighlyLikely,
-        x: 0,
-        y: 0
-      };
-      useDiagramStore.setState({ points: [point] });
+  describe('Persistence', () => {
+    describe('saveState', () => {
+      it('should persist points to localStorage', () => {
+        useDiagramStore.setState({ points: [mockPoint] });
 
-      const { saveState } = useDiagramStore.getState();
-      saveState();
+        const { saveState } = useDiagramStore.getState();
+        saveState();
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'diagramState',
-        JSON.stringify({ points: [point] })
-      );
-    });
-  });
-
-  describe('loadState', () => {
-    it('should load points from localStorage and clear selection', () => {
-      const point = {
-        id: mockUUID,
-        label: 'Test Point',
-        category: 'Technological',
-        relevance: 'High',
-        preparedness: 'Highly Prepared',
-        likelihood: 'Highly Likely',
-        x: 0,
-        y: 0
-      };
-      mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ points: [point] }));
-
-      const { loadState } = useDiagramStore.getState();
-      loadState();
-
-      const state = useDiagramStore.getState();
-      expect(state.points).toEqual([point]);
-      expect(state.selectedPoint).toBeNull();
+        expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+          'diagramState',
+          JSON.stringify({ points: [mockPoint] })
+        );
+      });
     });
 
-    it('should do nothing if no state in localStorage', () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
+    describe('loadState', () => {
+      it('should restore points from localStorage and reset selection', () => {
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ points: [mockPoint] }));
 
-      const { loadState } = useDiagramStore.getState();
-      loadState();
+        const { loadState } = useDiagramStore.getState();
+        loadState();
 
-      const state = useDiagramStore.getState();
-      expect(state.points).toEqual([]);
-      expect(state.selectedPoint).toBeNull();
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+        expect(state.selectedPoint).toBeNull();
+      });
+
+      it('should maintain empty state when no data in localStorage', () => {
+        mockLocalStorage.getItem.mockReturnValue(null);
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([]);
+        expect(state.selectedPoint).toBeNull();
+      });
     });
   });
 });

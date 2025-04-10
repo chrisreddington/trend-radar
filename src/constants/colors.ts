@@ -1,3 +1,6 @@
+/**
+ * Colors for diagram rings representing different levels
+ */
 export const RING_COLORS = [
   { fill: '#1e3a8a', stroke: '#1e40af', label: 'Very High', tailwindClass: 'bg-blue-800' },  // blue-900, blue-800
   { fill: '#1e40af', stroke: '#1d4ed8', label: 'High', tailwindClass: 'bg-blue-700' },       // blue-800, blue-700
@@ -6,6 +9,9 @@ export const RING_COLORS = [
   { fill: '#3b82f6', stroke: '#60a5fa', label: 'Very Low', tailwindClass: 'bg-blue-400' }    // blue-500, blue-400
 ];
 
+/**
+ * Colors for preparedness levels
+ */
 export const PREPAREDNESS_COLORS = {
   high: '#22c55e',     // green-500
   moderate: '#f59e0b', // amber-500
