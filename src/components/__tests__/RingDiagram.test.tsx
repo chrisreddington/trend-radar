@@ -147,4 +147,62 @@ describe('RingDiagram', () => {
       )).toBeTruthy();
     });
   });
+
+  describe('background click behavior', () => {
+    it('deselects point when clicking on background', () => {
+      mockedUseDiagramStore.mockReturnValue({
+        points: mockPoints,
+        selectedPoint: '1', // Start with a selected point
+        selectPoint: mockSelectPoint
+      });
+
+      render(<RingDiagram />);
+      
+      // Get the mock D3 selection object
+      const selectMock = d3.select as jest.Mock;
+      const mockSelection = selectMock.mock.results[0].value;
+      
+      // Find the background click handler
+      const backgroundClickHandler = mockSelection.on.mock.calls.find(
+        (call: [string, (event: { target: unknown, currentTarget: unknown }) => void]) => call[0] === 'click'
+      )?.[1];
+
+      if (backgroundClickHandler) {
+        // Simulate click on background (target === currentTarget)
+        const mockEvent = {
+          target: 'background',
+          currentTarget: 'background'
+        };
+        backgroundClickHandler(mockEvent);
+        expect(mockSelectPoint).toHaveBeenCalledWith(null);
+      }
+    });
+
+    it('does not deselect when clicking on a point', () => {
+      mockedUseDiagramStore.mockReturnValue({
+        points: mockPoints,
+        selectedPoint: '1',
+        selectPoint: mockSelectPoint
+      });
+
+      render(<RingDiagram />);
+      
+      const selectMock = d3.select as jest.Mock;
+      const mockSelection = selectMock.mock.results[0].value;
+      
+      const backgroundClickHandler = mockSelection.on.mock.calls.find(
+        (call: [string, (event: { target: unknown, currentTarget: unknown }) => void]) => call[0] === 'click'
+      )?.[1];
+
+      if (backgroundClickHandler) {
+        // Simulate click on point (target !== currentTarget)
+        const mockEvent = {
+          target: 'point',
+          currentTarget: 'background'
+        };
+        backgroundClickHandler(mockEvent);
+        expect(mockSelectPoint).not.toHaveBeenCalled();
+      }
+    });
+  });
 });

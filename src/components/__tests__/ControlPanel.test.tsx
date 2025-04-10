@@ -192,6 +192,20 @@ describe('ControlPanel', () => {
       expect(mockSelectPoint).toHaveBeenCalledWith(null);
     });
 
+    it('clears editing state when close button is clicked', () => {
+      render(<ControlPanel />);
+      
+      // Verify edit form is initially shown
+      expect(screen.getByText('Edit Selected Point')).toBeInTheDocument();
+      
+      // Click close button
+      fireEvent.click(screen.getByRole('button', { name: 'Close edit panel' }));
+      
+      // Verify both selection is cleared and edit form is removed
+      expect(mockSelectPoint).toHaveBeenCalledWith(null);
+      expect(screen.queryByText('Edit Selected Point')).not.toBeInTheDocument();
+    });
+
     it('handles category change in edit mode', () => {
       render(<ControlPanel />);
       const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
@@ -325,6 +339,77 @@ describe('ControlPanel', () => {
 
         jest.clearAllMocks(); // Clear mock calls for next iteration
       });
+    });
+  });
+
+  describe('editing state management', () => {
+    it('clears editing state when point is deselected', () => {
+      // Start with a selected point
+      mockedUseDiagramStore.mockReturnValue(getDefaultStore('1'));
+      const { rerender } = render(<ControlPanel />);
+      
+      // Verify edit form is shown initially
+      expect(screen.getByText('Edit Selected Point')).toBeInTheDocument();
+      
+      // Simulate point deselection
+      mockedUseDiagramStore.mockReturnValue(getDefaultStore(null));
+      rerender(<ControlPanel />);
+      
+      // Verify edit form is removed
+      expect(screen.queryByText('Edit Selected Point')).not.toBeInTheDocument();
+    });
+
+    it('updates editing state when selected point changes', () => {
+      // Start with first point selected
+      const firstPoint = { ...mockPoint, id: '1', label: 'First Point' };
+      const secondPoint = { ...mockPoint, id: '2', label: 'Second Point' };
+      
+      const getStoreWithPoints = (selectedId: string | null) => ({
+        points: [firstPoint, secondPoint],
+        selectedPoint: selectedId,
+        addPoint: mockAddPoint,
+        updatePoint: mockUpdatePoint,
+        removePoint: mockRemovePoint,
+        selectPoint: mockSelectPoint
+      });
+
+      mockedUseDiagramStore.mockReturnValue(getStoreWithPoints('1'));
+      const { rerender } = render(<ControlPanel />);
+      
+      // Find edit section and verify first point's label
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      let labelInput = within(editSection!).getByLabelText('Label') as HTMLInputElement;
+      expect(labelInput.value).toBe('First Point');
+      
+      // Change selection to second point
+      mockedUseDiagramStore.mockReturnValue(getStoreWithPoints('2'));
+      rerender(<ControlPanel />);
+      
+      // Verify second point's label in edit section
+      const newEditSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      labelInput = within(newEditSection!).getByLabelText('Label') as HTMLInputElement;
+      expect(labelInput.value).toBe('Second Point');
+    });
+
+    it('preserves editing state while updating point', () => {
+      mockedUseDiagramStore.mockReturnValue(getDefaultStore('1'));
+      render(<ControlPanel />);
+      
+      // Find edit section and start editing the point
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      const labelInput = within(editSection!).getByLabelText('Label');
+      fireEvent.change(labelInput, { target: { value: 'Updated Point' } });
+      
+      // Verify the edit form stays visible
+      expect(screen.getByText('Edit Selected Point')).toBeInTheDocument();
+      
+      // Submit the update
+      const updateButton = screen.getByRole('button', { name: 'Update Point' });
+      fireEvent.click(updateButton);
+      
+      // Verify edit form is still shown after update
+      expect(screen.getByText('Edit Selected Point')).toBeInTheDocument();
+      expect(mockUpdatePoint).toHaveBeenCalled();
     });
   });
 });
