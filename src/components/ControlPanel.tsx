@@ -43,29 +43,83 @@ export const ControlPanel = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const commonInputClasses = "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+  const commonSelectClasses = commonInputClasses;
+  const commonButtonClasses = "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors";
+
+  const getLikelihoodFromValue = (value: number): Likelihood => {
+    if (value >= 80) return Likelihood.HighlyLikely;
+    if (value >= 60) return Likelihood.Likely;
+    if (value >= 40) return Likelihood.Average;
+    if (value >= 20) return Likelihood.Unlikely;
+    return Likelihood.HighlyUnlikely;
+  };
+
+  const getValueFromLikelihood = (likelihood: Likelihood): number => {
+    switch (likelihood) {
+      case Likelihood.HighlyLikely: return 100;
+      case Likelihood.Likely: return 75;
+      case Likelihood.Average: return 50;
+      case Likelihood.Unlikely: return 25;
+      case Likelihood.HighlyUnlikely: return 0;
+    }
+  };
+
+  const getRelevanceFromValue = (value: number): Relevance => {
+    if (value >= 66) return Relevance.High;
+    if (value >= 33) return Relevance.Moderate;
+    return Relevance.Low;
+  };
+
+  const getValueFromRelevance = (relevance: Relevance): number => {
+    switch (relevance) {
+      case Relevance.High: return 100;
+      case Relevance.Moderate: return 50;
+      case Relevance.Low: return 0;
+    }
+  };
+
+  const getPreparednessFromValue = (value: number): Preparedness => {
+    if (value >= 66) return Preparedness.HighlyPrepared;
+    if (value >= 33) return Preparedness.ModeratelyPrepared;
+    return Preparedness.InadequatelyPrepared;
+  };
+
+  const getValueFromPreparedness = (preparedness: Preparedness): number => {
+    switch (preparedness) {
+      case Preparedness.HighlyPrepared: return 100;
+      case Preparedness.ModeratelyPrepared: return 50;
+      case Preparedness.InadequatelyPrepared: return 0;
+    }
+  };
+
   const renderPointForm = (point: Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-text-primary mb-1" htmlFor="point-label">Label</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="point-label">
+          Label
+        </label>
         <input
           id="point-label"
           type="text"
           name="label"
           value={point.label || ''}
           onChange={e => setNewPoint({ ...newPoint, label: e.target.value })}
-          className="w-full rounded-md border border-ring-color bg-background px-3 py-2 text-sm text-text-primary shadow-sm focus:border-highlight focus:outline-none focus:ring-1 focus:ring-highlight"
+          className={commonInputClasses}
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-primary mb-1" htmlFor="point-category">Category</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="point-category">
+          Category
+        </label>
         <select
           id="point-category"
           name="category"
           value={point.category}
           onChange={e => setNewPoint({ ...newPoint, category: e.target.value as Category })}
-          className="w-full rounded-md border border-ring-color bg-background px-3 py-2 text-sm text-text-primary shadow-sm focus:border-highlight focus:outline-none focus:ring-1 focus:ring-highlight"
+          className={commonSelectClasses}
         >
           {Object.values(Category).map(cat => (
             <option key={cat} value={cat}>{cat}</option>
@@ -74,53 +128,53 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-primary mb-1" htmlFor="point-likelihood">Likelihood</label>
-        <select
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="point-likelihood">
+          Likelihood: {point.likelihood}
+        </label>
+        <input
           id="point-likelihood"
-          name="likelihood"
-          value={point.likelihood}
-          onChange={e => setNewPoint({ ...newPoint, likelihood: e.target.value as Likelihood })}
-          className="w-full rounded-md border border-ring-color bg-background px-3 py-2 text-sm text-text-primary shadow-sm focus:border-highlight focus:outline-none focus:ring-1 focus:ring-highlight"
-        >
-          {Object.values(Likelihood).map(l => (
-            <option key={l} value={l}>{l}</option>
-          ))}
-        </select>
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromLikelihood(point.likelihood)}
+          onChange={e => setNewPoint({ ...newPoint, likelihood: getLikelihoodFromValue(Number(e.target.value)) })}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-primary mb-1" htmlFor="point-relevance">Relevance</label>
-        <select
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="point-relevance">
+          Relevance: {point.relevance}
+        </label>
+        <input
           id="point-relevance"
-          name="relevance"
-          value={point.relevance}
-          onChange={e => setNewPoint({ ...newPoint, relevance: e.target.value as Relevance })}
-          className="w-full rounded-md border border-ring-color bg-background px-3 py-2 text-sm text-text-primary shadow-sm focus:border-highlight focus:outline-none focus:ring-1 focus:ring-highlight"
-        >
-          {Object.values(Relevance).map(r => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromRelevance(point.relevance)}
+          onChange={e => setNewPoint({ ...newPoint, relevance: getRelevanceFromValue(Number(e.target.value)) })}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-primary mb-1" htmlFor="point-preparedness">Preparedness</label>
-        <select
+        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="point-preparedness">
+          Preparedness: {point.preparedness}
+        </label>
+        <input
           id="point-preparedness"
-          name="preparedness"
-          value={point.preparedness}
-          onChange={e => setNewPoint({ ...newPoint, preparedness: e.target.value as Preparedness })}
-          className="w-full rounded-md border border-ring-color bg-background px-3 py-2 text-sm text-text-primary shadow-sm focus:border-highlight focus:outline-none focus:ring-1 focus:ring-highlight"
-        >
-          {Object.values(Preparedness).map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromPreparedness(point.preparedness)}
+          onChange={e => setNewPoint({ ...newPoint, preparedness: getPreparednessFromValue(Number(e.target.value)) })}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-md bg-highlight px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-highlight/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight transition-colors"
+        className={commonButtonClasses}
       >
         {submitLabel}
       </button>
@@ -128,9 +182,9 @@ export const ControlPanel = () => {
   );
 
   return (
-    <div className="w-full lg:w-80 bg-panel-bg shadow-lg rounded-lg border border-panel-border">
-      <div className="panel-header p-4" onClick={toggleCollapse}>
-        <h2 className="text-lg font-semibold text-text-primary">
+    <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200">
+      <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
+        <h2 className="text-lg font-semibold text-gray-800">
           <button 
             className="w-full flex justify-between items-center focus:outline-none" 
             aria-expanded={!isCollapsed}
@@ -147,7 +201,7 @@ export const ControlPanel = () => {
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
-              className={`panel-header-icon ${isCollapsed ? 'rotated' : ''}`}
+              className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
               aria-hidden="true"
             >
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -157,7 +211,7 @@ export const ControlPanel = () => {
       </div>
       <div 
         id="control-panel-content"
-        className={`collapsible-panel p-6 pt-0 ${isCollapsed ? 'collapsed' : ''}`}
+        className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
       >
         <div className="space-y-6">
           <div>
@@ -165,12 +219,12 @@ export const ControlPanel = () => {
           </div>
 
           {selectedPointData && (
-            <div className="border-t border-ring-color pt-6">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Edit Selected Point</h3>
+            <div className="border-t border-gray-300 pt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Edit Selected Point</h3>
               {renderPointForm(selectedPointData, handleUpdatePoint, 'Update Point')}
               <button
                 onClick={() => selectedPoint && removePoint(selectedPoint)}
-                className="mt-4 w-full rounded-md bg-preparedness-low px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-preparedness-low/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-preparedness-low transition-colors"
+                className="w-full rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
               >
                 Delete Point
               </button>
