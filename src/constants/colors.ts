@@ -5,3 +5,9 @@ export const RING_COLORS = [
   { fill: '#2563eb', stroke: '#3b82f6', label: 'Low', tailwindClass: 'bg-blue-500' },        // blue-600, blue-500
   { fill: '#3b82f6', stroke: '#60a5fa', label: 'Very Low', tailwindClass: 'bg-blue-400' }    // blue-500, blue-400
 ];
+
+export const PREPAREDNESS_COLORS = {
+  high: '#22c55e',     // green-500
+  moderate: '#f59e0b', // amber-500
+  low: '#ef4444'       // red-500
+};

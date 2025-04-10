@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { Preparedness } from '../types';
-import { RING_COLORS } from '../constants/colors';
+import { RING_COLORS, PREPAREDNESS_COLORS } from '../constants/colors';
 
 export const Legend = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -70,9 +70,9 @@ export const Legend = () => {
                     className="w-3 h-3 rounded-full" 
                     role="presentation"
                     style={{ 
-                      backgroundColor: preparedness === Preparedness.HighlyPrepared ? 'var(--preparedness-high)' :
-                                     preparedness === Preparedness.ModeratelyPrepared ? 'var(--preparedness-moderate)' : 
-                                     'var(--preparedness-low)'
+                      backgroundColor: preparedness === Preparedness.HighlyPrepared ? PREPAREDNESS_COLORS.high :
+                                     preparedness === Preparedness.ModeratelyPrepared ? PREPAREDNESS_COLORS.moderate : 
+                                     PREPAREDNESS_COLORS.low
                     }}
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-200">{preparedness}</span>

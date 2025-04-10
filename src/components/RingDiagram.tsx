@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { useDiagramStore } from '../store/useDiagramStore';
 import { Category, Preparedness, Relevance, Likelihood } from '../types';
-import { RING_COLORS } from '../constants/colors';
+import { RING_COLORS, PREPAREDNESS_COLORS } from '../constants/colors';
 
 export const RingDiagram = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -127,9 +127,9 @@ export const RingDiagram = () => {
                       point.relevance === Relevance.Moderate ? 10 * sizeScale : 
                       7 * sizeScale;
       
-      const color = point.preparedness === Preparedness.HighlyPrepared ? 'var(--preparedness-high)' :
-                   point.preparedness === Preparedness.ModeratelyPrepared ? 'var(--preparedness-moderate)' : 
-                   'var(--preparedness-low)';
+      const color = point.preparedness === Preparedness.HighlyPrepared ? PREPAREDNESS_COLORS.high :
+                   point.preparedness === Preparedness.ModeratelyPrepared ? PREPAREDNESS_COLORS.moderate : 
+                   PREPAREDNESS_COLORS.low;
       
       // Create point
       const pointElement = svg.append('circle')
