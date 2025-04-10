@@ -6,6 +6,9 @@
 
 # Considerations when making changes
 - When making any code changes to implementation, ensure that you update (or create) the corresponding tests. Aim for 100% test coverage.
+- Before marking your work as complete:
+  - Run all tests to ensure everything is functioning as expected.
+  - Run the linter to check for any style issues.
 
 # Testing Style
 - Use descriptive test names that clearly indicate what is being tested.
