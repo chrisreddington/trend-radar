@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { Preparedness } from '../types';
+import { RING_COLORS } from '../constants/colors';
 
 export const Legend = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -75,6 +76,18 @@ export const Legend = () => {
                     }}
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-200">{preparedness}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Rings (Likelihood)</h3>
+            <div className="space-y-3">
+              {RING_COLORS.map((color) => (
+                <div key={color.label} className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-sm ${color.tailwindClass}`} role="presentation" />
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{color.label}</span>
                 </div>
               ))}
             </div>

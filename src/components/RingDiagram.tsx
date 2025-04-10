@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { useDiagramStore } from '../store/useDiagramStore';
 import { Category, Preparedness, Relevance, Likelihood } from '../types';
+import { RING_COLORS } from '../constants/colors';
 
 export const RingDiagram = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -50,26 +51,19 @@ export const RingDiagram = () => {
     
     // Get arrays of categories and likelihoods
     const categories = Object.values(Category);
-    const likelihoods = Object.values(Likelihood).reverse();
+    const likelihoods = Object.values(Likelihood).reverse();  // Keep the reverse for likelihood order
     const ringWidth = radius / likelihoods.length;
-    
-    // Define ring colors from inside (darker) to outside (lighter)
-    const ringColors = [
-      { fill: '#1e3a8a', stroke: '#1e40af' },  // blue-900, blue-800
-      { fill: '#1e40af', stroke: '#1d4ed8' },  // blue-800, blue-700
-      { fill: '#1d4ed8', stroke: '#2563eb' },  // blue-700, blue-600
-      { fill: '#2563eb', stroke: '#3b82f6' },  // blue-600, blue-500
-      { fill: '#3b82f6', stroke: '#60a5fa' },  // blue-500, blue-400
-    ];
     
     // Create rings for each likelihood level
     likelihoods.forEach((_, index) => {
+      const colorIndex = likelihoods.length - 1 - index; // Invert color index
+      
       // Draw the main ring circle with fills and strokes
       svg.append('circle')
         .attr('r', radius - (index * ringWidth))
-        .attr('fill', ringColors[index].fill)
-        .attr('fill-opacity', 0.5)
-        .attr('stroke', ringColors[index].stroke)
+        .attr('fill', RING_COLORS[colorIndex].fill)
+        .attr('fill-opacity', 1.0)
+        .attr('stroke', RING_COLORS[colorIndex].stroke)
         .attr('stroke-width', size < 500 ? 1 : 1.5);
       
       // Draw quadrant lines
@@ -89,7 +83,7 @@ export const RingDiagram = () => {
           .attr('y1', startY)
           .attr('x2', endX)
           .attr('y2', endY)
-          .attr('stroke', ringColors[index].stroke)
+          .attr('stroke', RING_COLORS[colorIndex].stroke)
           .attr('stroke-width', size < 500 ? 0.8 : 1);
       });
     });
@@ -116,23 +110,6 @@ export const RingDiagram = () => {
         .attr('font-size', size < 500 ? '0.65rem' : '0.875rem')
         .attr('class', size < 500 ? 'font-medium' : 'font-semibold');
     });
-    
-    // Add likelihood labels with responsive positioning
-    const showLabels = size >= 400;
-    if (showLabels) {
-      likelihoods.forEach((likelihood, index) => {
-        const y = (-radius + (index * ringWidth) + (ringWidth / 2));
-        
-        svg.append('text')
-          .attr('x', radius + (size < 500 ? 10 : 30))
-          .attr('y', y)
-          .attr('text-anchor', 'start')
-          .attr('dominant-baseline', 'middle')
-          .attr('fill', 'var(--text-secondary)')
-          .attr('font-size', size < 500 ? '0.65rem' : '0.75rem')
-          .text(likelihood);
-      });
-    }
     
     // Plot points with responsive sizing
     points.forEach(point => {
