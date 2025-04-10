@@ -1,5 +1,51 @@
 import { create } from 'zustand';
 import { Point, DiagramState } from '../types';
+import { Category, Likelihood } from '../types';
+
+function getDiagramDimensions(size = 800) {
+  const marginAdjusted = size * 0.08;
+  const diagramRadius = (size / 2) - marginAdjusted;
+  const categories = Object.values(Category);
+  const likelihoods = Object.values(Likelihood).reverse();
+  const ringWidth = diagramRadius / likelihoods.length;
+  const angleStep = (2 * Math.PI) / categories.length;
+  
+  return {
+    diagramRadius,
+    categories,
+    likelihoods,
+    ringWidth,
+    angleStep
+  };
+}
+
+/**
+ * Calculate a random position for a point within its category and likelihood segment
+ */
+function calculateRandomPosition(point: Omit<Point, 'id'>) {
+  const dims = getDiagramDimensions();
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
+  
+  const categoryIndex = categories.indexOf(point.category);
+  const likelihoodIndex = likelihoods.indexOf(point.likelihood);
+  
+  // Calculate the arc boundaries for the category
+  const arcStart = (categoryIndex * angleStep) - Math.PI/2;
+  const arcEnd = ((categoryIndex + 1) * angleStep) - Math.PI/2;
+  
+  // Calculate the ring boundaries for the likelihood
+  const outerRadius = diagramRadius - (likelihoodIndex * ringWidth);
+  const innerRadius = diagramRadius - ((likelihoodIndex + 1) * ringWidth);
+  
+  // Choose random values within the boundaries
+  const randomAngle = arcStart + Math.random() * (arcEnd - arcStart);
+  const randomRadius = innerRadius + Math.random() * (outerRadius - innerRadius);
+  
+  return {
+    x: Math.cos(randomAngle) * randomRadius,
+    y: Math.sin(randomAngle) * randomRadius
+  };
+}
 
 /**
  * Store interface for managing diagram state and actions
@@ -28,15 +74,52 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
   points: [],
   selectedPoint: null,
 
-  addPoint: (point) => set((state) => ({
-    points: [...state.points, { ...point, id: crypto.randomUUID() }]
-  })),
+  addPoint: (point) => set((state) => {
+    const pos = calculateRandomPosition(point);
+    return {
+      points: [
+        ...state.points,
+        { 
+          ...point,
+          id: crypto.randomUUID(),
+          x: pos.x,
+          y: pos.y
+        }
+      ]
+    };
+  }),
 
-  updatePoint: (id, updates) => set((state) => ({
-    points: state.points.map(point => 
-      point.id === id ? { ...point, ...updates } : point
-    )
-  })),
+  updatePoint: (id, updates) => set((state) => {
+    const existingPoint = state.points.find(p => p.id === id);
+    if (!existingPoint) return state;
+
+    // Create updated point with new values
+    const updatedPoint = { ...existingPoint, ...updates };
+
+    // Only recalculate position if category or likelihood changed
+    if (updates.category !== undefined || updates.likelihood !== undefined) {
+      const dims = getDiagramDimensions();
+      const { categories, likelihoods } = dims;
+      
+      // Calculate new position based on category and likelihood
+      const categoryIndex = categories.indexOf(updatedPoint.category);
+      const likelihoodIndex = likelihoods.indexOf(updatedPoint.likelihood);
+      
+      // Calculate position in the ring
+      const angle = (categoryIndex * dims.angleStep) + (dims.angleStep / 2) - Math.PI/2;
+      const radius = dims.diagramRadius - (likelihoodIndex * dims.ringWidth) - (dims.ringWidth / 2);
+      
+      // Update coordinates
+      updatedPoint.x = Math.cos(angle) * radius;
+      updatedPoint.y = Math.sin(angle) * radius;
+    }
+
+    return {
+      points: state.points.map(point => 
+        point.id === id ? updatedPoint : point
+      )
+    };
+  }),
 
   removePoint: (id) => set((state) => ({
     points: state.points.filter(point => point.id !== id),

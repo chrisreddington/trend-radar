@@ -83,6 +83,61 @@ describe('useDiagramStore', () => {
         const state = useDiagramStore.getState();
         expect(state.points[0]).toEqual(mockPoint);
       });
+
+      it('should recalculate position when category changes', () => {
+        const updates = {
+          category: Category.Economic
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates);
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].category).toBe(Category.Economic);
+        // Position should be different from original
+        expect(state.points[0].x).not.toBe(0);
+        expect(state.points[0].y).not.toBe(0);
+      });
+
+      it('should recalculate position when likelihood changes', () => {
+        const updates = {
+          likelihood: Likelihood.Unlikely
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates);
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].likelihood).toBe(Likelihood.Unlikely);
+        // Position should be different from original
+        expect(state.points[0].x).not.toBe(0);
+        expect(state.points[0].y).not.toBe(0);
+      });
+
+      it('should preserve position when updating other properties', () => {
+        const originalX = 100;
+        const originalY = 200;
+        useDiagramStore.setState({ 
+          points: [{
+            ...mockPoint,
+            x: originalX,
+            y: originalY
+          }]
+        });
+
+        const updates = {
+          label: 'Updated Label',
+          relevance: Relevance.Low,
+          preparedness: Preparedness.InadequatelyPrepared
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates);
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].x).toBe(originalX);
+        expect(state.points[0].y).toBe(originalY);
+      });
     });
 
     describe('removePoint', () => {
