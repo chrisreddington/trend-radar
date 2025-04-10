@@ -1,6 +1,6 @@
 # Trend Radar Visualisation
 
-This modern web app provides you with an interactive trend radar. It is used to visualise and manage potential threats and opportunities across Political, Economic, Social and Technological dimensions. These strategic points are displayed in a a concentric circle diagram.
+This modern web app provides you with an interactive trend radar. It is used to visualise and manage potential threats and opportunities across Political, Economic, Social and Technological dimensions. These strategic points are displayed in a concentric circle diagram.
 
 1. The outer ring represents trends with the lowest likelihood of occurrence, whereas the inner rings represent trends with increasing likelihood.
 2. The size of a point represents its potential impact, with larger points indicating a higher impact.
