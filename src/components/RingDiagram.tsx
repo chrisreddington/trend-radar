@@ -13,7 +13,7 @@ export const RingDiagram = () => {
 
     const width = 800;
     const height = 800;
-    const margin = 40;
+    const margin = 60;
     const radius = Math.min(width, height) / 2 - margin;
 
     // Clear existing SVG
@@ -31,14 +31,24 @@ export const RingDiagram = () => {
     const likelihoods = Object.values(Likelihood).reverse(); // Reverse to have HighlyLikely on the outside
     const ringWidth = radius / likelihoods.length;
 
+    // Define ring colors from inside (darker) to outside (lighter)
+    const ringColors = [
+      { fill: '#1e3a8a', stroke: '#1e40af' },  // blue-900, blue-800
+      { fill: '#1e40af', stroke: '#1d4ed8' },  // blue-800, blue-700
+      { fill: '#1d4ed8', stroke: '#2563eb' },  // blue-700, blue-600
+      { fill: '#2563eb', stroke: '#3b82f6' },  // blue-600, blue-500
+      { fill: '#3b82f6', stroke: '#60a5fa' },  // blue-500, blue-400
+    ];
+
     // Create rings for each likelihood level
     likelihoods.forEach((_, index) => {
-      // Draw the main ring circle
+      // Draw the main ring circle with fills and strokes
       svg.append('circle')
         .attr('r', radius - (index * ringWidth))
-        .attr('fill', 'none')
-        .attr('stroke', '#e5e7eb')
-        .attr('stroke-width', 1);
+        .attr('fill', ringColors[index].fill)
+        .attr('fill-opacity', 0.5)  // Make the fill subtle
+        .attr('stroke', ringColors[index].stroke)
+        .attr('stroke-width', 1.5);
 
       // Draw quadrant lines
       const angleStep = (2 * Math.PI) / categories.length;
@@ -57,16 +67,16 @@ export const RingDiagram = () => {
           .attr('y1', startY)
           .attr('x2', endX)
           .attr('y2', endY)
-          .attr('stroke', '#e5e7eb')
+          .attr('stroke', ringColors[index].stroke)
           .attr('stroke-width', 1);
       });
     });
 
-    // Draw category labels
+    // Draw category labels with improved styling
     const angleStep = (2 * Math.PI) / categories.length;
     categories.forEach((category, i) => {
       const angle = i * angleStep - Math.PI / 2; // Start from top
-      const labelRadius = radius + 20;
+      const labelRadius = radius + 30;
       const x = Math.cos(angle) * labelRadius;
       const y = Math.sin(angle) * labelRadius;
 
@@ -76,23 +86,25 @@ export const RingDiagram = () => {
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .text(category)
-        .attr('class', 'text-sm font-medium');
+        .attr('fill', 'var(--quadrant-label)')
+        .attr('class', 'text-base font-semibold');
     });
 
-    // Add likelihood labels on the right side
+    // Add likelihood labels on the right side with improved styling
     likelihoods.forEach((likelihood, index) => {
       const y = (-radius + (index * ringWidth) + (ringWidth / 2));
       
       svg.append('text')
-        .attr('x', radius + 40)
+        .attr('x', radius + 45)
         .attr('y', y)
         .attr('text-anchor', 'start')
         .attr('dominant-baseline', 'middle')
-        .attr('class', 'text-xs text-gray-600')
+        .attr('fill', 'var(--text-secondary)')
+        .attr('class', 'text-sm')
         .text(likelihood);
     });
 
-    // Plot points
+    // Plot points with improved visual differentiation
     points.forEach(point => {
       // Calculate position based on category and likelihood
       const categoryIndex = categories.indexOf(point.category);
@@ -107,24 +119,45 @@ export const RingDiagram = () => {
       const pointX = Math.cos(angle) * pointRadius;
       const pointY = Math.sin(angle) * pointRadius;
 
-      // Map relevance to point size
-      const size = point.relevance === Relevance.High ? 12 :
-                   point.relevance === Relevance.Moderate ? 8 : 6;
+      // Map relevance to point size with larger differences
+      const size = point.relevance === Relevance.High ? 14 :
+                   point.relevance === Relevance.Moderate ? 10 : 7;
 
-      // Map preparedness to color
-      const color = point.preparedness === Preparedness.HighlyPrepared ? '#22c55e' :
-                   point.preparedness === Preparedness.ModeratelyPrepared ? '#eab308' : '#ef4444';
+      // Map preparedness to color using CSS variables
+      const color = point.preparedness === Preparedness.HighlyPrepared ? 'var(--preparedness-high)' :
+                   point.preparedness === Preparedness.ModeratelyPrepared ? 'var(--preparedness-moderate)' : 
+                   'var(--preparedness-low)';
 
-      svg.append('circle')
+      // Create point with improved visual feedback
+      const pointElement = svg.append('circle')
         .attr('cx', pointX)
         .attr('cy', pointY)
         .attr('r', size)
         .attr('fill', color)
-        .attr('stroke', selectedPoint === point.id ? '#000' : 'none')
-        .attr('stroke-width', 2)
+        .attr('stroke', selectedPoint === point.id ? 'var(--highlight)' : 'none')
+        .attr('stroke-width', 3)
         .attr('cursor', 'pointer')
-        .on('click', () => selectPoint(point.id))
-        .append('title')
+        .attr('opacity', selectedPoint && selectedPoint !== point.id ? 0.6 : 1);
+
+      // Add hover effects
+      pointElement
+        .on('mouseover', function() {
+          d3.select(this)
+            .attr('stroke', 'var(--highlight)')
+            .attr('stroke-width', 3)
+            .attr('opacity', 1);
+        })
+        .on('mouseout', function() {
+          if (selectedPoint !== point.id) {
+            d3.select(this)
+              .attr('stroke', 'none')
+              .attr('opacity', selectedPoint ? 0.6 : 1);
+          }
+        })
+        .on('click', () => selectPoint(point.id));
+
+      // Add tooltip
+      pointElement.append('title')
         .text(point.label);
     });
 

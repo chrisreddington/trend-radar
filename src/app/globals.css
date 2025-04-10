@@ -2,7 +2,15 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1a1a;
+  --ring-color: #e2e8f0;
+  --quadrant-label: #334155;
+  --highlight: #3b82f6;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b5563;
+  --preparedness-high: #22c55e;
+  --preparedness-moderate: #eab308;
+  --preparedness-low: #ef4444;
 }
 
 @theme inline {
@@ -14,13 +22,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --ring-color: #334155;
+    --quadrant-label: #e2e8f0;
+    --highlight: #60a5fa;
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
