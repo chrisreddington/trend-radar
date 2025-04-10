@@ -1,6 +1,7 @@
 import { RingDiagram } from '../components/RingDiagram';
 import { ControlPanel } from '../components/ControlPanel';
 import { Legend } from '../components/Legend';
+import { PointsTable } from '../components/PointsTable';
 
 export default function Home() {
   return (
@@ -13,6 +14,9 @@ export default function Home() {
           <ControlPanel />
           <Legend />
         </div>
+      </div>
+      <div className="mt-6">
+        <PointsTable />
       </div>
     </main>
   );
