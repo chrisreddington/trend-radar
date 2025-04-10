@@ -49,13 +49,15 @@ describe('RingDiagram', () => {
   ];
 
   const mockSelectPoint = jest.fn();
+  const mockUpdatePoint = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockedUseDiagramStore.mockReturnValue({
       points: mockPoints,
       selectedPoint: null,
-      selectPoint: mockSelectPoint
+      selectPoint: mockSelectPoint,
+      updatePoint: mockUpdatePoint
     });
   });
 
@@ -89,7 +91,8 @@ describe('RingDiagram', () => {
       mockedUseDiagramStore.mockReturnValue({
         points: newPoints,
         selectedPoint: null,
-        selectPoint: mockSelectPoint
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint
       });
 
       rerender(<RingDiagram />);
@@ -121,7 +124,8 @@ describe('RingDiagram', () => {
         mockedUseDiagramStore.mockReturnValue({
           points: mockPoints,
           selectedPoint: '1',
-          selectPoint: mockSelectPoint
+          selectPoint: mockSelectPoint,
+          updatePoint: mockUpdatePoint
         });
 
         render(<RingDiagram />);
@@ -148,7 +152,8 @@ describe('RingDiagram', () => {
         mockedUseDiagramStore.mockReturnValue({
           points: mockPoints,
           selectedPoint: '1',
-          selectPoint: mockSelectPoint
+          selectPoint: mockSelectPoint,
+          updatePoint: mockUpdatePoint
         });
 
         render(<RingDiagram />);
