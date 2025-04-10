@@ -1,30 +1,37 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useDiagramStore } from '../store/useDiagramStore';
-import { Category, Likelihood, Relevance, Preparedness, Point } from '../types';
+import { useState, useEffect } from "react";
+import { useDiagramStore } from "../store/useDiagramStore";
+import { Category, Likelihood, Relevance, Preparedness, Point } from "../types";
 
 export const ControlPanel = () => {
-  const { points, selectedPoint, addPoint, updatePoint, removePoint, selectPoint } = useDiagramStore();
+  const {
+    points,
+    selectedPoint,
+    addPoint,
+    updatePoint,
+    removePoint,
+    selectPoint,
+  } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | null>(null);
-  const [newPoint, setNewPoint] = useState<Omit<Point, 'id'>>({
-    label: '',
+  const [newPoint, setNewPoint] = useState<Omit<Point, "id">>({
+    label: "",
     category: Category.Technological,
     likelihood: Likelihood.Average,
     relevance: Relevance.Moderate,
     preparedness: Preparedness.ModeratelyPrepared,
     x: 0,
-    y: 0
+    y: 0,
   });
 
   useEffect(() => {
     if (selectedPoint) {
-      const point = points.find(p => p.id === selectedPoint);
+      const point = points.find((p) => p.id === selectedPoint);
       if (point) {
         setEditingPoint({ ...point });
       }
     } else {
-      setEditingPoint(null);  // Clear editing state when no point is selected
+      setEditingPoint(null); // Clear editing state when no point is selected
     }
   }, [selectedPoint, points]);
 
@@ -32,13 +39,13 @@ export const ControlPanel = () => {
     e.preventDefault();
     addPoint(newPoint);
     setNewPoint({
-      label: '',
+      label: "",
       category: Category.Technological,
       likelihood: Likelihood.Average,
       relevance: Relevance.Moderate,
       preparedness: Preparedness.ModeratelyPrepared,
       x: 0,
-      y: 0
+      y: 0,
     });
   };
 
@@ -49,7 +56,10 @@ export const ControlPanel = () => {
     }
   };
 
-  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>, isEditing: boolean) => {
+  const handleLabelChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isEditing: boolean,
+  ) => {
     if (isEditing && editingPoint) {
       setEditingPoint({ ...editingPoint, label: e.target.value });
     } else {
@@ -63,13 +73,16 @@ export const ControlPanel = () => {
 
   const handleCloseEdit = () => {
     selectPoint(null);
-    setEditingPoint(null);  // Add this line to clear editing state
+    setEditingPoint(null); // Add this line to clear editing state
   };
 
-  const commonInputClasses = "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
+  const commonInputClasses =
+    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
   const commonSelectClasses = commonInputClasses;
-  const commonButtonClasses = "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
-  const deleteButtonClasses = "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
+  const commonButtonClasses =
+    "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
+  const deleteButtonClasses =
+    "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
 
   const getLikelihoodFromValue = (value: number): Likelihood => {
     if (value >= 80) return Likelihood.HighlyLikely;
@@ -81,11 +94,21 @@ export const ControlPanel = () => {
 
   const getValueFromLikelihood = (likelihood: Likelihood): number => {
     switch (likelihood) {
-      case Likelihood.HighlyLikely: return 100;
-      case Likelihood.Likely: return 75;
-      case Likelihood.Average: return 50;
-      case Likelihood.Unlikely: return 25;
-      case Likelihood.HighlyUnlikely: return 0;
+      case Likelihood.HighlyLikely: {
+        return 100;
+      }
+      case Likelihood.Likely: {
+        return 75;
+      }
+      case Likelihood.Average: {
+        return 50;
+      }
+      case Likelihood.Unlikely: {
+        return 25;
+      }
+      case Likelihood.HighlyUnlikely: {
+        return 0;
+      }
     }
   };
 
@@ -97,9 +120,15 @@ export const ControlPanel = () => {
 
   const getValueFromRelevance = (relevance: Relevance): number => {
     switch (relevance) {
-      case Relevance.High: return 100;
-      case Relevance.Moderate: return 50;
-      case Relevance.Low: return 0;
+      case Relevance.High: {
+        return 100;
+      }
+      case Relevance.Moderate: {
+        return 50;
+      }
+      case Relevance.Low: {
+        return 0;
+      }
     }
   };
 
@@ -111,16 +140,30 @@ export const ControlPanel = () => {
 
   const getValueFromPreparedness = (preparedness: Preparedness): number => {
     switch (preparedness) {
-      case Preparedness.HighlyPrepared: return 100;
-      case Preparedness.ModeratelyPrepared: return 50;
-      case Preparedness.InadequatelyPrepared: return 0;
+      case Preparedness.HighlyPrepared: {
+        return 100;
+      }
+      case Preparedness.ModeratelyPrepared: {
+        return 50;
+      }
+      case Preparedness.InadequatelyPrepared: {
+        return 0;
+      }
     }
   };
 
-  const renderPointForm = (point: Point | Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string, isEditing: boolean = false) => (
+  const renderPointForm = (
+    point: Point | Omit<Point, "id">,
+    onSubmit: (e: React.FormEvent) => void,
+    submitLabel: string,
+    isEditing: boolean = false,
+  ) => (
     <form onSubmit={onSubmit} className="space-y-4" role="form">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-label" : "point-label"}>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-label" : "point-label"}
+        >
           Label
         </label>
         <input
@@ -135,28 +178,44 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-category" : "point-category"}>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-category" : "point-category"}
+        >
           Category
         </label>
         <select
           id={isEditing ? "edit-point-category" : "point-category"}
           name="category"
           value={point.category}
-          onChange={e => isEditing && editingPoint 
-            ? setEditingPoint({ ...editingPoint, category: e.target.value as Category })
-            : setNewPoint({ ...newPoint, category: e.target.value as Category })}
+          onChange={(e) =>
+            isEditing && editingPoint
+              ? setEditingPoint({
+                  ...editingPoint,
+                  category: e.target.value as Category,
+                })
+              : setNewPoint({
+                  ...newPoint,
+                  category: e.target.value as Category,
+                })
+          }
           className={commonSelectClasses}
           role="combobox"
           aria-label="Category"
         >
-          {Object.values(Category).map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
+          {Object.values(Category).map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
           ))}
         </select>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-likelihood" : "point-likelihood"}>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-likelihood" : "point-likelihood"}
+        >
           Likelihood: {point.likelihood}
         </label>
         <input
@@ -165,7 +224,7 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromLikelihood(point.likelihood)}
-          onChange={e => {
+          onChange={(e) => {
             const newValue = getLikelihoodFromValue(Number(e.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, likelihood: newValue });
@@ -183,7 +242,10 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-relevance" : "point-relevance"}>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-relevance" : "point-relevance"}
+        >
           Relevance: {point.relevance}
         </label>
         <input
@@ -192,7 +254,7 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromRelevance(point.relevance)}
-          onChange={e => {
+          onChange={(e) => {
             const newValue = getRelevanceFromValue(Number(e.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, relevance: newValue });
@@ -210,7 +272,10 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-preparedness" : "point-preparedness"}>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-preparedness" : "point-preparedness"}
+        >
           Preparedness: {point.preparedness}
         </label>
         <input
@@ -219,7 +284,7 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromPreparedness(point.preparedness)}
-          onChange={e => {
+          onChange={(e) => {
             const newValue = getPreparednessFromValue(Number(e.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, preparedness: newValue });
@@ -236,10 +301,7 @@ export const ControlPanel = () => {
         />
       </div>
 
-      <button
-        type="submit"
-        className={commonButtonClasses}
-      >
+      <button type="submit" className={commonButtonClasses}>
         {submitLabel}
       </button>
     </form>
@@ -256,17 +318,17 @@ export const ControlPanel = () => {
             aria-label="Add New Point Toggle"
           >
             Add New Point
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
-              className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
+              className={`transform transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`}
               aria-hidden="true"
             >
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -274,34 +336,36 @@ export const ControlPanel = () => {
           </button>
         </h2>
       </div>
-      <div 
+      <div
         id="control-panel-content"
         data-testid="add-point-form-content"
-        className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
+        className={`p-6 pt-0 ${isCollapsed ? "hidden" : ""}`}
       >
         <div className="space-y-6">
           <div>
-            {renderPointForm(newPoint, handleAddPoint, 'Add Point', false)}
+            {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
           </div>
 
           {editingPoint && (
             <div className="border-t border-gray-300 pt-6 dark:border-gray-600">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Edit Selected Point</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Edit Selected Point
+                </h3>
                 <button
                   onClick={handleCloseEdit}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
                   aria-label="Close edit panel"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -309,7 +373,12 @@ export const ControlPanel = () => {
                   </svg>
                 </button>
               </div>
-              {renderPointForm(editingPoint, handleUpdatePoint, 'Update Point', true)}
+              {renderPointForm(
+                editingPoint,
+                handleUpdatePoint,
+                "Update Point",
+                true,
+              )}
               <button
                 onClick={() => selectedPoint && removePoint(selectedPoint)}
                 className={deleteButtonClasses}

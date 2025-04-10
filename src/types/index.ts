@@ -2,39 +2,39 @@
  * Categories for strategic points
  */
 export enum Category {
-  Technological = 'Technological',
-  Economic = 'Economic',
-  Political = 'Political',
-  Social = 'Social'
+  Technological = "Technological",
+  Economic = "Economic",
+  Political = "Political",
+  Social = "Social",
 }
 
 /**
  * Likelihood levels for strategic points
  */
 export enum Likelihood {
-  HighlyLikely = 'Highly Likely',
-  Likely = 'Likely',
-  Average = 'Average',
-  Unlikely = 'Unlikely',
-  HighlyUnlikely = 'Highly Unlikely'
+  HighlyLikely = "Highly Likely",
+  Likely = "Likely",
+  Average = "Average",
+  Unlikely = "Unlikely",
+  HighlyUnlikely = "Highly Unlikely",
 }
 
 /**
  * Relevance levels for strategic points
  */
 export enum Relevance {
-  High = 'High',
-  Moderate = 'Moderate',
-  Low = 'Low'
+  High = "High",
+  Moderate = "Moderate",
+  Low = "Low",
 }
 
 /**
  * Preparedness levels for strategic points
  */
 export enum Preparedness {
-  HighlyPrepared = 'Highly Prepared',
-  ModeratelyPrepared = 'Moderately Prepared',
-  InadequatelyPrepared = 'Inadequately Prepared'
+  HighlyPrepared = "Highly Prepared",
+  ModeratelyPrepared = "Moderately Prepared",
+  InadequatelyPrepared = "Inadequately Prepared",
 }
 
 /**
