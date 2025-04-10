@@ -75,8 +75,8 @@ export const RingDiagram = () => {
     // Draw category labels with improved styling
     const angleStep = (2 * Math.PI) / categories.length;
     categories.forEach((category, i) => {
-      const angle = i * angleStep - Math.PI / 2; // Start from top
-      const labelRadius = radius + 30;
+      const angle = (i * angleStep) + (angleStep / 2) - Math.PI / 2; // Start from top and offset by half step
+      const labelRadius = radius + 60; // Increased from 30 to 60 to move labels further out
       const x = Math.cos(angle) * labelRadius;
       const y = Math.sin(angle) * labelRadius;
 
