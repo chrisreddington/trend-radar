@@ -9,12 +9,24 @@
       ],
     "servers": {
         "github-server": {
-            "type": "stdio",
             "command": "/Users/chrisreddington/Documents/Code/github-mcp-server/server",
             "args": ["stdio"],
             "env": {
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-pat}"
             }
         },
+        "playwright": {
+          "command": "npx",
+          "args": [
+            "@playwright/mcp@latest"
+          ]
+        },
+        "sequential-thinking": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-sequential-thinking"
+          ]
+        }
     }
 }
