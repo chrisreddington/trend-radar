@@ -35,34 +35,36 @@ export const PointsTable = () => {
   return (
     <div className="w-full bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 mt-6">
       <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          <button 
-            className="w-full flex justify-between items-center focus:outline-none"
-            aria-expanded={!isCollapsed}
-            aria-controls="table-content"
-          >
+        <button
+          className="w-full p-4 flex justify-between items-center cursor-pointer"
+          onClick={toggleCollapse}
+          aria-expanded={!isCollapsed}
+          aria-label="Points Table Toggle"
+        >
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             Points Table
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-        </h2>
+          </h2>
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className={`transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
       </div>
       <div 
         id="table-content"
         className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
+        data-testid="points-table-content"
       >
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

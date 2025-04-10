@@ -6,6 +6,7 @@ import { Category, Likelihood, Relevance, Preparedness, Point } from '../types';
 export const ControlPanel = () => {
   const { points, selectedPoint, addPoint, updatePoint, removePoint, selectPoint } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [editingPoint, setEditingPoint] = useState<Point | null>(null);
   const [newPoint, setNewPoint] = useState<Omit<Point, 'id'>>({
     label: '',
     category: Category.Technological,
@@ -15,16 +16,15 @@ export const ControlPanel = () => {
     x: 0,
     y: 0
   });
-  const [editingPoint, setEditingPoint] = useState<Point | null>(null);
 
+  // Update useEffect to properly initialize form state
   useEffect(() => {
     if (selectedPoint) {
-      const pointData = points.find(p => p.id === selectedPoint);
-      if (pointData) {
-        setEditingPoint(pointData);
+      const point = points.find(p => p.id === selectedPoint);
+      if (point) {
+        const { id, ...pointData } = point;
+        setEditingPoint({ ...point }); // Include all properties
       }
-    } else {
-      setEditingPoint(null);
     }
   }, [selectedPoint, points]);
 
@@ -45,7 +45,16 @@ export const ControlPanel = () => {
   const handleUpdatePoint = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPoint && editingPoint) {
-      updatePoint(selectedPoint, editingPoint);
+      const { id, ...pointData } = editingPoint;
+      updatePoint(selectedPoint, pointData);
+    }
+  };
+
+  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>, isEditing: boolean) => {
+    if (isEditing && editingPoint) {
+      setEditingPoint({ ...editingPoint, label: e.target.value });
+    } else {
+      setNewPoint({ ...newPoint, label: e.target.value });
     }
   };
 
@@ -107,20 +116,18 @@ export const ControlPanel = () => {
     }
   };
 
-  const renderPointForm = (point: Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string, isEditing: boolean = false) => (
+  const renderPointForm = (point: Point | Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string, isEditing: boolean = false) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-label">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-label" : "point-label"}>
           Label
         </label>
         <input
-          id="point-label"
+          id={isEditing ? "edit-point-label" : "point-label"}
           type="text"
           name="label"
-          value={point.label || ''}
-          onChange={e => isEditing && editingPoint 
-            ? setEditingPoint({ ...editingPoint, label: e.target.value })
-            : setNewPoint({ ...newPoint, label: e.target.value })}
+          value={point.label}
+          onChange={(e) => handleLabelChange(e, isEditing)}
           className={commonInputClasses}
           required
         />
@@ -216,12 +223,13 @@ export const ControlPanel = () => {
 
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
+      <div className="p-4 cursor-pointer">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          <button 
-            className="w-full flex justify-between items-center focus:outline-none" 
+          <button
+            className="w-full flex justify-between items-center focus:outline-none"
+            onClick={toggleCollapse}
             aria-expanded={!isCollapsed}
-            aria-controls="control-panel-content"
+            aria-label="Add New Point Toggle"
           >
             Add New Point
             <svg 
@@ -244,6 +252,7 @@ export const ControlPanel = () => {
       </div>
       <div 
         id="control-panel-content"
+        data-testid="add-point-form-content"
         className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
       >
         <div className="space-y-6">

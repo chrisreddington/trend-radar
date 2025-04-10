@@ -54,9 +54,12 @@ export const RingDiagram = () => {
       .attr('r', radius)
       .attr('fill', 'transparent')
       .style('cursor', 'default')
-      .on('click', (event) => {
+      .on('click', (event: MouseEvent) => {
+        if (!event) return;
         // Only deselect if the click was directly on the background
-        if (event.target === event.currentTarget) {
+        const target = event.target as HTMLElement;
+        const currentTarget = event.currentTarget as HTMLElement;
+        if (target === currentTarget) {
           selectPoint(null);
         }
       });
@@ -215,6 +218,8 @@ export const RingDiagram = () => {
           ref={svgRef} 
           className="w-full h-auto"
           style={{ display: 'block' }} // Ensure SVG is visible
+          role="img"
+          aria-label="Ring diagram showing points across different categories and rings"
         />
       </div>
     </div>

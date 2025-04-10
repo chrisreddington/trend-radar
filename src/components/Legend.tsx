@@ -40,6 +40,7 @@ export const Legend = () => {
       </div>
       <div 
         id="legend-content"
+        data-testid="legend-content"
         className={`p-6 pt-0 ${isCollapsed ? 'hidden' : ''}`}
       >
         <div className="space-y-6">
