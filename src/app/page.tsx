@@ -1,15 +1,10 @@
 import { RingDiagram } from '../components/RingDiagram';
 import { ControlPanel } from '../components/ControlPanel';
 import { Legend } from '../components/Legend';
-import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-8">
-      <div className="flex justify-end mb-4">
-        <ThemeSwitcher />
-      </div>
-      
+    <main className="min-h-screen p-8">      
       <div className="flex flex-col lg:flex-row">
         <div className="flex-1 flex items-center justify-center mb-6 lg:mb-0">
           <RingDiagram />
