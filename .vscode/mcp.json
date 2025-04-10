@@ -10,7 +10,7 @@
     "servers": {
         "github-server": {
             "type": "stdio",
-            "command": "github-mcp-server",
+            "command": "/Users/chrisreddington/Documents/Code/github-mcp-server/server",
             "args": ["stdio"],
             "env": {
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-pat}"
