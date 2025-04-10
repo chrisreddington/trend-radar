@@ -11,6 +11,8 @@
   --preparedness-high: #22c55e;
   --preparedness-moderate: #eab308;
   --preparedness-low: #ef4444;
+  --panel-bg: #ffffff;
+  --panel-border: #e2e8f0;
 }
 
 @theme inline {
@@ -20,20 +22,48 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #ffffff;
-    --ring-color: #334155;
-    --quadrant-label: #e2e8f0;
-    --highlight: #60a5fa;
-    --text-primary: #ffffff;
-    --text-secondary: #9ca3af;
-  }
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --ring-color: #334155;
+  --quadrant-label: #e2e8f0;
+  --highlight: #60a5fa;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --panel-bg: #262626;
+  --panel-border: #334155;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Collapsible panel styles */
+.collapsible-panel {
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  max-height: 1000px;
+  overflow: hidden;
+  opacity: 1;
+}
+
+.collapsible-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.panel-header-icon {
+  transition: transform 0.3s ease;
+}
+
+.panel-header-icon.rotated {
+  transform: rotate(180deg);
 }
