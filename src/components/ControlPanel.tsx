@@ -43,8 +43,7 @@ export const ControlPanel = () => {
   const handleUpdatePoint = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPoint && editingPoint) {
-      const pointData = { ...editingPoint };
-      delete pointData.id;
+      const { id, ...pointData } = editingPoint;
       updatePoint(selectedPoint, pointData);
     }
   };
