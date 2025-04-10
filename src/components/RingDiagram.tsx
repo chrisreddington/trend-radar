@@ -134,9 +134,9 @@ export const RingDiagram = () => {
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .text(displayText)
-        .attr('fill', 'var(--quadrant-label)')
-        .attr('font-size', size < 500 ? '0.65rem' : '0.875rem')
-        .attr('class', size < 500 ? 'font-medium' : 'font-semibold');
+        .attr('fill', 'currentColor')
+        .attr('class', size < 500 ? 'font-medium' : 'font-semibold')
+        .attr('font-size', size < 500 ? '0.65rem' : '0.875rem');
     });
     
     // Plot points with responsive sizing
@@ -210,7 +210,7 @@ export const RingDiagram = () => {
   
   return (
     <div className="flex justify-center items-center w-full">
-      <div className="max-w-[800px] w-full">
+      <div className="max-w-[800px] w-full text-gray-900 dark:text-gray-100">
         <svg 
           ref={svgRef} 
           className="w-full h-auto"
