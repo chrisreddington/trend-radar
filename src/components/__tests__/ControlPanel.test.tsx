@@ -86,6 +86,60 @@ describe('ControlPanel', () => {
     }));
   });
 
+  describe('when adding a new point', () => {
+    it('handles category change', () => {
+      render(<ControlPanel />);
+      const select = screen.getByRole('combobox');
+      fireEvent.change(select, { target: { value: Category.Economic } });
+      
+      const form = screen.getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+        category: Category.Economic
+      }));
+    });
+
+    it('handles likelihood slider change', () => {
+      render(<ControlPanel />);
+      const slider = screen.getByRole('slider', { name: /Likelihood/ });
+      fireEvent.change(slider, { target: { value: '90' } });
+      
+      const form = screen.getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+        likelihood: Likelihood.HighlyLikely
+      }));
+    });
+
+    it('handles relevance slider change', () => {
+      render(<ControlPanel />);
+      const slider = screen.getByRole('slider', { name: /Relevance/ });
+      fireEvent.change(slider, { target: { value: '80' } });
+      
+      const form = screen.getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+        relevance: Relevance.High
+      }));
+    });
+
+    it('handles preparedness slider change', () => {
+      render(<ControlPanel />);
+      const slider = screen.getByRole('slider', { name: /Preparedness/ });
+      fireEvent.change(slider, { target: { value: '80' } });
+      
+      const form = screen.getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+        preparedness: Preparedness.HighlyPrepared
+      }));
+    });
+  });
+
   describe('when point is selected', () => {
     beforeEach(() => {
       // override selectedPoint to simulate a selected point
@@ -136,6 +190,141 @@ describe('ControlPanel', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Close edit panel' }));
       
       expect(mockSelectPoint).toHaveBeenCalledWith(null);
+    });
+
+    it('handles category change in edit mode', () => {
+      render(<ControlPanel />);
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      const select = within(editSection!).getByRole('combobox');
+      fireEvent.change(select, { target: { value: Category.Economic } });
+      
+      const form = within(editSection!).getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockUpdatePoint).toHaveBeenCalledWith('1', expect.objectContaining({
+        category: Category.Economic
+      }));
+    });
+
+    it('handles likelihood slider change in edit mode', () => {
+      render(<ControlPanel />);
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      const slider = within(editSection!).getByRole('slider', { name: /Likelihood/ });
+      fireEvent.change(slider, { target: { value: '90' } });
+      
+      const form = within(editSection!).getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockUpdatePoint).toHaveBeenCalledWith('1', expect.objectContaining({
+        likelihood: Likelihood.HighlyLikely
+      }));
+    });
+
+    it('handles relevance slider change in edit mode', () => {
+      render(<ControlPanel />);
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      const slider = within(editSection!).getByRole('slider', { name: /Relevance/ });
+      fireEvent.change(slider, { target: { value: '80' } });
+      
+      const form = within(editSection!).getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockUpdatePoint).toHaveBeenCalledWith('1', expect.objectContaining({
+        relevance: Relevance.High
+      }));
+    });
+
+    it('handles preparedness slider change in edit mode', () => {
+      render(<ControlPanel />);
+      const editSection = screen.getByText('Edit Selected Point').closest('div')?.parentElement;
+      const slider = within(editSection!).getByRole('slider', { name: /Preparedness/ });
+      fireEvent.change(slider, { target: { value: '80' } });
+      
+      const form = within(editSection!).getByRole('form');
+      fireEvent.submit(form);
+      
+      expect(mockUpdatePoint).toHaveBeenCalledWith('1', expect.objectContaining({
+        preparedness: Preparedness.HighlyPrepared
+      }));
+    });
+  });
+
+  describe('value conversion functions', () => {
+    it('converts likelihood values correctly', () => {
+      render(<ControlPanel />);
+      const likelihoodSlider = screen.getByRole('slider', { name: /Likelihood/ });
+
+      // Test all likelihood ranges
+      const testCases = [
+        { value: '90', expected: Likelihood.HighlyLikely },
+        { value: '70', expected: Likelihood.Likely },
+        { value: '50', expected: Likelihood.Average },
+        { value: '30', expected: Likelihood.Unlikely },
+        { value: '10', expected: Likelihood.HighlyUnlikely }
+      ];
+
+      testCases.forEach(({ value, expected }) => {
+        fireEvent.change(likelihoodSlider, { target: { value } });
+        
+        const form = screen.getByRole('form');
+        fireEvent.submit(form);
+
+        expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+          likelihood: expected
+        }));
+
+        jest.clearAllMocks(); // Clear mock calls for next iteration
+      });
+    });
+
+    it('converts relevance values correctly', () => {
+      render(<ControlPanel />);
+      const relevanceSlider = screen.getByRole('slider', { name: /Relevance/ });
+
+      // Test all relevance ranges
+      const testCases = [
+        { value: '80', expected: Relevance.High },
+        { value: '50', expected: Relevance.Moderate },
+        { value: '20', expected: Relevance.Low }
+      ];
+
+      testCases.forEach(({ value, expected }) => {
+        fireEvent.change(relevanceSlider, { target: { value } });
+        
+        const form = screen.getByRole('form');
+        fireEvent.submit(form);
+
+        expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+          relevance: expected
+        }));
+
+        jest.clearAllMocks(); // Clear mock calls for next iteration
+      });
+    });
+
+    it('converts preparedness values correctly', () => {
+      render(<ControlPanel />);
+      const preparednessSlider = screen.getByRole('slider', { name: /Preparedness/ });
+
+      // Test all preparedness ranges
+      const testCases = [
+        { value: '80', expected: Preparedness.HighlyPrepared },
+        { value: '50', expected: Preparedness.ModeratelyPrepared },
+        { value: '20', expected: Preparedness.InadequatelyPrepared }
+      ];
+
+      testCases.forEach(({ value, expected }) => {
+        fireEvent.change(preparednessSlider, { target: { value } });
+        
+        const form = screen.getByRole('form');
+        fireEvent.submit(form);
+
+        expect(mockAddPoint).toHaveBeenCalledWith(expect.objectContaining({
+          preparedness: expected
+        }));
+
+        jest.clearAllMocks(); // Clear mock calls for next iteration
+      });
     });
   });
 });

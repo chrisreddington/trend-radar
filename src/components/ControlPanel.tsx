@@ -117,7 +117,7 @@ export const ControlPanel = () => {
   };
 
   const renderPointForm = (point: Point | Omit<Point, 'id'>, onSubmit: (e: React.FormEvent) => void, submitLabel: string, isEditing: boolean = false) => (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4" role="form">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-label" : "point-label"}>
           Label
@@ -134,17 +134,18 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-category">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-category" : "point-category"}>
           Category
         </label>
         <select
-          id="point-category"
+          id={isEditing ? "edit-point-category" : "point-category"}
           name="category"
           value={point.category}
           onChange={e => isEditing && editingPoint 
             ? setEditingPoint({ ...editingPoint, category: e.target.value as Category })
             : setNewPoint({ ...newPoint, category: e.target.value as Category })}
           className={commonSelectClasses}
+          role="combobox"
         >
           {Object.values(Category).map(cat => (
             <option key={cat} value={cat}>{cat}</option>
@@ -153,11 +154,11 @@ export const ControlPanel = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-likelihood">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-likelihood" : "point-likelihood"}>
           Likelihood: {point.likelihood}
         </label>
         <input
-          id="point-likelihood"
+          id={isEditing ? "edit-point-likelihood" : "point-likelihood"}
           type="range"
           min="0"
           max="100"
@@ -169,15 +170,20 @@ export const ControlPanel = () => {
               : setNewPoint({ ...newPoint, likelihood: newValue });
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          role="slider"
+          aria-label="Likelihood"
+          aria-valuenow={getValueFromLikelihood(point.likelihood)}
+          aria-valuemin={0}
+          aria-valuemax={100}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-relevance">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-relevance" : "point-relevance"}>
           Relevance: {point.relevance}
         </label>
         <input
-          id="point-relevance"
+          id={isEditing ? "edit-point-relevance" : "point-relevance"}
           type="range"
           min="0"
           max="100"
@@ -189,15 +195,20 @@ export const ControlPanel = () => {
               : setNewPoint({ ...newPoint, relevance: newValue });
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          role="slider"
+          aria-label="Relevance"
+          aria-valuenow={getValueFromRelevance(point.relevance)}
+          aria-valuemin={0}
+          aria-valuemax={100}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor="point-preparedness">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" htmlFor={isEditing ? "edit-point-preparedness" : "point-preparedness"}>
           Preparedness: {point.preparedness}
         </label>
         <input
-          id="point-preparedness"
+          id={isEditing ? "edit-point-preparedness" : "point-preparedness"}
           type="range"
           min="0"
           max="100"
@@ -209,6 +220,11 @@ export const ControlPanel = () => {
               : setNewPoint({ ...newPoint, preparedness: newValue });
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          role="slider"
+          aria-label="Preparedness"
+          aria-valuenow={getValueFromPreparedness(point.preparedness)}
+          aria-valuemin={0}
+          aria-valuemax={100}
         />
       </div>
 
