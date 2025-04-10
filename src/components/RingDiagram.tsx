@@ -7,7 +7,7 @@ import { RING_COLORS, PREPAREDNESS_COLORS } from '../constants/colors';
 
 export const RingDiagram = () => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { points, selectedPoint, selectPoint } = useDiagramStore();
+  const { points, selectedPoint, selectPoint, updatePoint } = useDiagramStore();
   const [size, setSize] = useState(800); // Default size
   
   // Handle responsive sizing based on viewport
@@ -66,6 +66,34 @@ export const RingDiagram = () => {
     const likelihoods = Object.values(Likelihood).reverse();
     const ringWidth = diagramRadius / likelihoods.length;
     
+    // Add a helper for random positioning with collision detection
+    const MIN_POINT_SPACING = 2;
+    const placedPoints: { x: number; y: number; size: number }[] = [];
+    
+    const angleStep = (2 * Math.PI) / categories.length;
+    /**
+     * Calculates a random position within the specified arc segment and ring.
+     * @param point - The point being positioned.
+     * @param pointSize - The computed size for the point.
+     * @returns An object with x and y coordinates.
+     */
+    const calculatePointPosition = (point: any, pointSize: number) => {
+      const categoryIndex = categories.indexOf(point.category);
+      const likelihoodIndex = likelihoods.indexOf(point.likelihood);
+      // Apply offset so arc boundaries align with the label placement
+      const arcStart = (categoryIndex * angleStep) - Math.PI/2;
+      const arcEnd = ((categoryIndex + 1) * angleStep) - Math.PI/2;
+      // Calculate ring boundaries
+      const outerRadius = diagramRadius - (likelihoodIndex * ringWidth);
+      const innerRadius = diagramRadius - ((likelihoodIndex + 1) * ringWidth);
+      // Choose random values within the boundaries
+      const randomAngle = arcStart + Math.random() * (arcEnd - arcStart);
+      const randomRadius = innerRadius + Math.random() * (outerRadius - innerRadius);
+      const x = Math.cos(randomAngle) * randomRadius;
+      const y = Math.sin(randomAngle) * randomRadius;
+      return { x, y };
+    };
+    
     // Create rings for each likelihood level
     likelihoods.forEach((_, index) => {
       const colorIndex = likelihoods.length - 1 - index;
@@ -112,7 +140,6 @@ export const RingDiagram = () => {
     });
     
     // Draw category labels with responsive styling
-    const angleStep = (2 * Math.PI) / categories.length;
     categories.forEach((category, i) => {
       const angle = (i * angleStep) + (angleStep / 2) - Math.PI / 2;
       const labelRadius = diagramRadius + (size < 500 ? 20 : 40);
@@ -134,52 +161,55 @@ export const RingDiagram = () => {
         .attr('font-size', size < 500 ? '0.65rem' : '0.875rem');
     });
     
-    // Plot points with responsive sizing
+    // Plot points with responsive sizing and random placement while avoiding overlaps
     points.forEach(point => {
-      const categoryIndex = categories.indexOf(point.category);
-      const likelihoodIndex = likelihoods.indexOf(point.likelihood);
-      
-      const angle = (categoryIndex * angleStep) + (angleStep / 2) - Math.PI / 2;
-      const pointRadius = diagramRadius - (likelihoodIndex * ringWidth) - (ringWidth / 2);
-      
-      const pointX = Math.cos(angle) * pointRadius;
-      const pointY = Math.sin(angle) * pointRadius;
-      
+      // Determine point size based on relevance
       const sizeScale = size < 500 ? 0.7 : 1;
       const pointSize = point.relevance === Relevance.High ? 14 * sizeScale :
-                      point.relevance === Relevance.Moderate ? 10 * sizeScale : 
-                      7 * sizeScale;
+                        point.relevance === Relevance.Moderate ? 10 * sizeScale : 7 * sizeScale;
       
-      const color = point.preparedness === Preparedness.HighlyPrepared ? PREPAREDNESS_COLORS.high :
-                   point.preparedness === Preparedness.ModeratelyPrepared ? PREPAREDNESS_COLORS.moderate : 
-                   PREPAREDNESS_COLORS.low;
+      // Use existing position if available, otherwise calculate a new one
+      let pos = (point.x !== 0 || point.y !== 0) ? { x: point.x, y: point.y } : undefined;
+      if (!pos) {
+        let attempts = 0;
+        const MAX_ATTEMPTS = 10;
+        do {
+          pos = calculatePointPosition(point, pointSize);
+          attempts++;
+        } while (
+          attempts < MAX_ATTEMPTS &&
+          placedPoints.some(existing => Math.hypot(existing.x - pos!.x, existing.y - pos!.y) < (existing.size + pointSize + MIN_POINT_SPACING))
+        );
+        // Record the computed position in the store so the point won't move on re-render.
+        updatePoint(point.id, { ...point, x: pos.x, y: pos.y });
+      }
+      placedPoints.push({ ...pos, size: pointSize });
       
-      // Create point
       const pointElement = diagramGroup.append('circle')
-        .attr('cx', pointX)
-        .attr('cy', pointY)
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
         .attr('r', pointSize)
-        .attr('fill', color)
+        .attr('fill', point.preparedness === Preparedness.HighlyPrepared ? PREPAREDNESS_COLORS.high :
+                   point.preparedness === Preparedness.ModeratelyPrepared ? PREPAREDNESS_COLORS.moderate : PREPAREDNESS_COLORS.low)
         .attr('stroke', selectedPoint === point.id ? 'var(--highlight)' : 'none')
         .attr('stroke-width', size < 500 ? 2 : 3)
-        .attr('cursor', 'pointer') // Change cursor for points
+        .attr('cursor', 'pointer')
         .attr('opacity', selectedPoint && selectedPoint !== point.id ? 0.6 : 1)
-        .classed('point', true); // Add class for point identification
+        .classed('point', true);
       
-      // Add larger touch target for mobile
+      // For mobile: Add larger touch target using the computed position
       if (size < 500) {
         diagramGroup.append('circle')
-          .attr('cx', pointX)
-          .attr('cy', pointY)
+          .attr('cx', pos.x)
+          .attr('cy', pos.y)
           .attr('r', Math.max(pointSize * 2, 20))
           .attr('fill', 'transparent')
           .attr('stroke', 'none')
           .attr('pointer-events', 'all')
-          .style('cursor', 'pointer') // Add cursor for mobile touch targets
+          .style('cursor', 'pointer')
           .on('click', () => selectPoint(point.id));
       }
       
-      // Regular hover effects
       pointElement
         .on('mouseover', function() {
           d3.select(this)
@@ -196,12 +226,11 @@ export const RingDiagram = () => {
         })
         .on('click', () => selectPoint(point.id));
       
-      // Add tooltip
       pointElement.append('title')
         .text(point.label);
     });
     
-  }, [points, selectedPoint, selectPoint, size]);
+  }, [points, selectedPoint, selectPoint, updatePoint, size]);
   
   return (
     <div className="flex justify-center items-center w-full">
