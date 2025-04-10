@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { useDiagramStore } from '../store/useDiagramStore';
-import { Category, Preparedness, Relevance, Likelihood } from '../types';
+import { Category, Preparedness, Relevance, Likelihood, Point } from '../types';
 import { RING_COLORS, PREPAREDNESS_COLORS } from '../constants/colors';
 
 export const RingDiagram = () => {
@@ -77,7 +77,9 @@ export const RingDiagram = () => {
      * @param pointSize - The computed size for the point.
      * @returns An object with x and y coordinates.
      */
-    const calculatePointPosition = (point: any, pointSize: number) => {
+
+    //
+    const calculatePointPosition = (point: Point) => {
       const categoryIndex = categories.indexOf(point.category);
       const likelihoodIndex = likelihoods.indexOf(point.likelihood);
       // Apply offset so arc boundaries align with the label placement
@@ -174,7 +176,7 @@ export const RingDiagram = () => {
         let attempts = 0;
         const MAX_ATTEMPTS = 10;
         do {
-          pos = calculatePointPosition(point, pointSize);
+          pos = calculatePointPosition(point);
           attempts++;
         } while (
           attempts < MAX_ATTEMPTS &&
