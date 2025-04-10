@@ -4,12 +4,12 @@ import { Legend } from '../components/Legend';
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-8">      
-      <div className="flex flex-col lg:flex-row">
-        <div className="flex-1 flex items-center justify-center mb-6 lg:mb-0">
+    <main className="min-h-screen p-4 sm:p-8">      
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:flex-1 flex justify-center">
           <RingDiagram />
         </div>
-        <div className="w-full lg:w-auto lg:flex-shrink-0 lg:ml-6 space-y-6">
+        <div className="w-full lg:w-auto lg:max-w-xs space-y-6">
           <ControlPanel />
           <Legend />
         </div>
