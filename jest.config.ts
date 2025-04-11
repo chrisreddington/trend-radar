@@ -3,28 +3,29 @@
  * https://jestjs.io/docs/configuration
  */
 
-import type {Config} from 'jest';
+import type { Config } from "jest";
 
 const config: Config = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/src/setup-tests.ts"],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
     // Handle module aliases and static files
-    '\\.css$': '<rootDir>/__mocks__/styleMock.js',
-    '\\.svg$': '<rootDir>/__mocks__/fileMock.js'
+    "\\.css$": "<rootDir>/__mocks__/styleMock.js",
+    "\\.svg$": "<rootDir>/__mocks__/fileMock.js",
   },
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { configFile: './babel.config.test.js' }]
+    "^.+\\.(ts|tsx|js|jsx)$": [
+      "babel-jest",
+      { configFile: "./babel.config.test.js" },
+    ],
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!(@testing-library/jest-dom)/)'
-  ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  transformIgnorePatterns: ["/node_modules/(?!(@testing-library/jest-dom)/)"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageProvider: 'v8',
-  testMatch: ['**/__tests__/**/*.test.(ts|tsx)']
+  coverageDirectory: "coverage",
+  coverageProvider: "v8",
+  testMatch: ["**/__tests__/**/*.test.(ts|tsx)"],
 };
 
 export default config;
