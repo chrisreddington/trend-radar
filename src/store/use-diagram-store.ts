@@ -59,7 +59,7 @@ interface DiagramStore extends DiagramState {
   /** Remove a point from the diagram */
   removePoint: (id: string) => void;
   /** Select a point on the diagram */
-  selectPoint: (id: string | undefined) => void;
+  selectPoint: (id?: string) => void;
   /** Save the current diagram state to localStorage */
   saveState: () => void;
   /** Load the diagram state from localStorage */

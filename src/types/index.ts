@@ -66,5 +66,5 @@ export interface DiagramState {
   /** Array of points on the diagram */
   points: Point[];
   /** ID of the currently selected point, if any */
-  selectedPoint: string | undefined;
+  selectedPoint?: string;
 }

@@ -72,7 +72,7 @@ export const ControlPanel = () => {
   };
 
   const handleCloseEdit = () => {
-    selectPoint("");
+    selectPoint();
     setEditingPoint(undefined); // Change this line to clear editing state
   };
 
@@ -158,7 +158,11 @@ export const ControlPanel = () => {
     submitLabel: string,
     isEditing: boolean = false,
   ) => (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4"
+      data-testid="add-point-form"
+    >
       <div>
         <label
           className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
@@ -232,6 +236,7 @@ export const ControlPanel = () => {
               setNewPoint({ ...newPoint, likelihood: newValue });
             }
           }}
+          data-testid="likelihood-slider"
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           aria-label="Likelihood"
           aria-valuenow={getValueFromLikelihood(point.likelihood)}
@@ -261,6 +266,7 @@ export const ControlPanel = () => {
               setNewPoint({ ...newPoint, relevance: newValue });
             }
           }}
+          data-testid="relevance-slider"
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           aria-label="Relevance"
           aria-valuenow={getValueFromRelevance(point.relevance)}
@@ -292,6 +298,7 @@ export const ControlPanel = () => {
               setNewPoint({ ...newPoint, preparedness: newValue });
             }
           }}
+          data-testid="preparedness-slider"
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
           aria-label="Preparedness"
           aria-valuenow={getValueFromPreparedness(point.preparedness)}

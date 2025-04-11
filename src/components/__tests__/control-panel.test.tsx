@@ -30,7 +30,7 @@ describe("ControlPanel", () => {
   };
 
   // Helper to get store with optional selected point
-  const getStoreState = (selectedPoint: string | undefined) => ({
+  const getStoreState = (selectedPoint?: string) => ({
     points: [mockPoint],
     selectedPoint,
     ...mockActions,
@@ -38,7 +38,7 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue(getStoreState(""));
+    mockedUseDiagramStore.mockReturnValue(getStoreState());
   });
 
   describe("Basic Rendering", () => {
@@ -80,7 +80,7 @@ describe("ControlPanel", () => {
         target: { value: "New Point" },
       });
 
-      fireEvent.submit(screen.getByRole("form"));
+      fireEvent.submit(screen.getByTestId("add-point-form"));
 
       expect(mockActions.addPoint).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -96,9 +96,7 @@ describe("ControlPanel", () => {
     describe("Form Value Conversions", () => {
       it("should convert likelihood slider values to correct enum values", () => {
         render(<ControlPanel />);
-        const likelihoodSlider = screen.getByRole("slider", {
-          name: /Likelihood/,
-        });
+        const likelihoodSlider = screen.getByTestId("likelihood-slider");
 
         const testCases = [
           { value: "90", expected: Likelihood.HighlyLikely },
@@ -110,7 +108,7 @@ describe("ControlPanel", () => {
 
         for (const { value, expected } of testCases) {
           fireEvent.change(likelihoodSlider, { target: { value } });
-          fireEvent.submit(screen.getByRole("form"));
+          fireEvent.submit(screen.getByTestId("add-point-form"));
 
           expect(mockActions.addPoint).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -124,9 +122,7 @@ describe("ControlPanel", () => {
 
       it("should convert relevance slider values to correct enum values", () => {
         render(<ControlPanel />);
-        const relevanceSlider = screen.getByRole("slider", {
-          name: /Relevance/,
-        });
+        const relevanceSlider = screen.getByTestId("relevance-slider");
 
         const testCases = [
           { value: "80", expected: Relevance.High },
@@ -136,7 +132,7 @@ describe("ControlPanel", () => {
 
         for (const { value, expected } of testCases) {
           fireEvent.change(relevanceSlider, { target: { value } });
-          fireEvent.submit(screen.getByRole("form"));
+          fireEvent.submit(screen.getByTestId("add-point-form"));
 
           expect(mockActions.addPoint).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -150,9 +146,7 @@ describe("ControlPanel", () => {
 
       it("should convert preparedness slider values to correct enum values", () => {
         render(<ControlPanel />);
-        const preparednessSlider = screen.getByRole("slider", {
-          name: /Preparedness/,
-        });
+        const preparednessSlider = screen.getByTestId("preparedness-slider");
 
         const testCases = [
           { value: "80", expected: Preparedness.HighlyPrepared },
@@ -162,7 +156,7 @@ describe("ControlPanel", () => {
 
         for (const { value, expected } of testCases) {
           fireEvent.change(preparednessSlider, { target: { value } });
-          fireEvent.submit(screen.getByRole("form"));
+          fireEvent.submit(screen.getByTestId("add-point-form"));
 
           expect(mockActions.addPoint).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -267,7 +261,7 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        mockedUseDiagramStore.mockReturnValue(getStoreState(""));
+        mockedUseDiagramStore.mockReturnValue(getStoreState());
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -280,7 +274,7 @@ describe("ControlPanel", () => {
         const firstPoint = { ...mockPoint, id: "1", label: "First Point" };
         const secondPoint = { ...mockPoint, id: "2", label: "Second Point" };
 
-        const getStoreWithPoints = (selectedId: string | null) => ({
+        const getStoreWithPoints = (selectedId?: string) => ({
           points: [firstPoint, secondPoint],
           selectedPoint: selectedId,
           ...mockActions,

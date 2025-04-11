@@ -59,7 +59,7 @@ export const RingDiagram = () => {
       .on("click", (event) => {
         // Only deselect if the click was directly on the background
         if (event.target === event.currentTarget) {
-          selectPoint("");
+          selectPoint();
         }
       });
 
@@ -119,7 +119,7 @@ export const RingDiagram = () => {
           const clickedElement = event.target;
           const clickedPoint = d3.select(clickedElement).classed("point");
           if (!clickedPoint) {
-            selectPoint("");
+            selectPoint();
           }
         });
 
@@ -144,7 +144,7 @@ export const RingDiagram = () => {
           .attr("stroke", RING_COLORS[colorIndex].stroke)
           .attr("stroke-width", size < 500 ? 0.8 : 1)
           .style("cursor", "pointer")
-          .on("click", () => selectPoint(""));
+          .on("click", () => selectPoint());
       }
     }
 

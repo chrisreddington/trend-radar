@@ -155,7 +155,7 @@ describe("RingDiagram", () => {
             currentTarget: "background",
           };
           backgroundClickHandler(mockEvent);
-          expect(mockSelectPoint).toHaveBeenCalledWith(null);
+          expect(mockSelectPoint).toHaveBeenCalledWith();
         }
       });
 

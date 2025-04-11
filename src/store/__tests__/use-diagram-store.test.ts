@@ -212,7 +212,7 @@ describe("useDiagramStore", () => {
       useDiagramStore.setState({ selectedPoint: mockUUID });
 
       const { selectPoint } = useDiagramStore.getState();
-      selectPoint("");
+      selectPoint();
 
       const state = useDiagramStore.getState();
       expect(state.selectedPoint).toBeUndefined();
@@ -245,11 +245,11 @@ describe("useDiagramStore", () => {
 
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([mockPoint]);
-        expect(state.selectedPoint).toBeNull();
+        expect(state.selectedPoint).toBeUndefined();
       });
 
       it("should maintain empty state when no data in localStorage", () => {
-        mockLocalStorage.getItem.mockReturnValue("");
+        mockLocalStorage.getItem.mockReturnValue();
 
         const { loadState } = useDiagramStore.getState();
         loadState();
