@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useDiagramStore } from "../store/useDiagramStore";
+import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness, Point } from "../types";
 
 export const ControlPanel = () => {
@@ -13,7 +13,7 @@ export const ControlPanel = () => {
     selectPoint,
   } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [editingPoint, setEditingPoint] = useState<Point | null>(null);
+  const [editingPoint, setEditingPoint] = useState<Point | undefined>();
   const [newPoint, setNewPoint] = useState<Omit<Point, "id">>({
     label: "",
     category: Category.Technological,
@@ -31,12 +31,12 @@ export const ControlPanel = () => {
         setEditingPoint({ ...point });
       }
     } else {
-      setEditingPoint(null); // Clear editing state when no point is selected
+      setEditingPoint(undefined); // Clear editing state when no point is selected
     }
   }, [selectedPoint, points]);
 
-  const handleAddPoint = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddPoint = (event: React.FormEvent) => {
+    event.preventDefault();
     addPoint(newPoint);
     setNewPoint({
       label: "",
@@ -49,21 +49,21 @@ export const ControlPanel = () => {
     });
   };
 
-  const handleUpdatePoint = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdatePoint = (event: React.FormEvent) => {
+    event.preventDefault();
     if (selectedPoint && editingPoint) {
       updatePoint(selectedPoint, editingPoint);
     }
   };
 
   const handleLabelChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>,
     isEditing: boolean,
   ) => {
     if (isEditing && editingPoint) {
-      setEditingPoint({ ...editingPoint, label: e.target.value });
+      setEditingPoint({ ...editingPoint, label: event.target.value });
     } else {
-      setNewPoint({ ...newPoint, label: e.target.value });
+      setNewPoint({ ...newPoint, label: event.target.value });
     }
   };
 
@@ -72,8 +72,8 @@ export const ControlPanel = () => {
   };
 
   const handleCloseEdit = () => {
-    selectPoint(null);
-    setEditingPoint(null); // Add this line to clear editing state
+    selectPoint("");
+    setEditingPoint(undefined); // Change this line to clear editing state
   };
 
   const commonInputClasses =
@@ -154,11 +154,11 @@ export const ControlPanel = () => {
 
   const renderPointForm = (
     point: Point | Omit<Point, "id">,
-    onSubmit: (e: React.FormEvent) => void,
+    onSubmit: (event: React.FormEvent) => void,
     submitLabel: string,
     isEditing: boolean = false,
   ) => (
-    <form onSubmit={onSubmit} className="space-y-4" role="form">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label
           className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
@@ -171,7 +171,7 @@ export const ControlPanel = () => {
           type="text"
           name="label"
           value={point.label}
-          onChange={(e) => handleLabelChange(e, isEditing)}
+          onChange={(event) => handleLabelChange(event, isEditing)}
           className={commonInputClasses}
           required
         />
@@ -188,15 +188,15 @@ export const ControlPanel = () => {
           id={isEditing ? "edit-point-category" : "point-category"}
           name="category"
           value={point.category}
-          onChange={(e) =>
+          onChange={(event) =>
             isEditing && editingPoint
               ? setEditingPoint({
                   ...editingPoint,
-                  category: e.target.value as Category,
+                  category: event.target.value as Category,
                 })
               : setNewPoint({
                   ...newPoint,
-                  category: e.target.value as Category,
+                  category: event.target.value as Category,
                 })
           }
           className={commonSelectClasses}
@@ -224,8 +224,8 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromLikelihood(point.likelihood)}
-          onChange={(e) => {
-            const newValue = getLikelihoodFromValue(Number(e.target.value));
+          onChange={(event) => {
+            const newValue = getLikelihoodFromValue(Number(event.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, likelihood: newValue });
             } else {
@@ -233,7 +233,6 @@ export const ControlPanel = () => {
             }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
-          role="slider"
           aria-label="Likelihood"
           aria-valuenow={getValueFromLikelihood(point.likelihood)}
           aria-valuemin={0}
@@ -254,8 +253,8 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromRelevance(point.relevance)}
-          onChange={(e) => {
-            const newValue = getRelevanceFromValue(Number(e.target.value));
+          onChange={(event) => {
+            const newValue = getRelevanceFromValue(Number(event.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, relevance: newValue });
             } else {
@@ -263,7 +262,6 @@ export const ControlPanel = () => {
             }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
-          role="slider"
           aria-label="Relevance"
           aria-valuenow={getValueFromRelevance(point.relevance)}
           aria-valuemin={0}
@@ -284,8 +282,10 @@ export const ControlPanel = () => {
           min="0"
           max="100"
           value={getValueFromPreparedness(point.preparedness)}
-          onChange={(e) => {
-            const newValue = getPreparednessFromValue(Number(e.target.value));
+          onChange={(event) => {
+            const newValue = getPreparednessFromValue(
+              Number(event.target.value),
+            );
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, preparedness: newValue });
             } else {
@@ -293,7 +293,6 @@ export const ControlPanel = () => {
             }
           }}
           className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
-          role="slider"
           aria-label="Preparedness"
           aria-valuenow={getValueFromPreparedness(point.preparedness)}
           aria-valuemin={0}

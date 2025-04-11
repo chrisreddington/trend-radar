@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import { ControlPanel } from "../ControlPanel";
-import { useDiagramStore } from "../../store/useDiagramStore";
+import { ControlPanel } from "../control-panel";
+import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 
 jest.mock("../../store/useDiagramStore");
@@ -30,7 +30,7 @@ describe("ControlPanel", () => {
   };
 
   // Helper to get store with optional selected point
-  const getStoreState = (selectedPoint: string | null = null) => ({
+  const getStoreState = (selectedPoint: string | undefined) => ({
     points: [mockPoint],
     selectedPoint,
     ...mockActions,
@@ -38,7 +38,7 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue(getStoreState());
+    mockedUseDiagramStore.mockReturnValue(getStoreState(""));
   });
 
   describe("Basic Rendering", () => {
@@ -187,7 +187,10 @@ describe("ControlPanel", () => {
       const editSection = screen
         .getByText("Edit Selected Point")
         .closest("div")?.parentElement;
-      const labelInput = within(editSection!).getByLabelText(
+      if (!editSection) {
+        throw new Error("Edit section not found");
+      }
+      const labelInput = within(editSection).getByLabelText(
         "Label",
       ) as HTMLInputElement;
       expect(labelInput.value).toBe("Test Point");
@@ -206,7 +209,10 @@ describe("ControlPanel", () => {
       const editSection = screen
         .getByText("Edit Selected Point")
         .closest("div")?.parentElement;
-      const labelInput = within(editSection!).getByLabelText("Label");
+      if (!editSection) {
+        throw new Error("Edit section not found");
+      }
+      const labelInput = within(editSection).getByLabelText("Label");
       fireEvent.change(labelInput, { target: { value: "Updated Point" } });
 
       const updateButton = screen.getByRole("button", { name: "Update Point" });
@@ -235,7 +241,10 @@ describe("ControlPanel", () => {
       const editSection = screen
         .getByText("Edit Selected Point")
         .closest("div")?.parentElement;
-      const labelInput = within(editSection!).getByLabelText("Label");
+      if (!editSection) {
+        throw new Error("Edit section not found");
+      }
+      const labelInput = within(editSection).getByLabelText("Label");
       fireEvent.change(labelInput, { target: { value: "Updated Point" } });
 
       // Verify the edit form stays visible
@@ -258,7 +267,7 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        mockedUseDiagramStore.mockReturnValue(getStoreState(null));
+        mockedUseDiagramStore.mockReturnValue(getStoreState(""));
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -284,7 +293,10 @@ describe("ControlPanel", () => {
         const editSection = screen
           .getByText("Edit Selected Point")
           .closest("div")?.parentElement;
-        let labelInput = within(editSection!).getByLabelText(
+        if (!editSection) {
+          throw new Error("Edit section not found");
+        }
+        let labelInput = within(editSection).getByLabelText(
           "Label",
         ) as HTMLInputElement;
         expect(labelInput.value).toBe("First Point");
@@ -297,7 +309,10 @@ describe("ControlPanel", () => {
         const newEditSection = screen
           .getByText("Edit Selected Point")
           .closest("div")?.parentElement;
-        labelInput = within(newEditSection!).getByLabelText(
+        if (!newEditSection) {
+          throw new Error("Edit section not found");
+        }
+        labelInput = within(newEditSection).getByLabelText(
           "Label",
         ) as HTMLInputElement;
         expect(labelInput.value).toBe("Second Point");

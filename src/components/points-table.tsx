@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useDiagramStore } from "../store/useDiagramStore";
+import { useDiagramStore } from "../store/use-diagram-store";
 
 type SortField =
   | "label"

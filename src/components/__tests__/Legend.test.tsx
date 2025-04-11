@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import { Legend } from "../Legend";
+import { Legend } from "../legend";
 import { Preparedness } from "../../types";
 import { RING_COLORS } from "../../constants/colors";
 
@@ -31,9 +31,15 @@ describe("Legend", () => {
     });
 
     it("should display all ring levels", () => {
-      const likelihoodSection = screen.getByRole("heading", {
+      const headingElement = screen.getByRole("heading", {
         name: "Rings (Likelihood)",
-      }).parentElement!;
+      });
+      if (!headingElement.parentElement) {
+        throw new Error(
+          "Parent element for 'Rings (Likelihood)' heading not found.",
+        );
+      }
+      const likelihoodSection = headingElement.parentElement;
 
       for (const color of RING_COLORS) {
         expect(

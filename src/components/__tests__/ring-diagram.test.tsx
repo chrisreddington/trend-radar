@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { RingDiagram } from "../RingDiagram";
-import { useDiagramStore } from "../../store/useDiagramStore";
+import { RingDiagram } from "../ring-diagram";
+import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import * as d3 from "d3";
 
@@ -57,7 +57,7 @@ describe("RingDiagram", () => {
     jest.clearAllMocks();
     mockedUseDiagramStore.mockReturnValue({
       points: mockPoints,
-      selectedPoint: null,
+      selectedPoint: undefined,
       selectPoint: mockSelectPoint,
       updatePoint: mockUpdatePoint,
     });
@@ -95,7 +95,7 @@ describe("RingDiagram", () => {
 
       mockedUseDiagramStore.mockReturnValue({
         points: newPoints,
-        selectedPoint: null,
+        selectedPoint: undefined,
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
       });

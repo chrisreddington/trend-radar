@@ -1,7 +1,7 @@
-import { RingDiagram } from "../components/RingDiagram";
-import { ControlPanel } from "../components/ControlPanel";
-import { Legend } from "../components/Legend";
-import { PointsTable } from "../components/PointsTable";
+import { RingDiagram } from "../components/ring-diagram";
+import { ControlPanel } from "../components/control-panel";
+import { Legend } from "../components/legend";
+import { PointsTable } from "../components/points-table";
 
 export default function Home() {
   return (

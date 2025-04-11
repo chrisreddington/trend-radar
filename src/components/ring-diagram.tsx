@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { useDiagramStore } from "../store/useDiagramStore";
+import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
@@ -59,7 +59,7 @@ export const RingDiagram = () => {
       .on("click", (event) => {
         // Only deselect if the click was directly on the background
         if (event.target === event.currentTarget) {
-          selectPoint(null);
+          selectPoint("");
         }
       });
 
@@ -102,7 +102,7 @@ export const RingDiagram = () => {
     };
 
     // Create rings for each likelihood level
-    for (const [index, _] of likelihoods.entries()) {
+    for (const [index] of likelihoods.entries()) {
       const colorIndex = likelihoods.length - 1 - index;
 
       // Draw the main ring circle with fills, strokes, and click handler
@@ -119,13 +119,13 @@ export const RingDiagram = () => {
           const clickedElement = event.target;
           const clickedPoint = d3.select(clickedElement).classed("point");
           if (!clickedPoint) {
-            selectPoint(null);
+            selectPoint("");
           }
         });
 
       // Draw quadrant lines
       const angleStep = (2 * Math.PI) / categories.length;
-      for (const [catIndex, _] of categories.entries()) {
+      for (const [catIndex] of categories.entries()) {
         const angle = catIndex * angleStep;
         const innerRadius = diagramRadius - (index + 1) * ringWidth;
         const outerRadius = diagramRadius - index * ringWidth;
@@ -144,7 +144,7 @@ export const RingDiagram = () => {
           .attr("stroke", RING_COLORS[colorIndex].stroke)
           .attr("stroke-width", size < 500 ? 0.8 : 1)
           .style("cursor", "pointer")
-          .on("click", () => selectPoint(null));
+          .on("click", () => selectPoint(""));
       }
     }
 
@@ -187,22 +187,24 @@ export const RingDiagram = () => {
             : 7 * sizeScale;
 
       // Use existing position if available, otherwise calculate a new one
-      let pos =
-        point.x !== 0 || point.y !== 0 ? { x: point.x, y: point.y } : undefined;
-      if (!pos) {
+      let pos: { x: number; y: number } =
+        point.x !== 0 || point.y !== 0
+          ? { x: point.x, y: point.y }
+          : calculatePointPosition(point);
+      if (point.x === 0 && point.y === 0) {
         let attempts = 0;
         const MAX_ATTEMPTS = 10;
-        do {
-          pos = calculatePointPosition(point);
-          attempts++;
-        } while (
+        while (
           attempts < MAX_ATTEMPTS &&
           placedPoints.some(
             (existing) =>
-              Math.hypot(existing.x - pos!.x, existing.y - pos!.y) <
+              Math.hypot(existing.x - pos.x, existing.y - pos.y) <
               existing.size + pointSize + MIN_POINT_SPACING,
           )
-        );
+        ) {
+          pos = calculatePointPosition(point);
+          attempts++;
+        }
         // Record the computed position in the store so the point won't move on re-render.
         updatePoint(point.id, { ...point, x: pos.x, y: pos.y });
       }

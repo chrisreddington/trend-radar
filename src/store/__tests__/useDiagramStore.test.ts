@@ -1,4 +1,4 @@
-import { useDiagramStore } from "../useDiagramStore";
+import { useDiagramStore } from "../use-diagram-store";
 import { Likelihood, Point, Preparedness, Relevance } from "../../types";
 import { Category } from "../../types";
 

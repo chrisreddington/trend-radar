@@ -1,11 +1,53 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { PointsTable } from "../PointsTable";
-import { useDiagramStore } from "../../store/useDiagramStore";
+import { PointsTable } from "../points-table";
+import { useDiagramStore } from "../../store/use-diagram-store";
 
 jest.mock("../../store/useDiagramStore");
 const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
   typeof useDiagramStore
 >;
+
+// Helper functions for sorting tests
+const getColumnHeader = (columnName: string) => {
+  return screen.getByRole("columnheader", {
+    name: new RegExp(`^${columnName}( ↑| ↓)?$`),
+  });
+};
+
+const testColumnSorting = (
+  columnName: string,
+  firstValue: string,
+  secondValue: string,
+) => {
+  const getCellIndex = () => {
+    const headers = screen.getAllByRole("columnheader");
+    return headers.findIndex((header) =>
+      header.textContent?.includes(columnName),
+    );
+  };
+
+  const getCellText = (row: HTMLTableRowElement, cellIndex: number) =>
+    row.cells[cellIndex].textContent;
+
+  // Initial click for ascending sort
+  fireEvent.click(getColumnHeader(columnName));
+
+  let sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
+  const cellIndex = getCellIndex();
+  expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
+  expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
+  expect(getColumnHeader(columnName)).toHaveTextContent(/↑$/);
+
+  // Click again for descending sort
+  fireEvent.click(getColumnHeader(columnName));
+
+  sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
+  expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
+  expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
+  expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
+
+
+};
 
 describe("PointsTable", () => {
   // Common test data
@@ -68,48 +110,6 @@ describe("PointsTable", () => {
   });
 
   describe("Sorting", () => {
-    // Helper functions for sorting tests
-    const getColumnHeader = (columnName: string) => {
-      return screen.getByRole("columnheader", {
-        name: new RegExp(`^${columnName}( ↑| ↓)?$`),
-      });
-    };
-
-    const testColumnSorting = (
-      columnName: string,
-      firstValue: string,
-      secondValue: string,
-    ) => {
-      const getCellIndex = () => {
-        const headers = screen.getAllByRole("columnheader");
-        return headers.findIndex((header) =>
-          header.textContent?.includes(columnName),
-        );
-      };
-
-      const getCellText = (row: HTMLTableRowElement, cellIndex: number) =>
-        row.cells[cellIndex].textContent;
-
-      // Initial click for ascending sort
-      fireEvent.click(getColumnHeader(columnName));
-
-      let sortedRows = screen
-        .getAllByRole("row")
-        .slice(1) as HTMLTableRowElement[];
-      const cellIndex = getCellIndex();
-      expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
-      expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
-      expect(getColumnHeader(columnName)).toHaveTextContent(/↑$/);
-
-      // Click again for descending sort
-      fireEvent.click(getColumnHeader(columnName));
-
-      sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
-      expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
-      expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
-      expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
-    };
-
     it("should sort by label in both directions", () => {
       render(<PointsTable />);
       testColumnSorting("Label", "Test Point 1", "Test Point 2");

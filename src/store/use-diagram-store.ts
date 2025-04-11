@@ -59,7 +59,7 @@ interface DiagramStore extends DiagramState {
   /** Remove a point from the diagram */
   removePoint: (id: string) => void;
   /** Select a point on the diagram */
-  selectPoint: (id: string | null) => void;
+  selectPoint: (id: string | undefined) => void;
   /** Save the current diagram state to localStorage */
   saveState: () => void;
   /** Load the diagram state from localStorage */
@@ -73,7 +73,7 @@ interface DiagramStore extends DiagramState {
  */
 export const useDiagramStore = create<DiagramStore>((set, get) => ({
   points: [],
-  selectedPoint: null,
+  selectedPoint: undefined,
 
   addPoint: (point) =>
     set((state) => {
@@ -134,7 +134,8 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
   removePoint: (id) =>
     set((state) => ({
       points: state.points.filter((point) => point.id !== id),
-      selectedPoint: state.selectedPoint === id ? null : state.selectedPoint,
+      selectedPoint:
+        state.selectedPoint === id ? undefined : state.selectedPoint,
     })),
 
   selectPoint: (id) => set({ selectedPoint: id }),
@@ -153,7 +154,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
     const savedState = localStorage.getItem("diagramState");
     if (savedState) {
       const { points } = JSON.parse(savedState);
-      set({ points, selectedPoint: null });
+      set({ points, selectedPoint: undefined });
     }
   },
 }));
