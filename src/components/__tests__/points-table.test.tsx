@@ -45,8 +45,6 @@ const testColumnSorting = (
   expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
   expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
   expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
-
-
 };
 
 describe("PointsTable", () => {
@@ -95,15 +93,12 @@ describe("PointsTable", () => {
       });
       const content = screen.getByRole("table").parentElement?.parentElement;
 
-      // Initially expanded
       expect(content).toBeInTheDocument();
       expect(content).not.toHaveClass("hidden");
 
-      // Collapse
       fireEvent.click(button);
       expect(content).toHaveClass("hidden");
 
-      // Expand
       fireEvent.click(button);
       expect(content).not.toHaveClass("hidden");
     });
@@ -111,21 +106,25 @@ describe("PointsTable", () => {
 
   describe("Sorting", () => {
     it("should sort by label in both directions", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
       testColumnSorting("Label", "Test Point 1", "Test Point 2");
     });
 
     it("should sort by category in both directions", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
       testColumnSorting("Category", "Economic", "Technological");
     });
 
     it("should sort by relevance in both directions", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
       testColumnSorting("Relevance", "High", "Moderate");
     });
 
     it("should sort by preparedness in both directions", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
       testColumnSorting(
         "Preparedness",
@@ -135,18 +134,18 @@ describe("PointsTable", () => {
     });
 
     it("should sort by likelihood in both directions", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
       testColumnSorting("Likelihood", "Highly Likely", "Likely");
     });
 
     it("should handle changing sort column", () => {
+      expect.hasAssertions();
       render(<PointsTable />);
 
-      // Start with label sort
       fireEvent.click(getColumnHeader("Label"));
       expect(getColumnHeader("Label")).toHaveTextContent(/↑$/);
 
-      // Change to category sort - should start with ascending
       fireEvent.click(getColumnHeader("Category"));
       expect(getColumnHeader("Category")).toHaveTextContent(/↑$/);
       expect(getColumnHeader("Label")).toHaveTextContent(/^Label$/);
