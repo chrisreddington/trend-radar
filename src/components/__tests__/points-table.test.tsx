@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { PointsTable } from "../points-table";
 import { useDiagramStore } from "../../store/use-diagram-store";
 
-jest.mock("../../store/useDiagramStore");
+jest.mock("../../store/use-diagram-store");
 const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
   typeof useDiagramStore
 >;

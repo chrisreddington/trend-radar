@@ -4,7 +4,7 @@ import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import * as d3 from "d3";
 
-jest.mock("../../store/useDiagramStore");
+jest.mock("../../store/use-diagram-store");
 const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
   typeof useDiagramStore
 >;

@@ -24,7 +24,7 @@ describe("useDiagramStore", () => {
 
   beforeEach(() => {
     // Reset store and mocks before each test
-    useDiagramStore.setState({ points: [], selectedPoint: null });
+    useDiagramStore.setState({ points: [], selectedPoint: undefined });
     jest.clearAllMocks();
     Object.defineProperty(globalThis, "localStorage", {
       value: mockLocalStorage,
@@ -180,7 +180,7 @@ describe("useDiagramStore", () => {
 
         const state = useDiagramStore.getState();
         expect(state.points).toHaveLength(0);
-        expect(state.selectedPoint).toBeNull();
+        expect(state.selectedPoint).toBeUndefined();
       });
 
       it("should preserve selection when removing unselected point", () => {
@@ -212,10 +212,10 @@ describe("useDiagramStore", () => {
       useDiagramStore.setState({ selectedPoint: mockUUID });
 
       const { selectPoint } = useDiagramStore.getState();
-      selectPoint(null);
+      selectPoint("");
 
       const state = useDiagramStore.getState();
-      expect(state.selectedPoint).toBeNull();
+      expect(state.selectedPoint).toBeUndefined();
     });
   });
 
@@ -249,14 +249,14 @@ describe("useDiagramStore", () => {
       });
 
       it("should maintain empty state when no data in localStorage", () => {
-        mockLocalStorage.getItem.mockReturnValue(null);
+        mockLocalStorage.getItem.mockReturnValue("");
 
         const { loadState } = useDiagramStore.getState();
         loadState();
 
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([]);
-        expect(state.selectedPoint).toBeNull();
+        expect(state.selectedPoint).toBeUndefined();
       });
     });
   });
