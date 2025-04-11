@@ -12,7 +12,7 @@ export const Legend = () => {
 
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
+      <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button
             className="w-full flex justify-between items-center cursor-pointer focus:outline-none"

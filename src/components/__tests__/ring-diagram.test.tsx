@@ -11,23 +11,28 @@ const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
 
 // Mock D3 for testing
 jest.mock("d3", () => {
-  const mockD3Selection = {
+  const createMockSelection = () => ({
     append: jest.fn().mockReturnThis(),
     attr: jest.fn().mockReturnThis(),
     style: jest.fn().mockReturnThis(),
-    on: jest.fn().mockReturnThis(),
-    selectAll: jest.fn().mockReturnValue({
-      remove: jest.fn(),
-      data: jest.fn().mockReturnThis(),
-      enter: jest.fn().mockReturnThis(),
-      append: jest.fn().mockReturnThis(),
-      attr: jest.fn().mockReturnThis(),
-      style: jest.fn().mockReturnThis(),
-      on: jest.fn().mockReturnThis(),
-    }),
     text: jest.fn().mockReturnThis(),
     remove: jest.fn().mockReturnThis(),
     classed: jest.fn().mockReturnThis(),
+    on: jest.fn().mockImplementation(function (event, handler) {
+      this._handlers = this._handlers || {};
+      this._handlers[event] = handler;
+      return this;
+    }),
+    _handlers: {},
+  });
+
+  const mockD3Selection = {
+    ...createMockSelection(),
+    selectAll: jest.fn().mockReturnValue({
+      ...createMockSelection(),
+      data: jest.fn().mockReturnThis(),
+      enter: jest.fn().mockReturnThis(),
+    }),
   };
 
   return {
@@ -108,20 +113,32 @@ describe("RingDiagram", () => {
   describe("Interaction", () => {
     describe("Point Selection", () => {
       it("should select point when clicked", () => {
+        mockedUseDiagramStore.mockReturnValue({
+          points: mockPoints,
+          selectedPoint: undefined,
+          selectPoint: mockSelectPoint,
+          updatePoint: mockUpdatePoint,
+        });
         render(<RingDiagram />);
 
+        // Find all the on() calls made to d3
         const selectMock = d3.select as jest.Mock;
         const mockSelection = selectMock.mock.results[0].value;
+        const appendCalls = mockSelection.append.mock.calls;
 
-        const pointClickHandler =
-          mockSelection.selectAll.mock.results[0].value.on.mock.calls.find(
-            (call: [string, () => void]) => call[0] === "click",
-          )?.[1];
+        // Find the point element's click handler
+        // Points are created after rings and background, so they'll be later in the calls
+        const pointHandlers = appendCalls
+          .map((_, index) => mockSelection.append.mock.results[index].value)
+          .filter((result) => result._handlers && result._handlers.click);
 
-        if (pointClickHandler) {
-          pointClickHandler();
-          expect(mockSelectPoint).toHaveBeenCalledWith("1");
-        }
+        const pointHandler = pointHandlers.at(-1);
+        expect(pointHandler).toBeTruthy();
+        expect(mockSelectPoint).not.toHaveBeenCalled();
+
+        // Call the click handler with the point's id
+        pointHandler._handlers.click();
+        expect(mockSelectPoint).toHaveBeenCalledWith(mockPoints[0].id);
       });
     });
 
@@ -139,24 +156,22 @@ describe("RingDiagram", () => {
         const selectMock = d3.select as jest.Mock;
         const mockSelection = selectMock.mock.results[0].value;
 
-        const backgroundClickHandler = mockSelection.on.mock.calls.find(
-          (
-            call: [
-              string,
-              (event: { target: unknown; currentTarget: unknown }) => void,
-            ],
-          ) => call[0] === "click",
-        )?.[1];
+        // Get all click handlers and find the background handler
+        const handlers = mockSelection.on.mock.calls;
+        const backgroundHandler = handlers.find(
+          (call: [string, unknown]) => call[0] === "click",
+        );
 
-        if (backgroundClickHandler) {
-          // Simulate click on background (target === currentTarget)
-          const mockEvent = {
-            target: "background",
-            currentTarget: "background",
-          };
-          backgroundClickHandler(mockEvent);
-          expect(mockSelectPoint).toHaveBeenCalledWith();
-        }
+        expect(backgroundHandler).toBeTruthy();
+        expect(mockSelectPoint).not.toHaveBeenCalled();
+
+        // Now we know the handler exists, call it
+        const clickHandler = backgroundHandler[1] as (event: {
+          target: unknown;
+          currentTarget: unknown;
+        }) => void;
+        clickHandler({ target: "background", currentTarget: "background" });
+        expect(mockSelectPoint).toHaveBeenCalledWith();
       });
 
       it("should not deselect when clicking point", () => {
@@ -172,24 +187,22 @@ describe("RingDiagram", () => {
         const selectMock = d3.select as jest.Mock;
         const mockSelection = selectMock.mock.results[0].value;
 
-        const backgroundClickHandler = mockSelection.on.mock.calls.find(
-          (
-            call: [
-              string,
-              (event: { target: unknown; currentTarget: unknown }) => void,
-            ],
-          ) => call[0] === "click",
-        )?.[1];
+        // Get all click handlers and find the background handler
+        const handlers = mockSelection.on.mock.calls;
+        const backgroundHandler = handlers.find(
+          (call: [string, unknown]) => call[0] === "click",
+        );
 
-        if (backgroundClickHandler) {
-          // Simulate click on point (target !== currentTarget)
-          const mockEvent = {
-            target: "point",
-            currentTarget: "background",
-          };
-          backgroundClickHandler(mockEvent);
-          expect(mockSelectPoint).not.toHaveBeenCalled();
-        }
+        expect(backgroundHandler).toBeTruthy();
+        expect(mockSelectPoint).not.toHaveBeenCalled();
+
+        // Now we know the handler exists, call it
+        const clickHandler = backgroundHandler[1] as (event: {
+          target: unknown;
+          currentTarget: unknown;
+        }) => void;
+        clickHandler({ target: "point", currentTarget: "background" });
+        expect(mockSelectPoint).not.toHaveBeenCalled();
       });
     });
   });

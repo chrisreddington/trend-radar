@@ -38,7 +38,7 @@ export const PointsTable = () => {
 
   return (
     <div className="w-full bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 mt-6">
-      <div className="p-4 cursor-pointer" onClick={toggleCollapse}>
+      <div className="p-4">
         <button
           className="w-full p-4 flex justify-between items-center cursor-pointer focus:outline-none"
           onClick={toggleCollapse}
