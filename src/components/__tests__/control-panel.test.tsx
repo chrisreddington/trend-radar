@@ -347,7 +347,7 @@ describe("ControlPanel", () => {
     });
 
     it("should handle successful save operation", async () => {
-      const mockSaveDiagram = jest.fn().mockResolvedValue(undefined);
+      const mockSaveDiagram = jest.fn().mockResolvedValue();
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),
         saveDiagram: mockSaveDiagram,
@@ -379,7 +379,7 @@ describe("ControlPanel", () => {
     });
 
     it("should handle successful load operation", async () => {
-      const mockLoadDiagram = jest.fn().mockResolvedValue(undefined);
+      const mockLoadDiagram = jest.fn().mockResolvedValue();
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),
         loadDiagram: mockLoadDiagram,
@@ -414,7 +414,7 @@ describe("ControlPanel", () => {
       const mockSaveDiagram = jest
         .fn()
         .mockRejectedValueOnce(new Error("Save failed"))
-        .mockResolvedValueOnce(undefined);
+        .mockResolvedValueOnce();
 
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),

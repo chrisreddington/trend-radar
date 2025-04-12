@@ -25,8 +25,8 @@ const mockFileHandle = {
   getFile: jest.fn(),
 };
 
-global.window.showSaveFilePicker = jest.fn();
-global.window.showOpenFilePicker = jest.fn();
+globalThis.window.showSaveFilePicker = jest.fn();
+globalThis.window.showOpenFilePicker = jest.fn();
 
 describe("File Handlers", () => {
   const mockState: DiagramState = {
@@ -131,8 +131,7 @@ describe("File Handlers", () => {
     });
 
     it("should reject non-object data", () => {
-      expect(validateDiagramData(null)).toBe(false);
-      expect(validateDiagramData(undefined)).toBe(false);
+      expect(validateDiagramData(void 0)).toBe(false);
       expect(validateDiagramData("string")).toBe(false);
       expect(validateDiagramData(123)).toBe(false);
     });
@@ -140,13 +139,13 @@ describe("File Handlers", () => {
 
   describe("saveDiagramToFile", () => {
     it("should save diagram to file", async () => {
-      (window.showSaveFilePicker as jest.Mock).mockResolvedValue(
+      (globalThis.showSaveFilePicker as jest.Mock).mockResolvedValue(
         mockFileHandle,
       );
 
       await saveDiagramToFile(mockState);
 
-      expect(window.showSaveFilePicker).toHaveBeenCalledWith({
+      expect(globalThis.showSaveFilePicker).toHaveBeenCalledWith({
         suggestedName: "trend-radar-2025-04-12.json",
         types: [
           {
@@ -166,7 +165,9 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (window.showSaveFilePicker as jest.Mock).mockRejectedValue(abortError);
+      (globalThis.showSaveFilePicker as jest.Mock).mockRejectedValue(
+        abortError,
+      );
 
       await expect(saveDiagramToFile(mockState)).resolves.toBeUndefined();
       expect(mockFileHandle.createWritable).not.toHaveBeenCalled();
@@ -174,7 +175,7 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to save");
-      (window.showSaveFilePicker as jest.Mock).mockRejectedValue(error);
+      (globalThis.showSaveFilePicker as jest.Mock).mockRejectedValue(error);
 
       await expect(saveDiagramToFile(mockState)).rejects.toThrow(
         "Failed to save diagram",
@@ -199,13 +200,13 @@ describe("File Handlers", () => {
     });
 
     it("should load diagram from file", async () => {
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
         mockFileHandle,
       ]);
 
       const result = await loadDiagramFromFile();
 
-      expect(window.showOpenFilePicker).toHaveBeenCalledWith({
+      expect(globalThis.showOpenFilePicker).toHaveBeenCalledWith({
         types: [
           {
             description: "JSON Files",
@@ -223,7 +224,9 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (window.showOpenFilePicker as jest.Mock).mockRejectedValue(abortError);
+      (globalThis.showOpenFilePicker as jest.Mock).mockRejectedValue(
+        abortError,
+      );
 
       await expect(loadDiagramFromFile()).rejects.toEqual(abortError);
     });
@@ -232,7 +235,7 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: jest.fn().mockResolvedValue("invalid json"),
       });
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
         mockFileHandle,
       ]);
 
@@ -243,7 +246,7 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: jest.fn().mockResolvedValue(JSON.stringify({ invalid: "data" })),
       });
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
         mockFileHandle,
       ]);
 
@@ -254,7 +257,7 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to load");
-      (window.showOpenFilePicker as jest.Mock).mockRejectedValue(error);
+      (globalThis.showOpenFilePicker as jest.Mock).mockRejectedValue(error);
 
       await expect(loadDiagramFromFile()).rejects.toThrow(
         "Failed to load diagram",

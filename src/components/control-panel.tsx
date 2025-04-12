@@ -25,7 +25,7 @@ export const ControlPanel = () => {
     x: 0,
     y: 0,
   });
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
     if (selectedPoint) {
@@ -81,21 +81,21 @@ export const ControlPanel = () => {
 
   const handleSave = async () => {
     try {
-      setError(null);
+      setError(undefined);
       await saveDiagram();
-    } catch (err) {
+    } catch (error_) {
       setError("Failed to save diagram");
-      console.error(err);
+      console.error(error_);
     }
   };
 
   const handleLoad = async () => {
     try {
-      setError(null);
+      setError(undefined);
       await loadDiagram();
-    } catch (err) {
+    } catch (error_) {
       setError("Failed to load diagram");
-      console.error(err);
+      console.error(error_);
     }
   };
 

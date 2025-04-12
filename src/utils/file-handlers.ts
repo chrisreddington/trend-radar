@@ -29,7 +29,7 @@ export function exportDiagram(state: DiagramState): DiagramExport {
 
 export async function saveDiagramToFile(state: DiagramState): Promise<void> {
   try {
-    const handle = await window.showSaveFilePicker({
+    const handle = await globalThis.showSaveFilePicker({
       suggestedName: generateFilename(),
       types: [
         {
@@ -42,7 +42,7 @@ export async function saveDiagramToFile(state: DiagramState): Promise<void> {
     });
 
     const exportData = exportDiagram(state);
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+    const blob = new Blob([JSON.stringify(exportData, undefined, 2)], {
       type: "application/json",
     });
 
@@ -91,7 +91,7 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
 
 export async function loadDiagramFromFile(): Promise<DiagramExport> {
   try {
-    const [handle] = await window.showOpenFilePicker({
+    const [handle] = await globalThis.showOpenFilePicker({
       types: [
         {
           description: "JSON Files",
