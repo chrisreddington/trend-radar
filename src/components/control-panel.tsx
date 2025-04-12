@@ -36,7 +36,7 @@ export const ControlPanel = () => {
     } else if (editingPoint) {
       setEditingPoint(undefined);
     }
-  }, [selectedPoint, points, editingPoint]);
+  }, [selectedPoint, points]);
 
   const handleAddPoint = (event: React.FormEvent) => {
     event.preventDefault();
