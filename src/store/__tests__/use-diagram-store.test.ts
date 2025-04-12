@@ -1,6 +1,13 @@
 import { useDiagramStore } from "../use-diagram-store";
 import { Likelihood, Point, Preparedness, Relevance } from "../../types";
 import { Category } from "../../types";
+import { loadDiagramFromFile, saveDiagramToFile } from "../../utils/file-handlers";
+
+// Mock file handlers
+jest.mock("../../utils/file-handlers", () => ({
+  loadDiagramFromFile: jest.fn(),
+  saveDiagramToFile: jest.fn(),
+}));
 
 describe("useDiagramStore", () => {
   // Set up test data and mocks
@@ -256,6 +263,92 @@ describe("useDiagramStore", () => {
 
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([]);
+        expect(state.selectedPoint).toBeUndefined();
+      });
+    });
+  });
+
+  describe("File Operations", () => {
+    describe("saveDiagram", () => {
+      it("should call saveDiagramToFile with current state", async () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        const { saveDiagram } = useDiagramStore.getState();
+
+        await saveDiagram();
+        expect(saveDiagramToFile).toHaveBeenCalledWith(
+          expect.objectContaining({
+            points: [mockPoint],
+          }),
+        );
+      });
+
+      it("should throw error if save fails", async () => {
+        (saveDiagramToFile as jest.Mock).mockRejectedValue(
+          new Error("Save failed"),
+        );
+        const { saveDiagram } = useDiagramStore.getState();
+
+        await expect(saveDiagram()).rejects.toThrow("Save failed");
+      });
+    });
+
+    describe("loadDiagram", () => {
+      const mockExportData = {
+        version: 1,
+        points: [mockPoint],
+        metadata: {
+          createdAt: "2025-04-12T00:00:00.000Z",
+          lastModifiedAt: "2025-04-12T00:00:00.000Z",
+        },
+      };
+
+      it("should update state with loaded points", async () => {
+        (loadDiagramFromFile as jest.Mock).mockResolvedValue(mockExportData);
+        const { loadDiagram } = useDiagramStore.getState();
+
+        await loadDiagram();
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual(mockExportData.points);
+        expect(state.selectedPoint).toBeUndefined();
+      });
+
+      it("should handle AbortError silently", async () => {
+        const abortError = new Error("User cancelled");
+        abortError.name = "AbortError";
+        (loadDiagramFromFile as jest.Mock).mockRejectedValue(abortError);
+
+        const { loadDiagram } = useDiagramStore.getState();
+        await loadDiagram();
+        // State should remain unchanged
+        expect(useDiagramStore.getState().points).toEqual([]);
+      });
+
+      it("should throw other errors", async () => {
+        (loadDiagramFromFile as jest.Mock).mockRejectedValue(
+          new Error("Load failed"),
+        );
+        const { loadDiagram } = useDiagramStore.getState();
+
+        await expect(loadDiagram()).rejects.toThrow("Load failed");
+      });
+    });
+
+    describe("importPoints", () => {
+      it("should replace existing points and clear selection", () => {
+        useDiagramStore.setState({
+          points: [mockPoint],
+          selectedPoint: mockPoint.id,
+        });
+
+        const newPoints = [
+          { ...mockPoint, id: "new-id", label: "New Point" },
+        ];
+
+        const { importPoints } = useDiagramStore.getState();
+        importPoints(newPoints);
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual(newPoints);
         expect(state.selectedPoint).toBeUndefined();
       });
     });

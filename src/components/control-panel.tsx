@@ -11,6 +11,8 @@ export const ControlPanel = () => {
     updatePoint,
     removePoint,
     selectPoint,
+    saveDiagram,
+    loadDiagram,
   } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | undefined>();
@@ -23,17 +25,18 @@ export const ControlPanel = () => {
     x: 0,
     y: 0,
   });
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedPoint) {
       const point = points.find((p) => p.id === selectedPoint);
-      if (point) {
+      if (point && (!editingPoint || editingPoint.id !== point.id)) {
         setEditingPoint({ ...point });
       }
-    } else {
-      setEditingPoint(undefined); // Clear editing state when no point is selected
+    } else if (editingPoint) {
+      setEditingPoint(undefined);
     }
-  }, [selectedPoint, points]);
+  }, [selectedPoint, points, editingPoint]);
 
   const handleAddPoint = (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,6 +77,26 @@ export const ControlPanel = () => {
   const handleCloseEdit = () => {
     selectPoint();
     setEditingPoint(undefined); // Change this line to clear editing state
+  };
+
+  const handleSave = async () => {
+    try {
+      setError(null);
+      await saveDiagram();
+    } catch (err) {
+      setError("Failed to save diagram");
+      console.error(err);
+    }
+  };
+
+  const handleLoad = async () => {
+    try {
+      setError(null);
+      await loadDiagram();
+    } catch (err) {
+      setError("Failed to load diagram");
+      console.error(err);
+    }
   };
 
   const commonInputClasses =
@@ -315,7 +338,7 @@ export const ControlPanel = () => {
 
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <div className="p-4 cursor-pointer">
+      <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button
             className="w-full flex justify-between items-center focus:outline-none cursor-pointer"
@@ -348,6 +371,34 @@ export const ControlPanel = () => {
         className={`p-6 pt-0 ${isCollapsed ? "hidden" : ""}`}
       >
         <div className="space-y-6">
+          {/* File Operation Buttons */}
+          <div className="flex gap-4 mb-6">
+            <button
+              type="button"
+              onClick={handleSave}
+              className={`${commonButtonClasses} bg-green-600 hover:bg-green-700 focus:ring-green-500 dark:bg-green-700 dark:hover:bg-green-800`}
+            >
+              Save Diagram
+            </button>
+            <button
+              type="button"
+              onClick={handleLoad}
+              className={`${commonButtonClasses} bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-700 dark:hover:bg-blue-800`}
+            >
+              Load Diagram
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div
+              className="p-3 mb-4 text-sm text-red-600 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-200"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
+
           <div>
             {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
           </div>

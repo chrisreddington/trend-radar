@@ -1,15 +1,26 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ControlPanel } from "../control-panel";
-import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
+// Mock the entire store module
+jest.mock("../../store/use-diagram-store", () => {
+  const actual = jest.requireActual("../../store/use-diagram-store");
+  return {
+    ...actual,
+    useDiagramStore: jest.fn(),
+    saveDiagram: jest.fn(),
+    loadDiagram: jest.fn(),
+  };
+});
+
+// Import after mocking
+import { useDiagramStore } from "../../store/use-diagram-store";
 
 describe("ControlPanel", () => {
-  // Common test data
+  // Common test data and setup
+  const user = userEvent.setup();
+
   const mockPoint = {
     id: "1",
     label: "Test Point",
@@ -27,6 +38,8 @@ describe("ControlPanel", () => {
     updatePoint: jest.fn(),
     removePoint: jest.fn(),
     selectPoint: jest.fn(),
+    saveDiagram: jest.fn(),
+    loadDiagram: jest.fn(),
   };
 
   // Helper to get store with optional selected point
@@ -38,7 +51,7 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue(getStoreState());
+    (useDiagramStore as jest.Mock).mockImplementation(() => getStoreState());
   });
 
   describe("Basic Rendering", () => {
@@ -172,7 +185,9 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      mockedUseDiagramStore.mockReturnValue(getStoreState("1"));
+      (useDiagramStore as jest.Mock).mockImplementation(() =>
+        getStoreState("1"),
+      );
     });
 
     it("should display selected point data in edit form", () => {
@@ -261,7 +276,9 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        mockedUseDiagramStore.mockReturnValue(getStoreState());
+        (useDiagramStore as jest.Mock).mockImplementation(() =>
+          getStoreState(),
+        );
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -280,7 +297,9 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        mockedUseDiagramStore.mockReturnValue(getStoreWithPoints("1"));
+        (useDiagramStore as jest.Mock).mockImplementation(() =>
+          getStoreWithPoints("1"),
+        );
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -296,7 +315,9 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        mockedUseDiagramStore.mockReturnValue(getStoreWithPoints("2"));
+        (useDiagramStore as jest.Mock).mockImplementation(() =>
+          getStoreWithPoints("2"),
+        );
         rerender(<ControlPanel />);
 
         // Verify second point's label
@@ -311,6 +332,91 @@ describe("ControlPanel", () => {
         ) as HTMLInputElement;
         expect(labelInput.value).toBe("Second Point");
       });
+    });
+  });
+
+  describe("File Operations", () => {
+    it("should render file operation buttons", () => {
+      render(<ControlPanel />);
+      expect(screen.getByRole("button", { name: "Save Diagram" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Load Diagram" })).toBeInTheDocument();
+    });
+
+    it("should handle successful save operation", async () => {
+      const mockSaveDiagram = jest.fn().mockResolvedValue(undefined);
+      (useDiagramStore as jest.Mock).mockImplementation(() => ({
+        ...getStoreState(),
+        saveDiagram: mockSaveDiagram,
+      }));
+
+      render(<ControlPanel />);
+      await user.click(screen.getByRole("button", { name: "Save Diagram" }));
+
+      expect(mockSaveDiagram).toHaveBeenCalled();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("should handle failed save operation", async () => {
+      const mockSaveDiagram = jest.fn().mockRejectedValue(new Error("Save failed"));
+      (useDiagramStore as jest.Mock).mockImplementation(() => ({
+        ...getStoreState(),
+        saveDiagram: mockSaveDiagram,
+      }));
+
+      render(<ControlPanel />);
+      await user.click(screen.getByRole("button", { name: "Save Diagram" }));
+
+      expect(mockSaveDiagram).toHaveBeenCalled();
+      expect(screen.getByRole("alert")).toHaveTextContent("Failed to save diagram");
+    });
+
+    it("should handle successful load operation", async () => {
+      const mockLoadDiagram = jest.fn().mockResolvedValue(undefined);
+      (useDiagramStore as jest.Mock).mockImplementation(() => ({
+        ...getStoreState(),
+        loadDiagram: mockLoadDiagram,
+      }));
+
+      render(<ControlPanel />);
+      await user.click(screen.getByRole("button", { name: "Load Diagram" }));
+
+      expect(mockLoadDiagram).toHaveBeenCalled();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("should handle failed load operation", async () => {
+      const mockLoadDiagram = jest.fn().mockRejectedValue(new Error("Load failed"));
+      (useDiagramStore as jest.Mock).mockImplementation(() => ({
+        ...getStoreState(),
+        loadDiagram: mockLoadDiagram,
+      }));
+
+      render(<ControlPanel />);
+      await user.click(screen.getByRole("button", { name: "Load Diagram" }));
+
+      expect(mockLoadDiagram).toHaveBeenCalled();
+      expect(screen.getByRole("alert")).toHaveTextContent("Failed to load diagram");
+    });
+
+    it("should clear error when starting new operation", async () => {
+      const mockSaveDiagram = jest.fn()
+        .mockRejectedValueOnce(new Error("Save failed"))
+        .mockResolvedValueOnce(undefined);
+      
+      (useDiagramStore as jest.Mock).mockImplementation(() => ({
+        ...getStoreState(),
+        saveDiagram: mockSaveDiagram,
+      }));
+
+      render(<ControlPanel />);
+
+      // First operation fails
+      await user.click(screen.getByRole("button", { name: "Save Diagram" }));
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+
+      // Second operation succeeds and clears error
+      await user.click(screen.getByRole("button", { name: "Save Diagram" }));
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
   });
 });
