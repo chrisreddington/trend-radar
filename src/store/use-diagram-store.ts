@@ -164,7 +164,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
       const data = await loadDiagramFromFile();
       set({ points: data.points, selectedPoint: undefined });
     } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
+      if ((error as Error).name !== "AbortError") {
         console.error("Failed to load diagram:", error);
         throw error;
       }

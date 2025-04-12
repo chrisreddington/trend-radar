@@ -1,4 +1,10 @@
-import { DiagramState, Category, Likelihood, Relevance, Preparedness } from "../../types";
+import {
+  DiagramState,
+  Category,
+  Likelihood,
+  Relevance,
+  Preparedness,
+} from "../../types";
 import {
   generateFilename,
   exportDiagram,
@@ -134,24 +140,26 @@ describe("File Handlers", () => {
 
   describe("saveDiagramToFile", () => {
     it("should save diagram to file", async () => {
-      (window.showSaveFilePicker as jest.Mock).mockResolvedValue(mockFileHandle);
+      (window.showSaveFilePicker as jest.Mock).mockResolvedValue(
+        mockFileHandle,
+      );
 
       await saveDiagramToFile(mockState);
 
       expect(window.showSaveFilePicker).toHaveBeenCalledWith({
         suggestedName: "trend-radar-2025-04-12.json",
-        types: [{
-          description: 'JSON Files',
-          accept: {
-            'application/json': ['.json'],
+        types: [
+          {
+            description: "JSON Files",
+            accept: {
+              "application/json": [".json"],
+            },
           },
-        }],
+        ],
       });
 
       expect(mockFileHandle.createWritable).toHaveBeenCalled();
-      expect(mockWritable.write).toHaveBeenCalledWith(
-        expect.any(Blob)
-      );
+      expect(mockWritable.write).toHaveBeenCalledWith(expect.any(Blob));
       expect(mockWritable.close).toHaveBeenCalled();
     });
 
@@ -168,7 +176,9 @@ describe("File Handlers", () => {
       const error = new Error("Failed to save");
       (window.showSaveFilePicker as jest.Mock).mockRejectedValue(error);
 
-      await expect(saveDiagramToFile(mockState)).rejects.toThrow("Failed to save diagram");
+      await expect(saveDiagramToFile(mockState)).rejects.toThrow(
+        "Failed to save diagram",
+      );
     });
   });
 
@@ -189,17 +199,21 @@ describe("File Handlers", () => {
     });
 
     it("should load diagram from file", async () => {
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([mockFileHandle]);
+      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+        mockFileHandle,
+      ]);
 
       const result = await loadDiagramFromFile();
 
       expect(window.showOpenFilePicker).toHaveBeenCalledWith({
-        types: [{
-          description: 'JSON Files',
-          accept: {
-            'application/json': ['.json'],
+        types: [
+          {
+            description: "JSON Files",
+            accept: {
+              "application/json": [".json"],
+            },
           },
-        }],
+        ],
       });
 
       expect(mockFileHandle.getFile).toHaveBeenCalled();
@@ -218,7 +232,9 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: jest.fn().mockResolvedValue("invalid json"),
       });
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([mockFileHandle]);
+      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+        mockFileHandle,
+      ]);
 
       await expect(loadDiagramFromFile()).rejects.toThrow();
     });
@@ -227,16 +243,22 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: jest.fn().mockResolvedValue(JSON.stringify({ invalid: "data" })),
       });
-      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([mockFileHandle]);
+      (window.showOpenFilePicker as jest.Mock).mockResolvedValue([
+        mockFileHandle,
+      ]);
 
-      await expect(loadDiagramFromFile()).rejects.toThrow("Invalid diagram file format");
+      await expect(loadDiagramFromFile()).rejects.toThrow(
+        "Invalid diagram file format",
+      );
     });
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to load");
       (window.showOpenFilePicker as jest.Mock).mockRejectedValue(error);
 
-      await expect(loadDiagramFromFile()).rejects.toThrow("Failed to load diagram");
+      await expect(loadDiagramFromFile()).rejects.toThrow(
+        "Failed to load diagram",
+      );
     });
   });
 });

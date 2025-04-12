@@ -338,8 +338,12 @@ describe("ControlPanel", () => {
   describe("File Operations", () => {
     it("should render file operation buttons", () => {
       render(<ControlPanel />);
-      expect(screen.getByRole("button", { name: "Save Diagram" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Load Diagram" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Save Diagram" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Load Diagram" }),
+      ).toBeInTheDocument();
     });
 
     it("should handle successful save operation", async () => {
@@ -357,7 +361,9 @@ describe("ControlPanel", () => {
     });
 
     it("should handle failed save operation", async () => {
-      const mockSaveDiagram = jest.fn().mockRejectedValue(new Error("Save failed"));
+      const mockSaveDiagram = jest
+        .fn()
+        .mockRejectedValue(new Error("Save failed"));
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),
         saveDiagram: mockSaveDiagram,
@@ -367,7 +373,9 @@ describe("ControlPanel", () => {
       await user.click(screen.getByRole("button", { name: "Save Diagram" }));
 
       expect(mockSaveDiagram).toHaveBeenCalled();
-      expect(screen.getByRole("alert")).toHaveTextContent("Failed to save diagram");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Failed to save diagram",
+      );
     });
 
     it("should handle successful load operation", async () => {
@@ -385,7 +393,9 @@ describe("ControlPanel", () => {
     });
 
     it("should handle failed load operation", async () => {
-      const mockLoadDiagram = jest.fn().mockRejectedValue(new Error("Load failed"));
+      const mockLoadDiagram = jest
+        .fn()
+        .mockRejectedValue(new Error("Load failed"));
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),
         loadDiagram: mockLoadDiagram,
@@ -395,14 +405,17 @@ describe("ControlPanel", () => {
       await user.click(screen.getByRole("button", { name: "Load Diagram" }));
 
       expect(mockLoadDiagram).toHaveBeenCalled();
-      expect(screen.getByRole("alert")).toHaveTextContent("Failed to load diagram");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Failed to load diagram",
+      );
     });
 
     it("should clear error when starting new operation", async () => {
-      const mockSaveDiagram = jest.fn()
+      const mockSaveDiagram = jest
+        .fn()
         .mockRejectedValueOnce(new Error("Save failed"))
         .mockResolvedValueOnce(undefined);
-      
+
       (useDiagramStore as jest.Mock).mockImplementation(() => ({
         ...getStoreState(),
         saveDiagram: mockSaveDiagram,

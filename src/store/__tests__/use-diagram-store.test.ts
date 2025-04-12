@@ -1,7 +1,10 @@
 import { useDiagramStore } from "../use-diagram-store";
 import { Likelihood, Point, Preparedness, Relevance } from "../../types";
 import { Category } from "../../types";
-import { loadDiagramFromFile, saveDiagramToFile } from "../../utils/file-handlers";
+import {
+  loadDiagramFromFile,
+  saveDiagramToFile,
+} from "../../utils/file-handlers";
 
 // Mock file handlers
 jest.mock("../../utils/file-handlers", () => ({
@@ -340,9 +343,7 @@ describe("useDiagramStore", () => {
           selectedPoint: mockPoint.id,
         });
 
-        const newPoints = [
-          { ...mockPoint, id: "new-id", label: "New Point" },
-        ];
+        const newPoints = [{ ...mockPoint, id: "new-id", label: "New Point" }];
 
         const { importPoints } = useDiagramStore.getState();
         importPoints(newPoints);
