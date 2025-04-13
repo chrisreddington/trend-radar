@@ -27,18 +27,25 @@ export const ControlPanel = () => {
   useEffect(() => {
     if (selectedPoint) {
       const point = points.find((p) => p.id === selectedPoint);
-      setEditingPoint(point);
-    } else {
+      if (point && (!editingPoint || editingPoint.id !== point.id)) {
+        setEditingPoint({ ...point });
+      }
+    } else if (editingPoint) {
       setEditingPoint(undefined);
     }
-  }, [selectedPoint, points]);
+  }, [selectedPoint, points, editingPoint]);
 
   const handleAddPoint = (event: React.FormEvent) => {
     event.preventDefault();
     addPoint(newPoint);
     setNewPoint({
-      ...newPoint,
       label: "",
+      category: Category.Technological,
+      likelihood: Likelihood.Average,
+      relevance: Relevance.Moderate,
+      preparedness: Preparedness.ModeratelyPrepared,
+      x: 0,
+      y: 0,
     });
   };
 
@@ -66,53 +73,124 @@ export const ControlPanel = () => {
 
   const handleCloseEdit = () => {
     selectPoint();
-    setEditingPoint(undefined);
+    setEditingPoint(undefined); // Change this line to clear editing state
   };
 
   const commonInputClasses =
-    "block w-full p-2 text-sm border rounded-lg bg-gray-50 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500";
-
+    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
+  const commonSelectClasses = commonInputClasses;
   const commonButtonClasses =
-    "px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2";
+    "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
+  const deleteButtonClasses =
+    "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
 
-  const deleteButtonClasses = `${commonButtonClasses} bg-red-600 hover:bg-red-700 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800`;
+  const getLikelihoodFromValue = (value: number): Likelihood => {
+    if (value >= 80) return Likelihood.HighlyLikely;
+    if (value >= 60) return Likelihood.Likely;
+    if (value >= 40) return Likelihood.Average;
+    if (value >= 20) return Likelihood.Unlikely;
+    return Likelihood.HighlyUnlikely;
+  };
+
+  const getValueFromLikelihood = (likelihood: Likelihood): number => {
+    switch (likelihood) {
+      case Likelihood.HighlyLikely: {
+        return 100;
+      }
+      case Likelihood.Likely: {
+        return 75;
+      }
+      case Likelihood.Average: {
+        return 50;
+      }
+      case Likelihood.Unlikely: {
+        return 25;
+      }
+      case Likelihood.HighlyUnlikely: {
+        return 0;
+      }
+    }
+  };
+
+  const getRelevanceFromValue = (value: number): Relevance => {
+    if (value >= 66) return Relevance.High;
+    if (value >= 33) return Relevance.Moderate;
+    return Relevance.Low;
+  };
+
+  const getValueFromRelevance = (relevance: Relevance): number => {
+    switch (relevance) {
+      case Relevance.High: {
+        return 100;
+      }
+      case Relevance.Moderate: {
+        return 50;
+      }
+      case Relevance.Low: {
+        return 0;
+      }
+    }
+  };
+
+  const getPreparednessFromValue = (value: number): Preparedness => {
+    if (value >= 66) return Preparedness.HighlyPrepared;
+    if (value >= 33) return Preparedness.ModeratelyPrepared;
+    return Preparedness.InadequatelyPrepared;
+  };
+
+  const getValueFromPreparedness = (preparedness: Preparedness): number => {
+    switch (preparedness) {
+      case Preparedness.HighlyPrepared: {
+        return 100;
+      }
+      case Preparedness.ModeratelyPrepared: {
+        return 50;
+      }
+      case Preparedness.InadequatelyPrepared: {
+        return 0;
+      }
+    }
+  };
 
   const renderPointForm = (
     point: Point | Omit<Point, "id">,
     onSubmit: (event: React.FormEvent) => void,
     submitLabel: string,
-    isEditing = false,
+    isEditing: boolean = false,
   ) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {/* Label Input */}
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4"
+      data-testid="add-point-form"
+    >
       <div>
         <label
-          htmlFor={`${isEditing ? "edit" : "new"}-point-label`}
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-label" : "point-label"}
         >
           Label
         </label>
         <input
+          id={isEditing ? "edit-point-label" : "point-label"}
           type="text"
-          id={`${isEditing ? "edit" : "new"}-point-label`}
+          name="label"
           value={point.label}
           onChange={(event) => handleLabelChange(event, isEditing)}
-          required
           className={commonInputClasses}
-          placeholder="Enter point label"
+          required
         />
       </div>
 
-      {/* Category Select */}
       <div>
         <label
-          htmlFor={`${isEditing ? "edit" : "new"}-point-category`}
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-category" : "point-category"}
         >
           Category
         </label>
         <select
-          id={`${isEditing ? "edit" : "new"}-point-category`}
+          id={isEditing ? "edit-point-category" : "point-category"}
+          name="category"
           value={point.category}
           onChange={(event) =>
             isEditing && editingPoint
@@ -125,113 +203,110 @@ export const ControlPanel = () => {
                   category: event.target.value as Category,
                 })
           }
-          className={commonInputClasses}
+          className={commonSelectClasses}
+          role="combobox"
+          aria-label="Category"
         >
-          {Object.values(Category).map((category) => (
-            <option key={category} value={category}>
-              {category}
+          {Object.values(Category).map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Likelihood Select */}
       <div>
         <label
-          htmlFor={`${isEditing ? "edit" : "new"}-point-likelihood`}
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-likelihood" : "point-likelihood"}
         >
-          Likelihood
+          Likelihood: {point.likelihood}
         </label>
-        <select
-          id={`${isEditing ? "edit" : "new"}-point-likelihood`}
-          value={point.likelihood}
-          onChange={(event) =>
-            isEditing && editingPoint
-              ? setEditingPoint({
-                  ...editingPoint,
-                  likelihood: event.target.value as Likelihood,
-                })
-              : setNewPoint({
-                  ...newPoint,
-                  likelihood: event.target.value as Likelihood,
-                })
-          }
-          className={commonInputClasses}
-        >
-          {Object.values(Likelihood).map((likelihood) => (
-            <option key={likelihood} value={likelihood}>
-              {likelihood}
-            </option>
-          ))}
-        </select>
+        <input
+          id={isEditing ? "edit-point-likelihood" : "point-likelihood"}
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromLikelihood(point.likelihood)}
+          onChange={(event) => {
+            const newValue = getLikelihoodFromValue(Number(event.target.value));
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, likelihood: newValue });
+            } else {
+              setNewPoint({ ...newPoint, likelihood: newValue });
+            }
+          }}
+          data-testid="likelihood-slider"
+          className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          aria-label="Likelihood"
+          aria-valuenow={getValueFromLikelihood(point.likelihood)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
       </div>
 
-      {/* Relevance Select */}
       <div>
         <label
-          htmlFor={`${isEditing ? "edit" : "new"}-point-relevance`}
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-relevance" : "point-relevance"}
         >
-          Relevance
+          Relevance: {point.relevance}
         </label>
-        <select
-          id={`${isEditing ? "edit" : "new"}-point-relevance`}
-          value={point.relevance}
-          onChange={(event) =>
-            isEditing && editingPoint
-              ? setEditingPoint({
-                  ...editingPoint,
-                  relevance: event.target.value as Relevance,
-                })
-              : setNewPoint({
-                  ...newPoint,
-                  relevance: event.target.value as Relevance,
-                })
-          }
-          className={commonInputClasses}
-        >
-          {Object.values(Relevance).map((relevance) => (
-            <option key={relevance} value={relevance}>
-              {relevance}
-            </option>
-          ))}
-        </select>
+        <input
+          id={isEditing ? "edit-point-relevance" : "point-relevance"}
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromRelevance(point.relevance)}
+          onChange={(event) => {
+            const newValue = getRelevanceFromValue(Number(event.target.value));
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, relevance: newValue });
+            } else {
+              setNewPoint({ ...newPoint, relevance: newValue });
+            }
+          }}
+          data-testid="relevance-slider"
+          className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          aria-label="Relevance"
+          aria-valuenow={getValueFromRelevance(point.relevance)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
       </div>
 
-      {/* Preparedness Select */}
       <div>
         <label
-          htmlFor={`${isEditing ? "edit" : "new"}-point-preparedness`}
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-preparedness" : "point-preparedness"}
         >
-          Preparedness
+          Preparedness: {point.preparedness}
         </label>
-        <select
-          id={`${isEditing ? "edit" : "new"}-point-preparedness`}
-          value={point.preparedness}
-          onChange={(event) =>
-            isEditing && editingPoint
-              ? setEditingPoint({
-                  ...editingPoint,
-                  preparedness: event.target.value as Preparedness,
-                })
-              : setNewPoint({
-                  ...newPoint,
-                  preparedness: event.target.value as Preparedness,
-                })
-          }
-          className={commonInputClasses}
-        >
-          {Object.values(Preparedness).map((preparedness) => (
-            <option key={preparedness} value={preparedness}>
-              {preparedness}
-            </option>
-          ))}
-        </select>
+        <input
+          id={isEditing ? "edit-point-preparedness" : "point-preparedness"}
+          type="range"
+          min="0"
+          max="100"
+          value={getValueFromPreparedness(point.preparedness)}
+          onChange={(event) => {
+            const newValue = getPreparednessFromValue(
+              Number(event.target.value),
+            );
+            if (isEditing && editingPoint) {
+              setEditingPoint({ ...editingPoint, preparedness: newValue });
+            } else {
+              setNewPoint({ ...newPoint, preparedness: newValue });
+            }
+          }}
+          data-testid="preparedness-slider"
+          className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+          aria-label="Preparedness"
+          aria-valuenow={getValueFromPreparedness(point.preparedness)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
       </div>
 
-      {/* Submit Button */}
       <button type="submit" className={commonButtonClasses}>
         {submitLabel}
       </button>
@@ -239,9 +314,9 @@ export const ControlPanel = () => {
   );
 
   return (
-    <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+    <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div className="p-4 cursor-pointer">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           <button
             className="w-full flex justify-between items-center focus:outline-none cursor-pointer"
             onClick={toggleCollapse}
@@ -250,72 +325,75 @@ export const ControlPanel = () => {
           >
             Add New Point
             <svg
-              className={`w-6 h-6 transform transition-transform duration-200 ${
-                isCollapsed ? "-rotate-90" : "rotate-0"
-              }`}
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              viewBox="0 0 24 24"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`transform transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`}
+              aria-hidden="true"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
+              <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
-        </div>
+        </h2>
       </div>
-
       <div
-        className={`p-4 transition-all duration-200 ease-in-out ${
-          isCollapsed ? "hidden" : ""
-        }`}
+        id="control-panel-content"
+        data-testid="add-point-form-content"
+        className={`p-6 pt-0 ${isCollapsed ? "hidden" : ""}`}
       >
-        <div>
-          {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
-        </div>
+        <div className="space-y-6">
+          <div>
+            {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
+          </div>
 
-        {editingPoint && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Edit Point
-              </h3>
-              <button
-                onClick={handleCloseEdit}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+          {editingPoint && (
+            <div className="border-t border-gray-300 pt-6 dark:border-gray-600">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Edit Selected Point
+                </h3>
+                <button
+                  onClick={handleCloseEdit}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+                  aria-label="Close edit panel"
                 >
-                  <path
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              {renderPointForm(
+                editingPoint,
+                handleUpdatePoint,
+                "Update Point",
+                true,
+              )}
+              <button
+                onClick={() => selectedPoint && removePoint(selectedPoint)}
+                className={deleteButtonClasses}
+              >
+                Delete Point
               </button>
             </div>
-            {renderPointForm(
-              editingPoint,
-              handleUpdatePoint,
-              "Update Point",
-              true,
-            )}
-            <button
-              onClick={() => selectedPoint && removePoint(selectedPoint)}
-              className={deleteButtonClasses}
-            >
-              Delete Point
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

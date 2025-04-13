@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { FileOperations } from "../file-operations";
 import { useDiagramStore } from "../../store/use-diagram-store";
 
@@ -10,6 +11,7 @@ const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
 describe("FileOperations", () => {
   const mockSaveDiagram = jest.fn();
   const mockLoadDiagram = jest.fn();
+  const user = userEvent.setup();
 
   beforeEach(() => {
     mockedUseDiagramStore.mockReturnValue({
@@ -32,7 +34,7 @@ describe("FileOperations", () => {
     mockSaveDiagram.mockResolvedValue(void 0);
     render(<FileOperations />);
 
-    await fireEvent.click(screen.getByText("Save Diagram"));
+    await user.click(screen.getByText("Save Diagram"));
     expect(mockSaveDiagram).toHaveBeenCalledTimes(1);
   });
 
@@ -40,7 +42,7 @@ describe("FileOperations", () => {
     mockLoadDiagram.mockResolvedValue(void 0);
     render(<FileOperations />);
 
-    await fireEvent.click(screen.getByText("Load Diagram"));
+    await user.click(screen.getByText("Load Diagram"));
     expect(mockLoadDiagram).toHaveBeenCalledTimes(1);
   });
 
@@ -48,16 +50,22 @@ describe("FileOperations", () => {
     mockSaveDiagram.mockRejectedValueOnce(new Error("Save failed"));
     render(<FileOperations />);
 
-    await fireEvent.click(screen.getByText("Save Diagram"));
-    expect(screen.getByText("Failed to save diagram")).toBeInTheDocument();
+    await user.click(screen.getByText("Save Diagram"));
+    
+    // Wait for the error message to appear
+    const errorMessage = await screen.findByText("Failed to save diagram");
+    expect(errorMessage).toBeInTheDocument();
   });
 
   it("shows error message when load fails", async () => {
     mockLoadDiagram.mockRejectedValueOnce(new Error("Load failed"));
     render(<FileOperations />);
 
-    await fireEvent.click(screen.getByText("Load Diagram"));
-    expect(screen.getByText("Failed to load diagram")).toBeInTheDocument();
+    await user.click(screen.getByText("Load Diagram"));
+    
+    // Wait for the error message to appear
+    const errorMessage = await screen.findByText("Failed to load diagram");
+    expect(errorMessage).toBeInTheDocument();
   });
 
   it("clears error message when operation succeeds after previous error", async () => {
@@ -68,13 +76,12 @@ describe("FileOperations", () => {
     render(<FileOperations />);
 
     // First attempt fails
-    await fireEvent.click(screen.getByText("Save Diagram"));
-    expect(screen.getByText("Failed to save diagram")).toBeInTheDocument();
+    await user.click(screen.getByText("Save Diagram"));
+    const errorMessage = await screen.findByText("Failed to save diagram");
+    expect(errorMessage).toBeInTheDocument();
 
     // Second attempt succeeds
-    await fireEvent.click(screen.getByText("Save Diagram"));
-    expect(
-      screen.queryByText("Failed to save diagram"),
-    ).not.toBeInTheDocument();
+    await user.click(screen.getByText("Save Diagram"));
+    expect(screen.queryByText("Failed to save diagram")).not.toBeInTheDocument();
   });
 });
