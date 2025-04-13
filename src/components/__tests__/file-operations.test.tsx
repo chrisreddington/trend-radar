@@ -51,7 +51,7 @@ describe("FileOperations", () => {
     render(<FileOperations />);
 
     await user.click(screen.getByText("Save Diagram"));
-    
+
     // Wait for the error message to appear
     const errorMessage = await screen.findByText("Failed to save diagram");
     expect(errorMessage).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe("FileOperations", () => {
     render(<FileOperations />);
 
     await user.click(screen.getByText("Load Diagram"));
-    
+
     // Wait for the error message to appear
     const errorMessage = await screen.findByText("Failed to load diagram");
     expect(errorMessage).toBeInTheDocument();
@@ -82,6 +82,8 @@ describe("FileOperations", () => {
 
     // Second attempt succeeds
     await user.click(screen.getByText("Save Diagram"));
-    expect(screen.queryByText("Failed to save diagram")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Failed to save diagram"),
+    ).not.toBeInTheDocument();
   });
 });

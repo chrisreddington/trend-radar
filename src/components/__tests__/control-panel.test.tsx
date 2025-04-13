@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { ControlPanel } from "../control-panel";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 
@@ -19,8 +18,6 @@ import { useDiagramStore } from "../../store/use-diagram-store";
 
 describe("ControlPanel", () => {
   // Common test data and setup
-  const user = userEvent.setup();
-
   const mockPoint = {
     id: "1",
     label: "Test Point",
@@ -51,7 +48,9 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useDiagramStore as jest.Mock).mockImplementation(() => getStoreState());
+    (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+      getStoreState(),
+    );
   });
 
   describe("Basic Rendering", () => {
@@ -185,7 +184,7 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      (useDiagramStore as jest.Mock).mockImplementation(() =>
+      (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
         getStoreState("1"),
       );
     });
@@ -276,7 +275,7 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        (useDiagramStore as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
           getStoreState(),
         );
         rerender(<ControlPanel />);
@@ -297,7 +296,7 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        (useDiagramStore as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
           getStoreWithPoints("1"),
         );
         const { rerender } = render(<ControlPanel />);
@@ -315,7 +314,7 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        (useDiagramStore as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
           getStoreWithPoints("2"),
         );
         rerender(<ControlPanel />);
