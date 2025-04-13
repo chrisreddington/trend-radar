@@ -1,15 +1,23 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { ControlPanel } from "../control-panel";
-import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
+// Mock the entire store module
+jest.mock("../../store/use-diagram-store", () => {
+  const actual = jest.requireActual("../../store/use-diagram-store");
+  return {
+    ...actual,
+    useDiagramStore: jest.fn(),
+    saveDiagram: jest.fn(),
+    loadDiagram: jest.fn(),
+  };
+});
+
+// Import after mocking
+import { useDiagramStore } from "../../store/use-diagram-store";
 
 describe("ControlPanel", () => {
-  // Common test data
+  // Common test data and setup
   const mockPoint = {
     id: "1",
     label: "Test Point",
@@ -27,6 +35,8 @@ describe("ControlPanel", () => {
     updatePoint: jest.fn(),
     removePoint: jest.fn(),
     selectPoint: jest.fn(),
+    saveDiagram: jest.fn(),
+    loadDiagram: jest.fn(),
   };
 
   // Helper to get store with optional selected point
@@ -38,7 +48,9 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue(getStoreState());
+    (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+      getStoreState(),
+    );
   });
 
   describe("Basic Rendering", () => {
@@ -172,7 +184,9 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      mockedUseDiagramStore.mockReturnValue(getStoreState("1"));
+      (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        getStoreState("1"),
+      );
     });
 
     it("should display selected point data in edit form", () => {
@@ -261,7 +275,9 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        mockedUseDiagramStore.mockReturnValue(getStoreState());
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+          getStoreState(),
+        );
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -280,7 +296,9 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        mockedUseDiagramStore.mockReturnValue(getStoreWithPoints("1"));
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+          getStoreWithPoints("1"),
+        );
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -296,7 +314,9 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        mockedUseDiagramStore.mockReturnValue(getStoreWithPoints("2"));
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+          getStoreWithPoints("2"),
+        );
         rerender(<ControlPanel />);
 
         // Verify second point's label

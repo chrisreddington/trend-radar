@@ -27,13 +27,13 @@ export const ControlPanel = () => {
   useEffect(() => {
     if (selectedPoint) {
       const point = points.find((p) => p.id === selectedPoint);
-      if (point) {
+      if (point && (!editingPoint || editingPoint.id !== point.id)) {
         setEditingPoint({ ...point });
       }
-    } else {
-      setEditingPoint(undefined); // Clear editing state when no point is selected
+    } else if (editingPoint) {
+      setEditingPoint(undefined);
     }
-  }, [selectedPoint, points]);
+  }, [selectedPoint, points, editingPoint]);
 
   const handleAddPoint = (event: React.FormEvent) => {
     event.preventDefault();

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Point, DiagramState } from "../types";
 import { Category, Likelihood } from "../types";
+import { saveDiagramToFile, loadDiagramFromFile } from "../utils/file-handlers";
 
 function getDiagramDimensions(size = 800) {
   const marginAdjusted = size * 0.08;
@@ -60,6 +61,12 @@ interface DiagramStore extends DiagramState {
   removePoint: (id: string) => void;
   /** Select a point on the diagram */
   selectPoint: (id?: string) => void;
+  /** Import points from file, replacing current points */
+  importPoints: (points: Point[]) => void;
+  /** Save current diagram to a file */
+  saveDiagram: () => Promise<void>;
+  /** Load diagram from a file */
+  loadDiagram: () => Promise<void>;
   /** Save the current diagram state to localStorage */
   saveState: () => void;
   /** Load the diagram state from localStorage */
@@ -139,6 +146,30 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
     })),
 
   selectPoint: (id) => set({ selectedPoint: id }),
+
+  importPoints: (points) => set({ points, selectedPoint: undefined }),
+
+  saveDiagram: async () => {
+    try {
+      const state = get();
+      await saveDiagramToFile(state);
+    } catch (error) {
+      console.error("Failed to save diagram:", error);
+      throw error;
+    }
+  },
+
+  loadDiagram: async () => {
+    try {
+      const data = await loadDiagramFromFile();
+      set({ points: data.points, selectedPoint: undefined });
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        console.error("Failed to load diagram:", error);
+        throw error;
+      }
+    }
+  },
 
   saveState: () => {
     const state = get();

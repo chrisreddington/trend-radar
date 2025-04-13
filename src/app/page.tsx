@@ -2,6 +2,7 @@ import { RingDiagram } from "../components/ring-diagram";
 import { ControlPanel } from "../components/control-panel";
 import { Legend } from "../components/legend";
 import { PointsTable } from "../components/points-table";
+import { FileOperations } from "../components/file-operations";
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
           <RingDiagram />
         </div>
         <div className="w-full lg:w-auto lg:max-w-xs space-y-6">
+          <FileOperations />
           <ControlPanel />
           <Legend />
         </div>
