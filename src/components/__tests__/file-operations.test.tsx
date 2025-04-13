@@ -29,17 +29,17 @@ describe("FileOperations", () => {
   });
 
   it("calls saveDiagram when save button is clicked", async () => {
-    mockSaveDiagram.mockResolvedValue(null);
+    mockSaveDiagram.mockResolvedValue(void 0);
     render(<FileOperations />);
-    
+
     await fireEvent.click(screen.getByText("Save Diagram"));
     expect(mockSaveDiagram).toHaveBeenCalledTimes(1);
   });
 
   it("calls loadDiagram when load button is clicked", async () => {
-    mockLoadDiagram.mockResolvedValue(null);
+    mockLoadDiagram.mockResolvedValue(void 0);
     render(<FileOperations />);
-    
+
     await fireEvent.click(screen.getByText("Load Diagram"));
     expect(mockLoadDiagram).toHaveBeenCalledTimes(1);
   });
@@ -47,7 +47,7 @@ describe("FileOperations", () => {
   it("shows error message when save fails", async () => {
     mockSaveDiagram.mockRejectedValueOnce(new Error("Save failed"));
     render(<FileOperations />);
-    
+
     await fireEvent.click(screen.getByText("Save Diagram"));
     expect(screen.getByText("Failed to save diagram")).toBeInTheDocument();
   });
@@ -55,7 +55,7 @@ describe("FileOperations", () => {
   it("shows error message when load fails", async () => {
     mockLoadDiagram.mockRejectedValueOnce(new Error("Load failed"));
     render(<FileOperations />);
-    
+
     await fireEvent.click(screen.getByText("Load Diagram"));
     expect(screen.getByText("Failed to load diagram")).toBeInTheDocument();
   });
@@ -63,14 +63,14 @@ describe("FileOperations", () => {
   it("clears error message when operation succeeds after previous error", async () => {
     mockSaveDiagram
       .mockRejectedValueOnce(new Error("Save failed"))
-      .mockResolvedValue(null);
-    
+      .mockResolvedValue(void 0);
+
     render(<FileOperations />);
-    
+
     // First attempt fails
     await fireEvent.click(screen.getByText("Save Diagram"));
     expect(screen.getByText("Failed to save diagram")).toBeInTheDocument();
-    
+
     // Second attempt succeeds
     await fireEvent.click(screen.getByText("Save Diagram"));
     expect(
