@@ -156,7 +156,8 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
         try {
           const file = input.files?.[0];
           if (!file) {
-            reject(new Error("No file selected"));
+            input.remove();
+            reject(new Error("File selection cancelled"));
             return;
           }
 
@@ -180,7 +181,9 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
 
       const handleCancel = () => {
         input.remove();
-        reject(new Error("File selection cancelled"));
+        const error = new Error("File selection cancelled");
+        error.name = "AbortError";
+        reject(error);
       };
 
       input.addEventListener("change", handleFileSelect);
@@ -193,7 +196,6 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
     return fileData;
   }
 
-  // Rest of the function for File System Access API...
   try {
     const [handle] = await showOpenFilePicker({
       types: [
@@ -216,9 +218,10 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
 
     return data;
   } catch (error) {
-    if ((error as Error).name !== "AbortError") {
-      throw new Error("Failed to load diagram: " + (error as Error).message);
+    // Propagate AbortError as is, wrap other errors
+    if ((error as Error).name === "AbortError") {
+      throw error;
     }
-    throw error;
+    throw new Error("Failed to load diagram: " + (error as Error).message);
   }
 }

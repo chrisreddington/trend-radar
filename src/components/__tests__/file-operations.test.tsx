@@ -12,8 +12,10 @@ describe("FileOperations", () => {
   const mockSaveDiagram = jest.fn();
   const mockLoadDiagram = jest.fn();
   const user = userEvent.setup();
+  const originalConsoleError = console.error;
 
   beforeEach(() => {
+    console.error = jest.fn();
     mockedUseDiagramStore.mockReturnValue({
       saveDiagram: mockSaveDiagram,
       loadDiagram: mockLoadDiagram,
@@ -21,6 +23,7 @@ describe("FileOperations", () => {
   });
 
   afterEach(() => {
+    console.error = originalConsoleError;
     jest.clearAllMocks();
   });
 
@@ -36,6 +39,7 @@ describe("FileOperations", () => {
 
     await user.click(screen.getByText("Save Diagram"));
     expect(mockSaveDiagram).toHaveBeenCalledTimes(1);
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("calls loadDiagram when load button is clicked", async () => {
@@ -44,10 +48,12 @@ describe("FileOperations", () => {
 
     await user.click(screen.getByText("Load Diagram"));
     expect(mockLoadDiagram).toHaveBeenCalledTimes(1);
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("shows error message when save fails", async () => {
-    mockSaveDiagram.mockRejectedValueOnce(new Error("Save failed"));
+    const error = new Error("Save failed");
+    mockSaveDiagram.mockRejectedValueOnce(error);
     render(<FileOperations />);
 
     await user.click(screen.getByText("Save Diagram"));
@@ -55,10 +61,12 @@ describe("FileOperations", () => {
     // Wait for the error message to appear
     const errorMessage = await screen.findByText("Failed to save diagram");
     expect(errorMessage).toBeInTheDocument();
+    expect(console.error).toHaveBeenCalledWith(error);
   });
 
   it("shows error message when load fails", async () => {
-    mockLoadDiagram.mockRejectedValueOnce(new Error("Load failed"));
+    const error = new Error("Load failed");
+    mockLoadDiagram.mockRejectedValueOnce(error);
     render(<FileOperations />);
 
     await user.click(screen.getByText("Load Diagram"));
@@ -66,6 +74,7 @@ describe("FileOperations", () => {
     // Wait for the error message to appear
     const errorMessage = await screen.findByText("Failed to load diagram");
     expect(errorMessage).toBeInTheDocument();
+    expect(console.error).toHaveBeenCalledWith(error);
   });
 
   it("clears error message when operation succeeds after previous error", async () => {
