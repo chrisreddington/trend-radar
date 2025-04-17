@@ -27,17 +27,17 @@ describe("ThemeToggle", () => {
     localStorageMock = (function () {
       let store: Record<string, string> = {};
       return {
-        getItem: (key: string) => store[key] || null,
+        getItem: (key: string) => store[key],
         setItem: (key: string, value: string) => {
           store[key] = value;
         },
         removeItem: (key: string) => {
-          delete store[key];
+          store[key] = undefined as unknown as string;
         },
         clear: () => {
           store = {};
         },
-        key: (index: number) => Object.keys(store)[index] || null,
+        key: (index: number) => Object.keys(store)[index],
         length: 0,
       } as Storage;
     })();
@@ -49,7 +49,11 @@ describe("ThemeToggle", () => {
 
   afterEach(() => {
     globalThis.matchMedia = originalMatchMedia;
-    globalThis.localStorage = originalLocalStorage;
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      writable: true,
+      value: originalLocalStorage,
+    });
   });
 
   it("renders all theme options", () => {
@@ -77,7 +81,7 @@ describe("ThemeToggle", () => {
     mockMatchMedia(true); // system prefers dark
     render(<ThemeToggle />);
     fireEvent.click(screen.getByLabelText("System theme"));
-    expect(globalThis.localStorage.getItem("theme")).toBe(null);
+    expect(globalThis.localStorage.getItem("theme")).toBe(undefined);
     expect([THEME_OPTIONS.DARK, THEME_OPTIONS.LIGHT]).toContain(
       document.documentElement.dataset.theme,
     );
@@ -89,8 +93,8 @@ describe("ThemeToggle", () => {
       return {
         matches: false,
         media: query,
-        addEventListener: (event: string, cb: () => void) => {
-          listener = cb;
+        addEventListener: (event: string, callback: () => void) => {
+          listener = callback;
         },
         removeEventListener: jest.fn(),
       };
