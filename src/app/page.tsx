@@ -4,6 +4,7 @@ import { Legend } from "../components/legend";
 import { PointsTable } from "../components/points-table";
 import { FileOperations } from "../components/file-operations";
 import { ThemeToggle } from "../components/theme-toggle";
+import { ViewSourceOnGitHub } from "@/components/view-github-source";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
           <RingDiagram />
         </div>
         <div className="w-full lg:w-auto lg:max-w-xs space-y-6">
+          <ViewSourceOnGitHub repoUrl="https://github.com/chrisreddington/trend-radar" />
           <ThemeToggle />
           <FileOperations />
           <ControlPanel />
