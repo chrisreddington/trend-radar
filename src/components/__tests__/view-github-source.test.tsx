@@ -1,5 +1,15 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import { useRouter } from "next/router";
+
+jest.mock("next/router", () => ({
+  useRouter: jest.fn(),
+}));
+
+beforeEach(() => {
+  (useRouter as jest.Mock).mockReturnValue({ basePath: "" });
+});
+
 import { ViewSourceOnGitHub } from "../view-github-source";
 
 describe("ViewSourceOnGitHub", () => {
