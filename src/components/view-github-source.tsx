@@ -3,7 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { useRouter } from "next/router";
+
+// Removed useRouter import, using NEXT_PUBLIC_BASE_PATH instead
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 interface ViewSourceOnGitHubProperties {
   /** URL of the GitHub repository or file to view */
@@ -19,7 +21,6 @@ export function ViewSourceOnGitHub({
   repoUrl,
   ariaLabel = "View source on GitHub",
 }: ViewSourceOnGitHubProperties) {
-  const { basePath } = useRouter();
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4">
       <div className="flex flex-col items-center gap-4">
