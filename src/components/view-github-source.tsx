@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 
+// Removed useRouter import, using NEXT_PUBLIC_BASE_PATH instead
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 interface ViewSourceOnGitHubProperties {
   /** URL of the GitHub repository or file to view */
   repoUrl: string;
@@ -31,7 +34,7 @@ export function ViewSourceOnGitHub({
           <span className="flex justify-center items-center gap-2">
             {/* Light mode logo */}
             <Image
-              src="/github-mark.png"
+              src={`${basePath}/github-mark.png`}
               alt="GitHub logo"
               width={24}
               height={24}
@@ -39,7 +42,7 @@ export function ViewSourceOnGitHub({
             />
             {/* Dark mode logo */}
             <Image
-              src="/github-mark-white.png"
+              src={`${basePath}/github-mark-white.png`}
               alt="GitHub logo"
               width={24}
               height={24}
