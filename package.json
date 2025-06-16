@@ -36,7 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-jest": "^28.13.0",
+    "eslint-plugin-jest": "^28.14.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-react": "^7.37.5",
@@ -46,9 +46,9 @@
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "3.5.3",
     "tailwindcss": "^4",
-    "ts-jest": "^29.3.4",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.33.1"
+    "typescript-eslint": "^8.34.0"
   }
 }
