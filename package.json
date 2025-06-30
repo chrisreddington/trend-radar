@@ -38,17 +38,17 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jest": "^29.0.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.5.0",
+    "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-unicorn": "^59.0.1",
-    "jest": "^30.0.0",
+    "jest": "^30.0.3",
     "jest-environment-jsdom": "^30.0.2",
-    "prettier": "3.6.0",
+    "prettier": "3.6.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.35.0"
   }
 }
