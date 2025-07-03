@@ -176,6 +176,72 @@ describe("useDiagramStore", () => {
         expect(state.points[0].x).toBe(originalX);
         expect(state.points[0].y).toBe(originalY);
       });
+
+      it("should preserve exact position when preservePosition is true", () => {
+        const originalX = 100;
+        const originalY = 200;
+        useDiagramStore.setState({
+          points: [
+            {
+              ...mockPoint,
+              x: originalX,
+              y: originalY,
+            },
+          ],
+        });
+
+        // Update category/likelihood but preserve position
+        const updates = {
+          category: Category.Economic,
+          likelihood: Likelihood.Unlikely,
+          x: 150, // Explicit new coordinates
+          y: 250,
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates, true); // preservePosition = true
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].category).toBe(Category.Economic);
+        expect(state.points[0].likelihood).toBe(Likelihood.Unlikely);
+        // Position should be exactly as specified, not recalculated
+        expect(state.points[0].x).toBe(150);
+        expect(state.points[0].y).toBe(250);
+      });
+
+      it("should recalculate position when preservePosition is false (default)", () => {
+        const originalX = 100;
+        const originalY = 200;
+        useDiagramStore.setState({
+          points: [
+            {
+              ...mockPoint,
+              x: originalX,
+              y: originalY,
+            },
+          ],
+        });
+
+        // Update category/likelihood without preservePosition
+        const updates = {
+          category: Category.Economic,
+          likelihood: Likelihood.Unlikely,
+          x: 150, // These coordinates should be ignored
+          y: 250,
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates); // preservePosition defaults to false
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].category).toBe(Category.Economic);
+        expect(state.points[0].likelihood).toBe(Likelihood.Unlikely);
+        // Position should be recalculated, not the provided x/y
+        expect(state.points[0].x).not.toBe(150);
+        expect(state.points[0].y).not.toBe(250);
+        expect(state.points[0].x).not.toBe(originalX);
+        expect(state.points[0].y).not.toBe(originalY);
+      });
     });
 
     describe("removePoint", () => {

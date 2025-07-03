@@ -75,7 +75,9 @@ export const ControlPanel = () => {
 
   const handleCloseEdit = () => {
     selectPoint();
-    setEditingPoint(undefined); // Change this line to clear editing state
+    setEditingPoint(undefined);
+    // Re-expand the add new point section when closing edit
+    setIsCollapsed(false);
   };
 
   const commonInputClasses =

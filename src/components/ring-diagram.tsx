@@ -227,7 +227,7 @@ export const RingDiagram = () => {
           attempts++;
         }
         // Record the computed position in the store so the point won't move on re-render.
-        updatePoint(point.id, { ...point, x: pos.x, y: pos.y });
+        updatePoint(point.id, { ...point, x: pos.x, y: pos.y }, true);
       }
       placedPoints.push({ ...pos, size: pointSize });
 
@@ -302,13 +302,18 @@ export const RingDiagram = () => {
           );
 
           if (result) {
-            // Update the point with new position and derived category/likelihood
-            updatePoint(point.id, {
-              x: finalX,
-              y: finalY,
-              category: result.category,
-              likelihood: result.likelihood,
-            });
+            // Update the point with exact position and derived category/likelihood
+            // Use preservePosition flag to prevent automatic position recalculation
+            updatePoint(
+              point.id,
+              {
+                x: finalX,
+                y: finalY,
+                category: result.category,
+                likelihood: result.likelihood,
+              },
+              true,
+            ); // preservePosition = true
           } else {
             // If dropped outside bounds, revert to original position
             d3.select(this).attr("cx", pos.x).attr("cy", pos.y);

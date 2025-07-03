@@ -108,7 +108,11 @@ interface DiagramStore extends DiagramState {
     >,
   ) => boolean;
   /** Update an existing point's properties */
-  updatePoint: (id: string, updates: Partial<Point>) => void;
+  updatePoint: (
+    id: string,
+    updates: Partial<Point>,
+    preservePosition?: boolean,
+  ) => void;
   /** Remove a point from the diagram */
   removePoint: (id: string) => void;
   /** Select a point on the diagram */
@@ -177,7 +181,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
     return true; // Return true to indicate success
   },
 
-  updatePoint: (id, updates) =>
+  updatePoint: (id, updates, preservePosition = false) =>
     set((state) => {
       const existingPoint = state.points.find((p) => p.id === id);
       if (!existingPoint) return state;
@@ -185,8 +189,11 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
       // Create updated point with new values
       const updatedPoint = { ...existingPoint, ...updates };
 
-      // Only recalculate position if category or likelihood changed
-      if (updates.category !== undefined || updates.likelihood !== undefined) {
+      // Only recalculate position if category or likelihood changed AND preservePosition is false
+      if (
+        !preservePosition &&
+        (updates.category !== undefined || updates.likelihood !== undefined)
+      ) {
         const dims = getDiagramDimensions();
         const { categories, likelihoods } = dims;
 
