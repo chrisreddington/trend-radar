@@ -259,10 +259,10 @@ describe("RingDiagram", () => {
 
     it("should include addPointAtPosition in destructured store methods", () => {
       render(<RingDiagram />);
-      
+
       // Verify that the component has access to addPointAtPosition
       expect(mockedUseDiagramStore).toHaveBeenCalled();
-      
+
       // Check that the store was called with the correct destructuring
       const storeCallResult = mockedUseDiagramStore.mock.results[0].value;
       expect(storeCallResult.addPointAtPosition).toBe(mockAddPointAtPosition);

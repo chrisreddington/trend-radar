@@ -57,16 +57,16 @@ function coordinatesToCategoryAndLikelihood(
   x: number,
   y: number,
   size = 800,
-): { category: Category; likelihood: Likelihood } | null {
+): { category: Category; likelihood: Likelihood } | undefined {
   const dims = getDiagramDimensions(size);
   const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
 
   // Calculate radius from center
-  const radius = Math.sqrt(x * x + y * y);
+  const radius = Math.hypot(x, y);
 
   // Check if the point is within the diagram bounds
   if (radius > diagramRadius || radius < 0) {
-    return null;
+    return undefined;
   }
 
   // Calculate angle from coordinates
@@ -103,7 +103,9 @@ interface DiagramStore extends DiagramState {
     x: number,
     y: number,
     size: number,
-    pointData?: Partial<Omit<Point, "id" | "x" | "y" | "category" | "likelihood">>,
+    pointData?: Partial<
+      Omit<Point, "id" | "x" | "y" | "category" | "likelihood">
+    >,
   ) => boolean;
   /** Update an existing point's properties */
   updatePoint: (id: string, updates: Partial<Point>) => void;

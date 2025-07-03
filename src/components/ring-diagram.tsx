@@ -7,7 +7,13 @@ import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
-  const { points, selectedPoint, selectPoint, updatePoint, addPointAtPosition } = useDiagramStore();
+  const {
+    points,
+    selectedPoint,
+    selectPoint,
+    updatePoint,
+    addPointAtPosition,
+  } = useDiagramStore();
   const [size, setSize] = useState(800); // Default size
 
   // Handle responsive sizing based on viewport
@@ -53,18 +59,18 @@ export const RingDiagram = () => {
     /**
      * Handle clicks on the diagram to add points at specific coordinates
      */
-    const handleDiagramClick = (event: any) => {
+    const handleDiagramClick = (event: Event) => {
       // Check if the click was directly on a ring element (not on a point)
       const clickedElement = event.target as Element;
       const isPointClick = d3.select(clickedElement).classed("point");
-      
+
       if (isPointClick) {
         return; // Let point click handlers manage point selection
       }
 
       // Get mouse position relative to the diagram group
       const [x, y] = d3.pointer(event, diagramGroup.node());
-      
+
       // Add point at the clicked coordinates
       addPointAtPosition(x, y, size);
     };
@@ -276,7 +282,14 @@ export const RingDiagram = () => {
 
       pointElement.append("title").text(point.label);
     }
-  }, [points, selectedPoint, selectPoint, updatePoint, size]);
+  }, [
+    points,
+    selectedPoint,
+    selectPoint,
+    updatePoint,
+    addPointAtPosition,
+    size,
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full">
