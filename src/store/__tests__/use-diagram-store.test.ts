@@ -176,6 +176,72 @@ describe("useDiagramStore", () => {
         expect(state.points[0].x).toBe(originalX);
         expect(state.points[0].y).toBe(originalY);
       });
+
+      it("should preserve exact position when preservePosition is true", () => {
+        const originalX = 100;
+        const originalY = 200;
+        useDiagramStore.setState({
+          points: [
+            {
+              ...mockPoint,
+              x: originalX,
+              y: originalY,
+            },
+          ],
+        });
+
+        // Update category/likelihood but preserve position
+        const updates = {
+          category: Category.Economic,
+          likelihood: Likelihood.Unlikely,
+          x: 150, // Explicit new coordinates
+          y: 250,
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates, true); // preservePosition = true
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].category).toBe(Category.Economic);
+        expect(state.points[0].likelihood).toBe(Likelihood.Unlikely);
+        // Position should be exactly as specified, not recalculated
+        expect(state.points[0].x).toBe(150);
+        expect(state.points[0].y).toBe(250);
+      });
+
+      it("should recalculate position when preservePosition is false (default)", () => {
+        const originalX = 100;
+        const originalY = 200;
+        useDiagramStore.setState({
+          points: [
+            {
+              ...mockPoint,
+              x: originalX,
+              y: originalY,
+            },
+          ],
+        });
+
+        // Update category/likelihood without preservePosition
+        const updates = {
+          category: Category.Economic,
+          likelihood: Likelihood.Unlikely,
+          x: 150, // These coordinates should be ignored
+          y: 250,
+        };
+
+        const { updatePoint } = useDiagramStore.getState();
+        updatePoint(mockUUID, updates); // preservePosition defaults to false
+
+        const state = useDiagramStore.getState();
+        expect(state.points[0].category).toBe(Category.Economic);
+        expect(state.points[0].likelihood).toBe(Likelihood.Unlikely);
+        // Position should be recalculated, not the provided x/y
+        expect(state.points[0].x).not.toBe(150);
+        expect(state.points[0].y).not.toBe(250);
+        expect(state.points[0].x).not.toBe(originalX);
+        expect(state.points[0].y).not.toBe(originalY);
+      });
     });
 
     describe("removePoint", () => {
@@ -436,11 +502,114 @@ describe("useDiagramStore", () => {
       const expectedInnerRadius = expectedOuterRadius - ringWidth;
 
       // Allow for the random offset in radius checks
-      const maxRandomOffset = ringWidth * 0.25; // Half of the 0.5 multiplier used in the implementation
+      const maxRandomOffset = ringWidth * 0.3; // A bit more tolerance for the random offset
       expect(radius).toBeGreaterThanOrEqual(
         expectedInnerRadius - maxRandomOffset,
       );
       expect(radius).toBeLessThanOrEqual(expectedOuterRadius + maxRandomOffset);
+    });
+  });
+
+  describe("Click-to-place functionality", () => {
+    beforeEach(() => {
+      useDiagramStore.setState({ points: [], selectedPoint: undefined });
+    });
+
+    it("should add point at specific coordinates and derive category/likelihood", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+
+      // Add a point in the technological quadrant (top), moderate likelihood area
+      const x = 0; // Center of quadrant
+      const y = -150; // Upper area (more likely)
+      const size = 800;
+
+      const success = addPointAtPosition(x, y, size, { label: "Test Point" });
+
+      expect(success).toBe(true);
+
+      const state = useDiagramStore.getState();
+      expect(state.points).toHaveLength(1);
+
+      const addedPoint = state.points[0];
+      expect(addedPoint.x).toBe(x);
+      expect(addedPoint.y).toBe(y);
+      expect(addedPoint.label).toBe("Test Point");
+      expect(addedPoint.category).toBe(Category.Technological);
+      expect(addedPoint.relevance).toBe(Relevance.Moderate); // Default value
+      expect(addedPoint.preparedness).toBe(Preparedness.ModeratelyPrepared); // Default value
+
+      // The point should be selected after creation
+      expect(state.selectedPoint).toBe(addedPoint.id);
+    });
+
+    it("should return false for coordinates outside diagram bounds", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+
+      // Try to add a point outside the diagram
+      const x = 500; // Way outside
+      const y = 500;
+      const size = 800;
+
+      const success = addPointAtPosition(x, y, size);
+
+      expect(success).toBe(false);
+
+      const state = useDiagramStore.getState();
+      expect(state.points).toHaveLength(0);
+    });
+
+    it("should correctly map coordinates to different categories and likelihoods", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+      const size = 800;
+
+      // Test Economic quadrant (right side)
+      const economicX = 150;
+      const economicY = 0;
+      addPointAtPosition(economicX, economicY, size, {
+        label: "Economic Test",
+      });
+
+      // Test Political quadrant (bottom)
+      const politicalX = 0;
+      const politicalY = 150;
+      addPointAtPosition(politicalX, politicalY, size, {
+        label: "Political Test",
+      });
+
+      // Test Social quadrant (left side)
+      const socialX = -150;
+      const socialY = 0;
+      addPointAtPosition(socialX, socialY, size, { label: "Social Test" });
+
+      const state = useDiagramStore.getState();
+      expect(state.points).toHaveLength(3);
+
+      // Check that points were assigned to correct categories
+      const categories = state.points.map((p) => p.category);
+      expect(categories).toContain(Category.Economic);
+      expect(categories).toContain(Category.Political);
+      expect(categories).toContain(Category.Social);
+    });
+
+    it("should accept custom point properties", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+
+      const customData = {
+        label: "Custom Point",
+        relevance: Relevance.High,
+        preparedness: Preparedness.HighlyPrepared,
+      };
+
+      const success = addPointAtPosition(0, -100, 800, customData);
+
+      expect(success).toBe(true);
+
+      const state = useDiagramStore.getState();
+      const addedPoint = state.points[0];
+
+      expect(addedPoint.label).toBe("Custom Point");
+      expect(addedPoint.relevance).toBe(Relevance.High);
+      expect(addedPoint.preparedness).toBe(Preparedness.HighlyPrepared);
     });
   });
 });

@@ -18,6 +18,8 @@ jest.mock("d3", () => {
     text: jest.fn().mockReturnThis(),
     remove: jest.fn().mockReturnThis(),
     classed: jest.fn().mockReturnThis(),
+    call: jest.fn().mockReturnThis(),
+    node: jest.fn(),
     on: jest.fn().mockImplementation(function (event, handler) {
       this._handlers = this._handlers || {};
       this._handlers[event] = handler;
@@ -35,8 +37,14 @@ jest.mock("d3", () => {
     }),
   };
 
+  const mockDrag = jest.fn().mockReturnValue({
+    on: jest.fn().mockReturnThis(),
+  });
+
   return {
     select: jest.fn().mockReturnValue(mockD3Selection),
+    drag: mockDrag,
+    pointer: jest.fn().mockReturnValue([0, 0]),
   };
 });
 
@@ -240,6 +248,75 @@ describe("RingDiagram", () => {
             call[0].getAttribute("class")?.includes("w-full"),
         ),
       ).toBeTruthy();
+    });
+  });
+
+  describe("Drag functionality", () => {
+    const mockAddPointAtPosition = jest.fn();
+
+    beforeEach(() => {
+      mockAddPointAtPosition.mockClear();
+      mockSelectPoint.mockClear();
+      mockUpdatePoint.mockClear();
+
+      mockedUseDiagramStore.mockReturnValue({
+        points: mockPoints,
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+    });
+
+    it("should set up drag behavior on points", () => {
+      render(<RingDiagram />);
+
+      // Verify that drag behavior is attached to points
+      expect(d3.drag).toHaveBeenCalled();
+      const dragBehavior = (d3.drag as jest.Mock).mock.results[0].value;
+      expect(dragBehavior.on).toHaveBeenCalledWith(
+        "start",
+        expect.any(Function),
+      );
+      expect(dragBehavior.on).toHaveBeenCalledWith(
+        "drag",
+        expect.any(Function),
+      );
+      expect(dragBehavior.on).toHaveBeenCalledWith("end", expect.any(Function));
+    });
+
+    it("should call the drag behavior on point elements", () => {
+      render(<RingDiagram />);
+
+      // Verify that the call method is used to attach drag behavior
+      const mockSelection = (d3.select as jest.Mock).mock.results[0].value;
+      expect(mockSelection.call).toHaveBeenCalled();
+    });
+  });
+
+  describe("Click-to-place functionality", () => {
+    const mockAddPointAtPosition = jest.fn();
+
+    beforeEach(() => {
+      mockAddPointAtPosition.mockClear();
+      mockedUseDiagramStore.mockReturnValue({
+        points: mockPoints,
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+    });
+
+    it("should include addPointAtPosition in destructured store methods", () => {
+      render(<RingDiagram />);
+
+      // Verify that the component has access to addPointAtPosition
+      expect(mockedUseDiagramStore).toHaveBeenCalled();
+
+      // Check that the store was called with the correct destructuring
+      const storeCallResult = mockedUseDiagramStore.mock.results[0].value;
+      expect(storeCallResult.addPointAtPosition).toBe(mockAddPointAtPosition);
     });
   });
 });

@@ -1,13 +1,22 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { useDiagramStore } from "../store/use-diagram-store";
+import {
+  useDiagramStore,
+  coordinatesToCategoryAndLikelihood,
+} from "../store/use-diagram-store";
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
-  const { points, selectedPoint, selectPoint, updatePoint } = useDiagramStore();
+  const {
+    points,
+    selectedPoint,
+    selectPoint,
+    updatePoint,
+    addPointAtPosition,
+  } = useDiagramStore();
   const [size, setSize] = useState(800); // Default size
 
   // Handle responsive sizing based on viewport
@@ -49,6 +58,25 @@ export const RingDiagram = () => {
     const diagramGroup = svg
       .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
       .append("g");
+
+    /**
+     * Handle clicks on the diagram to add points at specific coordinates
+     */
+    const handleDiagramClick = (event: Event) => {
+      // Check if the click was directly on a ring element (not on a point)
+      const clickedElement = event.target as Element;
+      const isPointClick = d3.select(clickedElement).classed("point");
+
+      if (isPointClick) {
+        return; // Let point click handlers manage point selection
+      }
+
+      // Get mouse position relative to the diagram group
+      const [x, y] = d3.pointer(event, diagramGroup.node());
+
+      // Add point at the clicked coordinates
+      addPointAtPosition(x, y, size);
+    };
 
     // Add background for click handling
     diagramGroup
@@ -114,14 +142,7 @@ export const RingDiagram = () => {
         .attr("stroke", RING_COLORS[colorIndex].stroke)
         .attr("stroke-width", size < 500 ? 1 : 1.5)
         .style("cursor", "pointer")
-        .on("click", (event) => {
-          // Check if the click was directly on the ring (not on a point)
-          const clickedElement = event.target;
-          const clickedPoint = d3.select(clickedElement).classed("point");
-          if (!clickedPoint) {
-            selectPoint();
-          }
-        });
+        .on("click", handleDiagramClick);
 
       // Draw quadrant lines
       const angleStep = (2 * Math.PI) / categories.length;
@@ -144,7 +165,7 @@ export const RingDiagram = () => {
           .attr("stroke", RING_COLORS[colorIndex].stroke)
           .attr("stroke-width", size < 500 ? 0.8 : 1)
           .style("cursor", "pointer")
-          .on("click", () => selectPoint());
+          .on("click", handleDiagramClick);
       }
     }
 
@@ -206,7 +227,7 @@ export const RingDiagram = () => {
           attempts++;
         }
         // Record the computed position in the store so the point won't move on re-render.
-        updatePoint(point.id, { ...point, x: pos.x, y: pos.y });
+        updatePoint(point.id, { ...point, x: pos.x, y: pos.y }, true);
       }
       placedPoints.push({ ...pos, size: pointSize });
 
@@ -246,7 +267,64 @@ export const RingDiagram = () => {
           .on("click", () => selectPoint(point.id));
       }
 
+      // Handle drag behavior for moving points
+      const handleDrag = d3
+        .drag<SVGCircleElement, unknown>()
+        .on("start", function () {
+          // Select the point when dragging starts
+          selectPoint(point.id);
+          // Add visual feedback during drag
+          d3.select(this)
+            .attr("stroke", "var(--highlight)")
+            .attr("stroke-width", size < 500 ? 3 : 4)
+            .style("cursor", "grabbing");
+        })
+        .on("drag", function (event) {
+          // Update position during drag
+          const [newX, newY] = d3.pointer(
+            event,
+            diagramGroup.node?.() || undefined,
+          );
+          d3.select(this).attr("cx", newX).attr("cy", newY);
+        })
+        .on("end", function (event) {
+          // Get final position after drag
+          const [finalX, finalY] = d3.pointer(
+            event,
+            diagramGroup.node?.() || undefined,
+          );
+
+          // Check if the position is within diagram bounds and convert to category/likelihood
+          const result = coordinatesToCategoryAndLikelihood(
+            finalX,
+            finalY,
+            size,
+          );
+
+          if (result) {
+            // Update the point with exact position and derived category/likelihood
+            // Use preservePosition flag to prevent automatic position recalculation
+            updatePoint(
+              point.id,
+              {
+                x: finalX,
+                y: finalY,
+                category: result.category,
+                likelihood: result.likelihood,
+              },
+              true,
+            ); // preservePosition = true
+          } else {
+            // If dropped outside bounds, revert to original position
+            d3.select(this).attr("cx", pos.x).attr("cy", pos.y);
+          }
+
+          // Reset cursor
+          d3.select(this).style("cursor", "pointer");
+        });
+
       pointElement
+        .call(handleDrag)
         .on("mouseover", function () {
           d3.select(this)
             .attr("stroke", "var(--highlight)")
@@ -260,11 +338,22 @@ export const RingDiagram = () => {
               .attr("opacity", selectedPoint ? 0.6 : 1);
           }
         })
-        .on("click", () => selectPoint(point.id));
+        .on("click", function (event) {
+          // Only handle click if it wasn't a drag operation
+          if (event?.defaultPrevented) return;
+          selectPoint(point.id);
+        });
 
       pointElement.append("title").text(point.label);
     }
-  }, [points, selectedPoint, selectPoint, updatePoint, size]);
+  }, [
+    points,
+    selectedPoint,
+    selectPoint,
+    updatePoint,
+    addPointAtPosition,
+    size,
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full">
