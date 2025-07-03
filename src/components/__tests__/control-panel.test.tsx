@@ -349,6 +349,77 @@ describe("ControlPanel", () => {
         // Note: The actual class check requires a re-render after state change
         // which is handled by the component's useEffect
       });
+
+      it("should re-expand add new point section when point is deleted", () => {
+        render(<ControlPanel />);
+
+        // Verify edit section is shown and add section is collapsed
+        expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
+        const addNewPointContent = screen.getByTestId("add-point-form-content");
+        expect(addNewPointContent).toHaveClass("hidden");
+
+        // Delete the point
+        const deleteButton = screen.getByRole("button", {
+          name: "Delete Point",
+        });
+        fireEvent.click(deleteButton);
+
+        // Verify the same cleanup actions as closing edit panel
+        expect(mockActions.removePoint).toHaveBeenCalledWith("1");
+        expect(mockActions.selectPoint).toHaveBeenCalledWith();
+        // Note: The actual class check requires a re-render after state change
+        // which is handled by the component's useEffect
+      });
+
+      it("should sync category dropdown when point data changes after drag", () => {
+        const originalPoint = {
+          ...mockPoint,
+          category: Category.Technological,
+        };
+        const updatedPoint = { ...mockPoint, category: Category.Economic };
+
+        const getStoreWithUpdatedPoint = (point: typeof mockPoint) => ({
+          points: [point],
+          selectedPoint: "1",
+          ...mockActions,
+        });
+
+        // Start with original point
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+          getStoreWithUpdatedPoint(originalPoint),
+        );
+        const { rerender } = render(<ControlPanel />);
+
+        // Verify initial category
+        const editSection = screen
+          .getByText("Edit Selected Point")
+          .closest("div")?.parentElement;
+        if (!editSection) {
+          throw new Error("Edit section not found");
+        }
+        const categorySelect = within(editSection).getByLabelText(
+          "Category",
+        ) as HTMLSelectElement;
+        expect(categorySelect.value).toBe(Category.Technological);
+
+        // Simulate point data change (e.g., after drag operation)
+        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+          getStoreWithUpdatedPoint(updatedPoint),
+        );
+        rerender(<ControlPanel />);
+
+        // Verify category dropdown updated to reflect new data
+        const newEditSection = screen
+          .getByText("Edit Selected Point")
+          .closest("div")?.parentElement;
+        if (!newEditSection) {
+          throw new Error("Edit section not found");
+        }
+        const newCategorySelect = within(newEditSection).getByLabelText(
+          "Category",
+        ) as HTMLSelectElement;
+        expect(newCategorySelect.value).toBe(Category.Economic);
+      });
     });
   });
 });

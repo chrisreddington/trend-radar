@@ -27,7 +27,14 @@ export const ControlPanel = () => {
   useEffect(() => {
     if (selectedPoint) {
       const point = points.find((p) => p.id === selectedPoint);
-      if (point && (!editingPoint || editingPoint.id !== point.id)) {
+      if (
+        point &&
+        (!editingPoint ||
+          editingPoint.id !== point.id ||
+          editingPoint.category !== point.category ||
+          editingPoint.likelihood !== point.likelihood)
+      ) {
+        // Update editingPoint when point data changes (e.g., after drag operations)
         setEditingPoint({ ...point });
       }
       // Auto-collapse the "Add New Point" section when a point is selected for editing
@@ -78,6 +85,16 @@ export const ControlPanel = () => {
     setEditingPoint(undefined);
     // Re-expand the add new point section when closing edit
     setIsCollapsed(false);
+  };
+
+  const handleDeletePoint = () => {
+    if (selectedPoint) {
+      removePoint(selectedPoint);
+      // Apply same cleanup as closing edit panel
+      selectPoint();
+      setEditingPoint(undefined);
+      setIsCollapsed(false);
+    }
   };
 
   const commonInputClasses =
@@ -380,10 +397,7 @@ export const ControlPanel = () => {
             "Update Point",
             true,
           )}
-          <button
-            onClick={() => selectedPoint && removePoint(selectedPoint)}
-            className={deleteButtonClasses}
-          >
+          <button onClick={handleDeletePoint} className={deleteButtonClasses}>
             Delete Point
           </button>
         </div>
