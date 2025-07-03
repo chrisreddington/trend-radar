@@ -14,6 +14,7 @@ export const ControlPanel = () => {
   } = useDiagramStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | undefined>();
+  const [isUserEditing, setIsUserEditing] = useState(false);
   const [newPoint, setNewPoint] = useState<Omit<Point, "id">>({
     label: "",
     category: Category.Technological,
@@ -31,18 +32,22 @@ export const ControlPanel = () => {
         point &&
         (!editingPoint ||
           editingPoint.id !== point.id ||
-          editingPoint.category !== point.category ||
-          editingPoint.likelihood !== point.likelihood)
+          (!isUserEditing &&
+            (editingPoint.category !== point.category ||
+              editingPoint.likelihood !== point.likelihood)))
       ) {
         // Update editingPoint when point data changes (e.g., after drag operations)
+        // but don't reset user's active edits
         setEditingPoint({ ...point });
+        setIsUserEditing(false);
       }
       // Auto-collapse the "Add New Point" section when a point is selected for editing
       setIsCollapsed(true);
     } else if (editingPoint) {
       setEditingPoint(undefined);
+      setIsUserEditing(false);
     }
-  }, [selectedPoint, points, editingPoint]);
+  }, [selectedPoint, points, editingPoint, isUserEditing]);
 
   const handleAddPoint = (event: React.FormEvent) => {
     event.preventDefault();
@@ -61,7 +66,32 @@ export const ControlPanel = () => {
   const handleUpdatePoint = (event: React.FormEvent) => {
     event.preventDefault();
     if (selectedPoint && editingPoint) {
-      updatePoint(selectedPoint, editingPoint);
+      const originalPoint = points.find((p) => p.id === selectedPoint);
+      if (!originalPoint) return;
+
+      // Check if category or likelihood changed
+      const categoryChanged = editingPoint.category !== originalPoint.category;
+      const likelihoodChanged =
+        editingPoint.likelihood !== originalPoint.likelihood;
+
+      // Only pass the changed fields to updatePoint
+      const updates: Partial<Point> = {};
+      if (editingPoint.label !== originalPoint.label)
+        updates.label = editingPoint.label;
+      if (editingPoint.category !== originalPoint.category)
+        updates.category = editingPoint.category;
+      if (editingPoint.likelihood !== originalPoint.likelihood)
+        updates.likelihood = editingPoint.likelihood;
+      if (editingPoint.relevance !== originalPoint.relevance)
+        updates.relevance = editingPoint.relevance;
+      if (editingPoint.preparedness !== originalPoint.preparedness)
+        updates.preparedness = editingPoint.preparedness;
+
+      // Preserve position if only non-spatial properties changed
+      const preservePosition = !categoryChanged && !likelihoodChanged;
+
+      updatePoint(selectedPoint, updates, preservePosition);
+      setIsUserEditing(false);
     }
   };
 
@@ -71,6 +101,7 @@ export const ControlPanel = () => {
   ) => {
     if (isEditing && editingPoint) {
       setEditingPoint({ ...editingPoint, label: event.target.value });
+      setIsUserEditing(true);
     } else {
       setNewPoint({ ...newPoint, label: event.target.value });
     }
@@ -83,6 +114,7 @@ export const ControlPanel = () => {
   const handleCloseEdit = () => {
     selectPoint();
     setEditingPoint(undefined);
+    setIsUserEditing(false);
     // Re-expand the add new point section when closing edit
     setIsCollapsed(false);
   };
@@ -93,6 +125,7 @@ export const ControlPanel = () => {
       // Apply same cleanup as closing edit panel
       selectPoint();
       setEditingPoint(undefined);
+      setIsUserEditing(false);
       setIsCollapsed(false);
     }
   };
@@ -215,10 +248,13 @@ export const ControlPanel = () => {
           value={point.category}
           onChange={(event) =>
             isEditing && editingPoint
-              ? setEditingPoint({
-                  ...editingPoint,
-                  category: event.target.value as Category,
-                })
+              ? (() => {
+                  setEditingPoint({
+                    ...editingPoint,
+                    category: event.target.value as Category,
+                  });
+                  setIsUserEditing(true);
+                })()
               : setNewPoint({
                   ...newPoint,
                   category: event.target.value as Category,
@@ -253,6 +289,7 @@ export const ControlPanel = () => {
             const newValue = getLikelihoodFromValue(Number(event.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, likelihood: newValue });
+              setIsUserEditing(true);
             } else {
               setNewPoint({ ...newPoint, likelihood: newValue });
             }
@@ -283,6 +320,7 @@ export const ControlPanel = () => {
             const newValue = getRelevanceFromValue(Number(event.target.value));
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, relevance: newValue });
+              setIsUserEditing(true);
             } else {
               setNewPoint({ ...newPoint, relevance: newValue });
             }
@@ -315,6 +353,7 @@ export const ControlPanel = () => {
             );
             if (isEditing && editingPoint) {
               setEditingPoint({ ...editingPoint, preparedness: newValue });
+              setIsUserEditing(true);
             } else {
               setNewPoint({ ...newPoint, preparedness: newValue });
             }
@@ -336,38 +375,16 @@ export const ControlPanel = () => {
 
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <div className="p-4 cursor-pointer">
+      <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          <button
-            className="w-full flex justify-between items-center focus:outline-none cursor-pointer"
-            onClick={toggleCollapse}
-            aria-expanded={!isCollapsed}
-            aria-label="Add New Point Toggle"
-          >
-            Add New Point
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`transform transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`}
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
+          Points Management
         </h2>
       </div>
       {/* Show edit section first when a point is selected */}
       {editingPoint && (
         <div className="p-6 pt-0">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">
               Edit Selected Point
             </h3>
             <button
@@ -409,6 +426,33 @@ export const ControlPanel = () => {
         data-testid="add-point-form-content"
         className={`p-6 ${editingPoint ? "pt-0 border-t border-gray-300 dark:border-gray-600" : "pt-0"} ${isCollapsed ? "hidden" : ""}`}
       >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">
+            Add New Point
+          </h3>
+          <button
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+            onClick={toggleCollapse}
+            aria-expanded={!isCollapsed}
+            aria-label="Add New Point Toggle"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`transform transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
         <div>
           {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
         </div>

@@ -231,6 +231,63 @@ describe("ControlPanel", () => {
         expect.objectContaining({
           label: "Updated Point",
         }),
+        true, // preservePosition should be true since only label changed
+      );
+    });
+
+    it("should preserve position when only non-spatial properties change", () => {
+      render(<ControlPanel />);
+
+      const editSection = screen
+        .getByText("Edit Selected Point")
+        .closest("div")?.parentElement;
+      if (!editSection) {
+        throw new Error("Edit section not found");
+      }
+      const labelInput = within(editSection).getByLabelText("Label");
+      const relevanceSlider =
+        within(editSection).getByTestId("relevance-slider");
+
+      fireEvent.change(labelInput, { target: { value: "Updated Point" } });
+      fireEvent.change(relevanceSlider, { target: { value: "80" } });
+
+      const updateButton = screen.getByRole("button", { name: "Update Point" });
+      fireEvent.click(updateButton);
+
+      expect(mockActions.updatePoint).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({
+          label: "Updated Point",
+          relevance: Relevance.High,
+        }),
+        true, // preservePosition should be true since category and likelihood didn't change
+      );
+    });
+
+    it("should not preserve position when category changes", () => {
+      render(<ControlPanel />);
+
+      const editSection = screen
+        .getByText("Edit Selected Point")
+        .closest("div")?.parentElement;
+      if (!editSection) {
+        throw new Error("Edit section not found");
+      }
+      const categorySelect = within(editSection).getByLabelText("Category");
+
+      fireEvent.change(categorySelect, {
+        target: { value: Category.Economic },
+      });
+
+      const updateButton = screen.getByRole("button", { name: "Update Point" });
+      fireEvent.click(updateButton);
+
+      expect(mockActions.updatePoint).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({
+          category: Category.Economic,
+        }),
+        false, // preservePosition should be false since category changed
       );
     });
 
