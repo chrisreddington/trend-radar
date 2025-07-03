@@ -8,6 +8,21 @@ import {
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
+/**
+ * Touch interaction state for managing long press and drag functionality
+ */
+interface TouchState {
+  isLongPressing: boolean;
+  isDragActive: boolean;
+  startTime: number;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+  pointId: string | undefined;
+  longPressTimer: number | undefined;
+}
+
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
   const {
@@ -18,6 +33,23 @@ export const RingDiagram = () => {
     addPointAtPosition,
   } = useDiagramStore();
   const [size, setSize] = useState(800); // Default size
+
+  // Touch interaction state
+  const [touchState, setTouchState] = useState<TouchState>({
+    isLongPressing: false,
+    isDragActive: false,
+    startTime: 0,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+    pointId: undefined,
+    longPressTimer: undefined,
+  });
+
+  // Constants for touch interaction
+  const LONG_PRESS_DURATION = 600; // 600ms for long press
+  const TOUCH_MOVE_THRESHOLD = 10; // pixels - movement threshold to cancel long press
 
   // Handle responsive sizing based on viewport
   const updateSize = useCallback(() => {
@@ -42,6 +74,167 @@ export const RingDiagram = () => {
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
   }, [updateSize]);
+
+  /**
+   * Handles touch start events for long press detection
+   */
+  const handleTouchStart = useCallback(
+    (
+      event: TouchEvent,
+      pointId: string,
+      diagramGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+    ) => {
+      const touch = event.touches[0];
+      const [x, y] = d3.pointer(touch, diagramGroup.node());
+
+      setTouchState((previous) => {
+        // Clear any existing timer
+        if (previous.longPressTimer) {
+          clearTimeout(previous.longPressTimer);
+        }
+
+        // Start new long press timer
+        const timer = globalThis.setTimeout(() => {
+          setTouchState((current) => ({
+            ...current,
+            isLongPressing: true,
+            isDragActive: true,
+          }));
+
+          // Provide haptic feedback if available
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
+
+          // Select the point when long press activates
+          selectPoint(pointId);
+        }, LONG_PRESS_DURATION);
+
+        return {
+          ...previous,
+          startTime: Date.now(),
+          startX: x,
+          startY: y,
+          currentX: x,
+          currentY: y,
+          pointId,
+          longPressTimer: timer,
+          isLongPressing: false,
+          isDragActive: false,
+        };
+      });
+    },
+    [selectPoint],
+  );
+
+  /**
+   * Handles touch move events during long press detection and dragging
+   */
+  const handleTouchMove = useCallback(
+    (
+      event: TouchEvent,
+      diagramGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+    ) => {
+      event.preventDefault(); // Prevent scrolling during potential drag
+
+      const touch = event.touches[0];
+      const [x, y] = d3.pointer(touch, diagramGroup.node());
+
+      setTouchState((previous) => {
+        // If we're in long press detection phase
+        if (!previous.isLongPressing && previous.longPressTimer) {
+          const moveDistance = Math.hypot(
+            x - previous.startX,
+            y - previous.startY,
+          );
+
+          // Cancel long press if moved too far
+          if (moveDistance > TOUCH_MOVE_THRESHOLD) {
+            clearTimeout(previous.longPressTimer);
+            return {
+              ...previous,
+              longPressTimer: undefined,
+            };
+          }
+        }
+
+        // Update current position for dragging
+        if (previous.isDragActive) {
+          return {
+            ...previous,
+            currentX: x,
+            currentY: y,
+          };
+        }
+
+        return previous;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Handles touch end events for completing drags or normal taps
+   */
+  const handleTouchEnd = useCallback(
+    (event: TouchEvent, pointId: string) => {
+      setTouchState((previous) => {
+        // Clear any pending long press timer
+        if (previous.longPressTimer) {
+          clearTimeout(previous.longPressTimer);
+        }
+
+        // If we were dragging, handle the drag completion
+        if (previous.isDragActive && previous.pointId) {
+          const result = coordinatesToCategoryAndLikelihood(
+            previous.currentX,
+            previous.currentY,
+            size,
+          );
+
+          if (result) {
+            // Update the point with exact position and derived category/likelihood
+            updatePoint(
+              previous.pointId,
+              {
+                x: previous.currentX,
+                y: previous.currentY,
+                category: result.category,
+                likelihood: result.likelihood,
+              },
+              true, // preservePosition = true
+            );
+          }
+        } else if (!previous.isLongPressing) {
+          // Handle normal tap (not a long press or drag)
+          selectPoint(pointId);
+        }
+
+        // Reset touch state
+        return {
+          isLongPressing: false,
+          isDragActive: false,
+          startTime: 0,
+          startX: 0,
+          startY: 0,
+          currentX: 0,
+          currentY: 0,
+          pointId: undefined,
+          longPressTimer: undefined,
+        };
+      });
+    },
+    [selectPoint, updatePoint, size],
+  );
+
+  // Clean up touch timers on unmount
+  useEffect(() => {
+    return () => {
+      if (touchState.longPressTimer) {
+        clearTimeout(touchState.longPressTimer);
+      }
+    };
+  }, [touchState.longPressTimer]);
 
   // Render diagram whenever size or data changes
   useEffect(() => {
@@ -344,7 +537,42 @@ export const RingDiagram = () => {
           selectPoint(point.id);
         });
 
+      // Add touch event handlers for long press drag functionality
+      pointElement.node()?.addEventListener(
+        "touchstart",
+        (event) => {
+          handleTouchStart(event, point.id, diagramGroup);
+        },
+        { passive: false },
+      );
+
+      pointElement.node()?.addEventListener(
+        "touchmove",
+        (event) => {
+          handleTouchMove(event, diagramGroup);
+        },
+        { passive: false },
+      );
+
+      pointElement.node()?.addEventListener(
+        "touchend",
+        (event) => {
+          handleTouchEnd(event, point.id);
+        },
+        { passive: true },
+      );
+
       pointElement.append("title").text(point.label);
+
+      // Update point position during touch drag
+      if (touchState.isDragActive && touchState.pointId === point.id) {
+        pointElement
+          .attr("cx", touchState.currentX)
+          .attr("cy", touchState.currentY)
+          .attr("stroke", "var(--highlight)")
+          .attr("stroke-width", size < 500 ? 3 : 4)
+          .style("cursor", "grabbing");
+      }
     }
   }, [
     points,
@@ -353,6 +581,10 @@ export const RingDiagram = () => {
     updatePoint,
     addPointAtPosition,
     size,
+    touchState,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
   ]);
 
   return (
