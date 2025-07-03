@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Point, DiagramState } from "../types";
-import { Category, Likelihood } from "../types";
+import { Category, Likelihood, Relevance, Preparedness } from "../types";
 import { saveDiagramToFile, loadDiagramFromFile } from "../utils/file-handlers";
 
 function getDiagramDimensions(size = 800) {
@@ -50,11 +50,61 @@ function calculateRandomPosition(point: Omit<Point, "id">) {
 }
 
 /**
+ * Convert x,y coordinates to category and likelihood
+ * This is the inverse of the positioning logic
+ */
+function coordinatesToCategoryAndLikelihood(
+  x: number,
+  y: number,
+  size = 800,
+): { category: Category; likelihood: Likelihood } | null {
+  const dims = getDiagramDimensions(size);
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
+
+  // Calculate radius from center
+  const radius = Math.sqrt(x * x + y * y);
+
+  // Check if the point is within the diagram bounds
+  if (radius > diagramRadius || radius < 0) {
+    return null;
+  }
+
+  // Calculate angle from coordinates
+  let angle = Math.atan2(y, x);
+  // Normalize angle to match our coordinate system (starting from top, going clockwise)
+  angle = angle + Math.PI / 2;
+  if (angle < 0) angle += 2 * Math.PI;
+  if (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+
+  // Determine category from angle
+  const categoryIndex = Math.floor(angle / angleStep);
+  const clampedCategoryIndex = Math.min(categoryIndex, categories.length - 1);
+  const category = categories[clampedCategoryIndex];
+
+  // Determine likelihood from radius
+  const likelihoodIndex = Math.floor((diagramRadius - radius) / ringWidth);
+  const clampedLikelihoodIndex = Math.min(
+    Math.max(likelihoodIndex, 0),
+    likelihoods.length - 1,
+  );
+  const likelihood = likelihoods[clampedLikelihoodIndex];
+
+  return { category, likelihood };
+}
+
+/**
  * Store interface for managing diagram state and actions
  */
 interface DiagramStore extends DiagramState {
   /** Add a new point to the diagram */
   addPoint: (point: Omit<Point, "id">) => void;
+  /** Add a new point at specific coordinates, deriving category and likelihood from position */
+  addPointAtPosition: (
+    x: number,
+    y: number,
+    size: number,
+    pointData?: Partial<Omit<Point, "id" | "x" | "y" | "category" | "likelihood">>,
+  ) => boolean;
   /** Update an existing point's properties */
   updatePoint: (id: string, updates: Partial<Point>) => void;
   /** Remove a point from the diagram */
@@ -97,6 +147,33 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
         ],
       };
     }),
+
+  addPointAtPosition: (x, y, size, pointData = {}) => {
+    // Convert coordinates to category and likelihood
+    const result = coordinatesToCategoryAndLikelihood(x, y, size);
+    if (!result) {
+      return false; // Invalid position, don't add point
+    }
+
+    const { category, likelihood } = result;
+    const newPoint: Point = {
+      id: crypto.randomUUID(),
+      label: pointData.label || "",
+      category,
+      likelihood,
+      relevance: pointData.relevance || Relevance.Moderate,
+      preparedness: pointData.preparedness || Preparedness.ModeratelyPrepared,
+      x,
+      y,
+    };
+
+    set((state) => ({
+      points: [...state.points, newPoint],
+      selectedPoint: newPoint.id, // Select the newly added point
+    }));
+
+    return true; // Return true to indicate success
+  },
 
   updatePoint: (id, updates) =>
     set((state) => {

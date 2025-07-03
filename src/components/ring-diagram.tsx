@@ -7,7 +7,7 @@ import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
-  const { points, selectedPoint, selectPoint, updatePoint } = useDiagramStore();
+  const { points, selectedPoint, selectPoint, updatePoint, addPointAtPosition } = useDiagramStore();
   const [size, setSize] = useState(800); // Default size
 
   // Handle responsive sizing based on viewport
@@ -49,6 +49,25 @@ export const RingDiagram = () => {
     const diagramGroup = svg
       .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
       .append("g");
+
+    /**
+     * Handle clicks on the diagram to add points at specific coordinates
+     */
+    const handleDiagramClick = (event: any) => {
+      // Check if the click was directly on a ring element (not on a point)
+      const clickedElement = event.target as Element;
+      const isPointClick = d3.select(clickedElement).classed("point");
+      
+      if (isPointClick) {
+        return; // Let point click handlers manage point selection
+      }
+
+      // Get mouse position relative to the diagram group
+      const [x, y] = d3.pointer(event, diagramGroup.node());
+      
+      // Add point at the clicked coordinates
+      addPointAtPosition(x, y, size);
+    };
 
     // Add background for click handling
     diagramGroup
@@ -114,14 +133,7 @@ export const RingDiagram = () => {
         .attr("stroke", RING_COLORS[colorIndex].stroke)
         .attr("stroke-width", size < 500 ? 1 : 1.5)
         .style("cursor", "pointer")
-        .on("click", (event) => {
-          // Check if the click was directly on the ring (not on a point)
-          const clickedElement = event.target;
-          const clickedPoint = d3.select(clickedElement).classed("point");
-          if (!clickedPoint) {
-            selectPoint();
-          }
-        });
+        .on("click", handleDiagramClick);
 
       // Draw quadrant lines
       const angleStep = (2 * Math.PI) / categories.length;
@@ -144,7 +156,7 @@ export const RingDiagram = () => {
           .attr("stroke", RING_COLORS[colorIndex].stroke)
           .attr("stroke-width", size < 500 ? 0.8 : 1)
           .style("cursor", "pointer")
-          .on("click", () => selectPoint());
+          .on("click", handleDiagramClick);
       }
     }
 
