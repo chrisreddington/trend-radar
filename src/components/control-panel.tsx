@@ -41,8 +41,7 @@ export const ControlPanel = () => {
         setEditingPoint({ ...point });
         setIsUserEditing(false);
       }
-      // Auto-collapse the "Add New Point" section when a point is selected for editing
-      setIsCollapsed(true);
+      // Don't auto-collapse when a point is selected - let user control panel state
     } else if (editingPoint) {
       setEditingPoint(undefined);
       setIsUserEditing(false);
@@ -74,14 +73,12 @@ export const ControlPanel = () => {
       const likelihoodChanged =
         editingPoint.likelihood !== originalPoint.likelihood;
 
-      // Only pass the changed fields to updatePoint
+      // Only include fields that have actually changed
       const updates: Partial<Point> = {};
       if (editingPoint.label !== originalPoint.label)
         updates.label = editingPoint.label;
-      if (editingPoint.category !== originalPoint.category)
-        updates.category = editingPoint.category;
-      if (editingPoint.likelihood !== originalPoint.likelihood)
-        updates.likelihood = editingPoint.likelihood;
+      if (categoryChanged) updates.category = editingPoint.category;
+      if (likelihoodChanged) updates.likelihood = editingPoint.likelihood;
       if (editingPoint.relevance !== originalPoint.relevance)
         updates.relevance = editingPoint.relevance;
       if (editingPoint.preparedness !== originalPoint.preparedness)
@@ -115,18 +112,16 @@ export const ControlPanel = () => {
     selectPoint();
     setEditingPoint(undefined);
     setIsUserEditing(false);
-    // Re-expand the add new point section when closing edit
-    setIsCollapsed(false);
+    // Keep the panel expanded when closing edit - user can manually collapse if needed
   };
 
   const handleDeletePoint = () => {
     if (selectedPoint) {
       removePoint(selectedPoint);
-      // Apply same cleanup as closing edit panel
+      // Keep the panel expanded when deleting point - user can manually collapse if needed
       selectPoint();
       setEditingPoint(undefined);
       setIsUserEditing(false);
-      setIsCollapsed(false);
     }
   };
 
@@ -376,65 +371,15 @@ export const ControlPanel = () => {
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
       <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          Points Management
-        </h2>
-      </div>
-      {/* Show edit section first when a point is selected */}
-      {editingPoint && (
-        <div className="p-6 pt-0">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">
-              Edit Selected Point
-            </h3>
-            <button
-              onClick={handleCloseEdit}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
-              aria-label="Close edit panel"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          {renderPointForm(
-            editingPoint,
-            handleUpdatePoint,
-            "Update Point",
-            true,
-          )}
-          <button onClick={handleDeletePoint} className={deleteButtonClasses}>
-            Delete Point
-          </button>
-        </div>
-      )}
-
-      {/* Show add new point section */}
-      <div
-        id="control-panel-content"
-        data-testid="add-point-form-content"
-        className={`p-6 ${editingPoint ? "pt-0 border-t border-gray-300 dark:border-gray-600" : "pt-0"} ${isCollapsed ? "hidden" : ""}`}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">
-            Add New Point
-          </h3>
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Points Management
+          </h2>
           <button
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
             onClick={toggleCollapse}
             aria-expanded={!isCollapsed}
-            aria-label="Add New Point Toggle"
+            aria-label="Points Management Toggle"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -453,8 +398,61 @@ export const ControlPanel = () => {
             </svg>
           </button>
         </div>
-        <div>
-          {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
+      </div>
+
+      <div className={`${isCollapsed ? "hidden" : ""}`}>
+        {/* Show edit section first when a point is selected */}
+        {editingPoint && (
+          <div className="p-6 pt-0">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-base font-medium text-gray-800 dark:text-gray-200">
+                Edit Selected Point
+              </h3>
+              <button
+                onClick={handleCloseEdit}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+                aria-label="Close edit panel"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            {renderPointForm(
+              editingPoint,
+              handleUpdatePoint,
+              "Update Point",
+              true,
+            )}
+            <button onClick={handleDeletePoint} className={deleteButtonClasses}>
+              Delete Point
+            </button>
+          </div>
+        )}
+
+        {/* Show add new point section */}
+        <div
+          id="control-panel-content"
+          data-testid="add-point-form-content"
+          className={`p-6 ${editingPoint ? "pt-0 border-t border-gray-300 dark:border-gray-600" : "pt-0"}`}
+        >
+          <h3 className="text-base font-medium text-gray-800 dark:text-gray-200 mb-4">
+            Add New Point
+          </h3>
+          <div>
+            {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
+          </div>
         </div>
       </div>
     </div>
