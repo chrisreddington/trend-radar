@@ -53,7 +53,7 @@ function calculateRandomPosition(point: Omit<Point, "id">) {
  * Convert x,y coordinates to category and likelihood
  * This is the inverse of the positioning logic
  */
-function coordinatesToCategoryAndLikelihood(
+export function coordinatesToCategoryAndLikelihood(
   x: number,
   y: number,
   size = 800,

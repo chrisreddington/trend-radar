@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
-import { useDiagramStore } from "../store/use-diagram-store";
+import {
+  useDiagramStore,
+  coordinatesToCategoryAndLikelihood,
+} from "../store/use-diagram-store";
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
@@ -264,7 +267,59 @@ export const RingDiagram = () => {
           .on("click", () => selectPoint(point.id));
       }
 
+      // Handle drag behavior for moving points
+      const handleDrag = d3
+        .drag<SVGCircleElement, unknown>()
+        .on("start", function () {
+          // Select the point when dragging starts
+          selectPoint(point.id);
+          // Add visual feedback during drag
+          d3.select(this)
+            .attr("stroke", "var(--highlight)")
+            .attr("stroke-width", size < 500 ? 3 : 4)
+            .style("cursor", "grabbing");
+        })
+        .on("drag", function (event) {
+          // Update position during drag
+          const [newX, newY] = d3.pointer(
+            event,
+            diagramGroup.node?.() || undefined,
+          );
+          d3.select(this).attr("cx", newX).attr("cy", newY);
+        })
+        .on("end", function (event) {
+          // Get final position after drag
+          const [finalX, finalY] = d3.pointer(
+            event,
+            diagramGroup.node?.() || undefined,
+          );
+
+          // Check if the position is within diagram bounds and convert to category/likelihood
+          const result = coordinatesToCategoryAndLikelihood(
+            finalX,
+            finalY,
+            size,
+          );
+
+          if (result) {
+            // Update the point with new position and derived category/likelihood
+            updatePoint(point.id, {
+              x: finalX,
+              y: finalY,
+              category: result.category,
+              likelihood: result.likelihood,
+            });
+          } else {
+            // If dropped outside bounds, revert to original position
+            d3.select(this).attr("cx", pos.x).attr("cy", pos.y);
+          }
+
+          // Reset cursor
+          d3.select(this).style("cursor", "pointer");
+        });
+
       pointElement
+        .call(handleDrag)
         .on("mouseover", function () {
           d3.select(this)
             .attr("stroke", "var(--highlight)")
@@ -278,7 +333,11 @@ export const RingDiagram = () => {
               .attr("opacity", selectedPoint ? 0.6 : 1);
           }
         })
-        .on("click", () => selectPoint(point.id));
+        .on("click", function (event) {
+          // Only handle click if it wasn't a drag operation
+          if (event?.defaultPrevented) return;
+          selectPoint(point.id);
+        });
 
       pointElement.append("title").text(point.label);
     }

@@ -30,6 +30,8 @@ export const ControlPanel = () => {
       if (point && (!editingPoint || editingPoint.id !== point.id)) {
         setEditingPoint({ ...point });
       }
+      // Auto-collapse the "Add New Point" section when a point is selected for editing
+      setIsCollapsed(true);
     } else if (editingPoint) {
       setEditingPoint(undefined);
     }
@@ -342,57 +344,57 @@ export const ControlPanel = () => {
           </button>
         </h2>
       </div>
+      {/* Show edit section first when a point is selected */}
+      {editingPoint && (
+        <div className="p-6 pt-0">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              Edit Selected Point
+            </h3>
+            <button
+              onClick={handleCloseEdit}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+              aria-label="Close edit panel"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          {renderPointForm(
+            editingPoint,
+            handleUpdatePoint,
+            "Update Point",
+            true,
+          )}
+          <button
+            onClick={() => selectedPoint && removePoint(selectedPoint)}
+            className={deleteButtonClasses}
+          >
+            Delete Point
+          </button>
+        </div>
+      )}
+
+      {/* Show add new point section */}
       <div
         id="control-panel-content"
         data-testid="add-point-form-content"
-        className={`p-6 pt-0 ${isCollapsed ? "hidden" : ""}`}
+        className={`p-6 ${editingPoint ? "pt-0 border-t border-gray-300 dark:border-gray-600" : "pt-0"} ${isCollapsed ? "hidden" : ""}`}
       >
-        <div className="space-y-6">
-          <div>
-            {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
-          </div>
-
-          {editingPoint && (
-            <div className="border-t border-gray-300 pt-6 dark:border-gray-600">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Edit Selected Point
-                </h3>
-                <button
-                  onClick={handleCloseEdit}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
-                  aria-label="Close edit panel"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-              {renderPointForm(
-                editingPoint,
-                handleUpdatePoint,
-                "Update Point",
-                true,
-              )}
-              <button
-                onClick={() => selectedPoint && removePoint(selectedPoint)}
-                className={deleteButtonClasses}
-              >
-                Delete Point
-              </button>
-            </div>
-          )}
+        <div>
+          {renderPointForm(newPoint, handleAddPoint, "Add Point", false)}
         </div>
       </div>
     </div>
