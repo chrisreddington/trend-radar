@@ -5,11 +5,12 @@ import {
   loadDiagramFromFile,
   saveDiagramToFile,
 } from "../../utils/file-handlers";
+import { vi } from "vitest";
 
 // Mock file handlers
-jest.mock("../../utils/file-handlers", () => ({
-  loadDiagramFromFile: jest.fn(),
-  saveDiagramToFile: jest.fn(),
+vi.mock("../../utils/file-handlers", () => ({
+  loadDiagramFromFile: vi.fn(),
+  saveDiagramToFile: vi.fn(),
 }));
 
 describe("useDiagramStore", () => {
@@ -27,19 +28,19 @@ describe("useDiagramStore", () => {
   };
 
   const mockLocalStorage = {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    clear: jest.fn(),
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    clear: vi.fn(),
   };
 
   beforeEach(() => {
     // Reset store and mocks before each test
     useDiagramStore.setState({ points: [], selectedPoint: undefined });
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     Object.defineProperty(globalThis, "localStorage", {
       value: mockLocalStorage,
     });
-    globalThis.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
+    globalThis.crypto.randomUUID = vi.fn().mockReturnValue(mockUUID);
   });
 
   describe("Point Management", () => {
@@ -352,12 +353,14 @@ describe("useDiagramStore", () => {
       });
 
       it("should throw error if save fails", async () => {
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         (saveDiagramToFile as jest.Mock).mockRejectedValue(
           new Error("Save failed"),
         );
         const { saveDiagram } = useDiagramStore.getState();
 
         await expect(saveDiagram()).rejects.toThrow("Save failed");
+        consoleErrorSpy.mockRestore();
       });
     });
 
@@ -393,12 +396,14 @@ describe("useDiagramStore", () => {
       });
 
       it("should throw other errors", async () => {
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         (loadDiagramFromFile as jest.Mock).mockRejectedValue(
           new Error("Load failed"),
         );
         const { loadDiagram } = useDiagramStore.getState();
 
         await expect(loadDiagram()).rejects.toThrow("Load failed");
+        consoleErrorSpy.mockRestore();
       });
     });
 

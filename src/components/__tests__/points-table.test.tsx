@@ -1,11 +1,10 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PointsTable } from "../points-table";
 import { useDiagramStore } from "../../store/use-diagram-store";
+import { vi } from "vitest";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
+vi.mock("../../store/use-diagram-store");
+const mockedUseDiagramStore = useDiagramStore as unknown as ReturnType<typeof vi.fn>;
 
 // Helper functions for sorting tests
 const getColumnHeader = (columnName: string) => {

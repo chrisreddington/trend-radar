@@ -6,7 +6,7 @@ import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
-import pluginJest from "eslint-plugin-jest";
+import pluginVitest from "eslint-plugin-vitest";
 
 // Get current directory for configuration
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +32,13 @@ const eslintConfig = [
   ...tseslint.configs.strict,
   pluginReact.configs.flat.recommended,
   eslintPluginUnicorn.configs.recommended,
-  pluginJest.configs["flat/recommended"],
+  {
+    files: ["**/__tests__/**/*.{js,ts,jsx,tsx}", "**/*.test.{js,ts,jsx,tsx}"],
+    plugins: { vitest: pluginVitest },
+    rules: {
+      ...pluginVitest.configs.recommended.rules,
+    },
+  },
   ...compat.extends(
     "next",
     "next/core-web-vitals", // Base Next.js rules for performance

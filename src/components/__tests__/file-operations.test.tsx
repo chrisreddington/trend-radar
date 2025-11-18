@@ -2,20 +2,19 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FileOperations } from "../file-operations";
 import { useDiagramStore } from "../../store/use-diagram-store";
+import { vi } from "vitest";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
+vi.mock("../../store/use-diagram-store");
+const mockedUseDiagramStore = useDiagramStore as unknown as ReturnType<typeof vi.fn>;
 
 describe("FileOperations", () => {
-  const mockSaveDiagram = jest.fn();
-  const mockLoadDiagram = jest.fn();
+  const mockSaveDiagram = vi.fn();
+  const mockLoadDiagram = vi.fn();
   const user = userEvent.setup();
   const originalConsoleError = console.error;
 
   beforeEach(() => {
-    console.error = jest.fn();
+    console.error = vi.fn();
     mockedUseDiagramStore.mockReturnValue({
       saveDiagram: mockSaveDiagram,
       loadDiagram: mockLoadDiagram,
@@ -24,7 +23,7 @@ describe("FileOperations", () => {
 
   afterEach(() => {
     console.error = originalConsoleError;
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("renders save and load buttons", () => {

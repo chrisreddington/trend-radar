@@ -3,10 +3,14 @@
 {
   "name": "Node.js & TypeScript",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-24-bookworm",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
+  "features": {
+    "ghcr.io/devcontainers-extra/features/playwright:1": {
+      "browsers": "chromium"
+    }
+  },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [3000],

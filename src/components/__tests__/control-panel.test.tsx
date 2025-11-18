@@ -1,15 +1,16 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { ControlPanel } from "../control-panel";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
+import { vi } from "vitest";
 
 // Mock the entire store module
-jest.mock("../../store/use-diagram-store", () => {
-  const actual = jest.requireActual("../../store/use-diagram-store");
+vi.mock("../../store/use-diagram-store", () => {
+  const actual = vi.importActual("../../store/use-diagram-store");
   return {
     ...actual,
-    useDiagramStore: jest.fn(),
-    saveDiagram: jest.fn(),
-    loadDiagram: jest.fn(),
+    useDiagramStore: vi.fn(),
+    saveDiagram: vi.fn(),
+    loadDiagram: vi.fn(),
   };
 });
 
@@ -31,12 +32,12 @@ describe("ControlPanel", () => {
 
   // Mock store actions
   const mockActions = {
-    addPoint: jest.fn(),
-    updatePoint: jest.fn(),
-    removePoint: jest.fn(),
-    selectPoint: jest.fn(),
-    saveDiagram: jest.fn(),
-    loadDiagram: jest.fn(),
+    addPoint: vi.fn(),
+    updatePoint: vi.fn(),
+    removePoint: vi.fn(),
+    selectPoint: vi.fn(),
+    saveDiagram: vi.fn(),
+    loadDiagram: vi.fn(),
   };
 
   // Helper to get store with optional selected point
@@ -47,8 +48,8 @@ describe("ControlPanel", () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+    vi.clearAllMocks();
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
       getStoreState(),
     );
   });
@@ -128,7 +129,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
 
@@ -152,7 +153,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
 
@@ -176,7 +177,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
     });
