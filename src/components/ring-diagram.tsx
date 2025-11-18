@@ -95,7 +95,7 @@ export const RingDiagram = () => {
     const diagramRadius = size / 2 - marginAdjusted;
 
     const categories = Object.values(Category);
-    const likelihoods = Object.values(Likelihood).reverse();
+    const likelihoods = Object.values(Likelihood).toReversed();
     const ringWidth = diagramRadius / likelihoods.length;
 
     // Add a helper for random positioning with collision detection

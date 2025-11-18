@@ -8,12 +8,9 @@
     }
   ],
   "servers": {
-    "github-server": {
-      "command": "/Users/chrisreddington/Documents/Code/github-mcp-server/server",
-      "args": ["stdio"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-pat}"
-      }
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
     },
     "playwright": {
       "command": "npx",
