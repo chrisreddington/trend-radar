@@ -94,9 +94,9 @@ export const Legend = () => {
                       backgroundColor:
                         preparedness === Preparedness.HighlyPrepared
                           ? PREPAREDNESS_COLORS.high
-                          : preparedness === Preparedness.ModeratelyPrepared
+                          : (preparedness === Preparedness.ModeratelyPrepared
                             ? PREPAREDNESS_COLORS.moderate
-                            : PREPAREDNESS_COLORS.low,
+                            : PREPAREDNESS_COLORS.low),
                     }}
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-200">
