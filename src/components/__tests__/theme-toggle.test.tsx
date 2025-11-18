@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
 import { ThemeToggle, THEME_OPTIONS } from "../theme-toggle";
+import { vi } from "vitest";
 
 /**
  * Helper to mock matchMedia for system theme tests.
@@ -9,11 +10,11 @@ import { ThemeToggle, THEME_OPTIONS } from "../theme-toggle";
 function mockMatchMedia(matches: boolean) {
   Object.defineProperty(globalThis, "matchMedia", {
     writable: true,
-    value: jest.fn().mockImplementation((query: string) => ({
+    value: vi.fn().mockImplementation((query: string) => ({
       matches,
       media: query,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     })),
   });
 }
@@ -89,14 +90,14 @@ describe("ThemeToggle", () => {
 
   it("responds to system theme changes when system is selected", () => {
     let listener: (() => void) | undefined;
-    globalThis.matchMedia = jest.fn().mockImplementation((query: string) => {
+    globalThis.matchMedia = vi.fn().mockImplementation((query: string) => {
       return {
         matches: false,
         media: query,
         addEventListener: (event: string, callback: () => void) => {
           listener = callback;
         },
-        removeEventListener: jest.fn(),
+        removeEventListener: vi.fn(),
       };
     });
     render(<ThemeToggle />);

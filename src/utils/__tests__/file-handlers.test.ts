@@ -13,20 +13,21 @@ import {
   loadDiagramFromFile,
   CURRENT_VERSION,
 } from "../file-handlers";
+import { vi } from "vitest";
 
 // Mock window.showSaveFilePicker and window.showOpenFilePicker
 const mockWritable = {
-  write: jest.fn(),
-  close: jest.fn(),
+  write: vi.fn(),
+  close: vi.fn(),
 };
 
 const mockFileHandle = {
-  createWritable: jest.fn().mockResolvedValue(mockWritable),
-  getFile: jest.fn(),
+  createWritable: vi.fn().mockResolvedValue(mockWritable),
+  getFile: vi.fn(),
 };
 
-globalThis.window.showSaveFilePicker = jest.fn();
-globalThis.window.showOpenFilePicker = jest.fn();
+globalThis.window.showSaveFilePicker = vi.fn();
+globalThis.window.showOpenFilePicker = vi.fn();
 
 describe("File Handlers", () => {
   const mockState: DiagramState = {
@@ -46,13 +47,13 @@ describe("File Handlers", () => {
 
   beforeEach(() => {
     // Mock Date to ensure consistent timestamps
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date("2025-04-12"));
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-04-12"));
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("generateFilename", () => {
@@ -139,9 +140,9 @@ describe("File Handlers", () => {
 
   describe("saveDiagramToFile", () => {
     it("should save diagram to file", async () => {
-      (globalThis.showSaveFilePicker as jest.Mock).mockResolvedValue(
-        mockFileHandle,
-      );
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockFileHandle);
 
       await saveDiagramToFile(mockState);
 
@@ -165,9 +166,9 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (globalThis.showSaveFilePicker as jest.Mock).mockRejectedValue(
-        abortError,
-      );
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(abortError);
 
       await expect(saveDiagramToFile(mockState)).resolves.toBeUndefined();
       expect(mockFileHandle.createWritable).not.toHaveBeenCalled();
@@ -175,7 +176,9 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to save");
-      (globalThis.showSaveFilePicker as jest.Mock).mockRejectedValue(error);
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(error);
 
       await expect(saveDiagramToFile(mockState)).rejects.toThrow(
         "Failed to save diagram",
@@ -195,14 +198,14 @@ describe("File Handlers", () => {
 
     beforeEach(() => {
       mockFileHandle.getFile.mockResolvedValue({
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockFileContent)),
+        text: vi.fn().mockResolvedValue(JSON.stringify(mockFileContent)),
       });
     });
 
     it("should load diagram from file", async () => {
-      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       const result = await loadDiagramFromFile();
 
@@ -224,31 +227,31 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (globalThis.showOpenFilePicker as jest.Mock).mockRejectedValue(
-        abortError,
-      );
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(abortError);
 
       await expect(loadDiagramFromFile()).rejects.toEqual(abortError);
     });
 
     it("should handle invalid file contents", async () => {
       mockFileHandle.getFile.mockResolvedValue({
-        text: jest.fn().mockResolvedValue("invalid json"),
+        text: vi.fn().mockResolvedValue("invalid json"),
       });
-      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       await expect(loadDiagramFromFile()).rejects.toThrow();
     });
 
     it("should handle invalid diagram data", async () => {
       mockFileHandle.getFile.mockResolvedValue({
-        text: jest.fn().mockResolvedValue(JSON.stringify({ invalid: "data" })),
+        text: vi.fn().mockResolvedValue(JSON.stringify({ invalid: "data" })),
       });
-      (globalThis.showOpenFilePicker as jest.Mock).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       await expect(loadDiagramFromFile()).rejects.toThrow(
         "Invalid diagram file format",
@@ -257,7 +260,9 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to load");
-      (globalThis.showOpenFilePicker as jest.Mock).mockRejectedValue(error);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(error);
 
       await expect(loadDiagramFromFile()).rejects.toThrow(
         "Failed to load diagram",

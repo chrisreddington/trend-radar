@@ -1,11 +1,20 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PointsTable } from "../points-table";
-import { useDiagramStore } from "../../store/use-diagram-store";
+import { vi } from "vitest";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
+// Mock the entire store module
+vi.mock("../../store/use-diagram-store", async () => {
+  const actual = await vi.importActual<
+    typeof import("../../store/use-diagram-store")
+  >("../../store/use-diagram-store");
+  return {
+    ...actual,
+    useDiagramStore: vi.fn(),
+  };
+});
+
+// Import after mocking
+import { useDiagramStore } from "../../store/use-diagram-store";
 
 // Helper functions for sorting tests
 const getColumnHeader = (columnName: string) => {
@@ -73,7 +82,7 @@ describe("PointsTable", () => {
   ];
 
   beforeEach(() => {
-    mockedUseDiagramStore.mockReturnValue({
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       points: mockPoints,
     });
   });

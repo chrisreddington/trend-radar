@@ -1,15 +1,18 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { ControlPanel } from "../control-panel";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
+import { vi } from "vitest";
 
 // Mock the entire store module
-jest.mock("../../store/use-diagram-store", () => {
-  const actual = jest.requireActual("../../store/use-diagram-store");
+vi.mock("../../store/use-diagram-store", async () => {
+  const actual = await vi.importActual<
+    typeof import("../../store/use-diagram-store")
+  >("../../store/use-diagram-store");
   return {
     ...actual,
-    useDiagramStore: jest.fn(),
-    saveDiagram: jest.fn(),
-    loadDiagram: jest.fn(),
+    useDiagramStore: vi.fn(),
+    saveDiagram: vi.fn(),
+    loadDiagram: vi.fn(),
   };
 });
 
@@ -31,12 +34,12 @@ describe("ControlPanel", () => {
 
   // Mock store actions
   const mockActions = {
-    addPoint: jest.fn(),
-    updatePoint: jest.fn(),
-    removePoint: jest.fn(),
-    selectPoint: jest.fn(),
-    saveDiagram: jest.fn(),
-    loadDiagram: jest.fn(),
+    addPoint: vi.fn(),
+    updatePoint: vi.fn(),
+    removePoint: vi.fn(),
+    selectPoint: vi.fn(),
+    saveDiagram: vi.fn(),
+    loadDiagram: vi.fn(),
   };
 
   // Helper to get store with optional selected point
@@ -47,9 +50,9 @@ describe("ControlPanel", () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-      getStoreState(),
+    vi.clearAllMocks();
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      () => getStoreState(),
     );
   });
 
@@ -128,7 +131,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
 
@@ -152,7 +155,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
 
@@ -176,7 +179,7 @@ describe("ControlPanel", () => {
             }),
           );
 
-          jest.clearAllMocks();
+          vi.clearAllMocks();
         }
       });
     });
@@ -184,9 +187,9 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-        getStoreState("1"),
-      );
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => getStoreState("1"));
     });
 
     it("should display selected point data in edit form", () => {
@@ -332,9 +335,9 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreState(),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState());
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -353,9 +356,9 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreWithPoints("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithPoints("1"));
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -371,9 +374,9 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreWithPoints("2"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithPoints("2"));
         rerender(<ControlPanel />);
 
         // Verify second point's label
@@ -438,9 +441,9 @@ describe("ControlPanel", () => {
         });
 
         // Start with original point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreWithUpdatedPoint(originalPoint),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithUpdatedPoint(originalPoint));
         const { rerender } = render(<ControlPanel />);
 
         // Verify initial category
@@ -456,9 +459,9 @@ describe("ControlPanel", () => {
         expect(categorySelect.value).toBe(Category.Technological);
 
         // Simulate point data change (e.g., after drag operation)
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreWithUpdatedPoint(updatedPoint),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithUpdatedPoint(updatedPoint));
         rerender(<ControlPanel />);
 
         // Verify category dropdown updated to reflect new data
@@ -476,9 +479,9 @@ describe("ControlPanel", () => {
 
       it("should preserve point position when updating non-spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreState("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState("1"));
 
         render(<ControlPanel />);
 
@@ -523,9 +526,9 @@ describe("ControlPanel", () => {
 
       it("should not preserve point position when updating spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
-          getStoreState("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState("1"));
 
         render(<ControlPanel />);
 

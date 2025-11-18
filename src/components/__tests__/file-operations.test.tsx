@@ -1,22 +1,31 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FileOperations } from "../file-operations";
+import { vi } from "vitest";
+
+// Mock the entire store module
+vi.mock("../../store/use-diagram-store", async () => {
+  const actual = await vi.importActual<
+    typeof import("../../store/use-diagram-store")
+  >("../../store/use-diagram-store");
+  return {
+    ...actual,
+    useDiagramStore: vi.fn(),
+  };
+});
+
+// Import after mocking
 import { useDiagramStore } from "../../store/use-diagram-store";
 
-jest.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as jest.MockedFunction<
-  typeof useDiagramStore
->;
-
 describe("FileOperations", () => {
-  const mockSaveDiagram = jest.fn();
-  const mockLoadDiagram = jest.fn();
+  const mockSaveDiagram = vi.fn();
+  const mockLoadDiagram = vi.fn();
   const user = userEvent.setup();
   const originalConsoleError = console.error;
 
   beforeEach(() => {
-    console.error = jest.fn();
-    mockedUseDiagramStore.mockReturnValue({
+    console.error = vi.fn();
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       saveDiagram: mockSaveDiagram,
       loadDiagram: mockLoadDiagram,
     });
@@ -24,7 +33,7 @@ describe("FileOperations", () => {
 
   afterEach(() => {
     console.error = originalConsoleError;
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("renders save and load buttons", () => {

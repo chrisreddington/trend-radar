@@ -203,9 +203,9 @@ export const RingDiagram = () => {
       const pointSize =
         point.relevance === Relevance.High
           ? 14 * sizeScale
-          : point.relevance === Relevance.Moderate
+          : (point.relevance === Relevance.Moderate
             ? 10 * sizeScale
-            : 7 * sizeScale;
+            : 7 * sizeScale);
 
       // Use existing position if available, otherwise calculate a new one
       let pos: { x: number; y: number } =
@@ -240,9 +240,9 @@ export const RingDiagram = () => {
           "fill",
           point.preparedness === Preparedness.HighlyPrepared
             ? PREPAREDNESS_COLORS.high
-            : point.preparedness === Preparedness.ModeratelyPrepared
+            : (point.preparedness === Preparedness.ModeratelyPrepared
               ? PREPAREDNESS_COLORS.moderate
-              : PREPAREDNESS_COLORS.low,
+              : PREPAREDNESS_COLORS.low),
         )
         .attr(
           "stroke",
