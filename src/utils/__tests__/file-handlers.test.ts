@@ -140,7 +140,7 @@ describe("File Handlers", () => {
 
   describe("saveDiagramToFile", () => {
     it("should save diagram to file", async () => {
-      (globalThis.showSaveFilePicker as jest.Mock).mockResolvedValue(
+      (globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockFileHandle,
       );
 

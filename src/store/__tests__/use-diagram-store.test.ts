@@ -377,7 +377,7 @@ describe("useDiagramStore", () => {
       };
 
       it("should update state with loaded points", async () => {
-        (loadDiagramFromFile as jest.Mock).mockResolvedValue(mockExportData);
+        (loadDiagramFromFile as ReturnType<typeof vi.fn>).mockResolvedValue(mockExportData);
         const { loadDiagram } = useDiagramStore.getState();
 
         await loadDiagram();
@@ -389,7 +389,7 @@ describe("useDiagramStore", () => {
       it("should handle AbortError silently", async () => {
         const abortError = new Error("User cancelled");
         abortError.name = "AbortError";
-        (loadDiagramFromFile as jest.Mock).mockRejectedValue(abortError);
+        (loadDiagramFromFile as ReturnType<typeof vi.fn>).mockRejectedValue(abortError);
 
         const { loadDiagram } = useDiagramStore.getState();
         await loadDiagram();

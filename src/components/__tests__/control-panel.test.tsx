@@ -185,7 +185,7 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
         getStoreState("1"),
       );
     });
@@ -333,7 +333,7 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreState(),
         );
         rerender(<ControlPanel />);
@@ -354,7 +354,7 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreWithPoints("1"),
         );
         const { rerender } = render(<ControlPanel />);
@@ -372,7 +372,7 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreWithPoints("2"),
         );
         rerender(<ControlPanel />);
@@ -439,7 +439,7 @@ describe("ControlPanel", () => {
         });
 
         // Start with original point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreWithUpdatedPoint(originalPoint),
         );
         const { rerender } = render(<ControlPanel />);
@@ -457,7 +457,7 @@ describe("ControlPanel", () => {
         expect(categorySelect.value).toBe(Category.Technological);
 
         // Simulate point data change (e.g., after drag operation)
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreWithUpdatedPoint(updatedPoint),
         );
         rerender(<ControlPanel />);
@@ -477,7 +477,7 @@ describe("ControlPanel", () => {
 
       it("should preserve point position when updating non-spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreState("1"),
         );
 
@@ -524,7 +524,7 @@ describe("ControlPanel", () => {
 
       it("should not preserve point position when updating spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as jest.Mock).mockImplementation(() =>
+        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
           getStoreState("1"),
         );
 
