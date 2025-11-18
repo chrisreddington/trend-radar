@@ -356,7 +356,7 @@ describe("useDiagramStore", () => {
         const consoleErrorSpy = vi
           .spyOn(console, "error")
           .mockImplementation(() => {});
-        (saveDiagramToFile as jest.Mock).mockRejectedValue(
+        (saveDiagramToFile as ReturnType<typeof vi.fn>).mockRejectedValue(
           new Error("Save failed"),
         );
         const { saveDiagram } = useDiagramStore.getState();
@@ -401,7 +401,7 @@ describe("useDiagramStore", () => {
         const consoleErrorSpy = vi
           .spyOn(console, "error")
           .mockImplementation(() => {});
-        (loadDiagramFromFile as jest.Mock).mockRejectedValue(
+        (loadDiagramFromFile as ReturnType<typeof vi.fn>).mockRejectedValue(
           new Error("Load failed"),
         );
         const { loadDiagram } = useDiagramStore.getState();
