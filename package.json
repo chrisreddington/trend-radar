@@ -32,6 +32,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^4.0.10",
+    "@vitest/browser-playwright": "^4.0.10",
     "@vitest/ui": "^4.0.10",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
