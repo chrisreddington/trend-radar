@@ -4,8 +4,8 @@ import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import { vi } from "vitest";
 
 // Mock the entire store module
-vi.mock("../../store/use-diagram-store", () => {
-  const actual = vi.importActual("../../store/use-diagram-store");
+vi.mock("../../store/use-diagram-store", async () => {
+  const actual = await vi.importActual<typeof import("../../store/use-diagram-store")>("../../store/use-diagram-store");
   return {
     ...actual,
     useDiagramStore: vi.fn(),

@@ -1,13 +1,19 @@
 import { render, screen, act } from "@testing-library/react";
 import { RingDiagram } from "../ring-diagram";
-import { useDiagramStore } from "../../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import { vi } from "vitest";
 
-vi.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as ReturnType<
-  typeof vi.fn
->;
+// Mock the entire store module
+vi.mock("../../store/use-diagram-store", async () => {
+  const actual = await vi.importActual<typeof import("../../store/use-diagram-store")>("../../store/use-diagram-store");
+  return {
+    ...actual,
+    useDiagramStore: vi.fn(),
+  };
+});
+
+// Import after mocking
+import { useDiagramStore } from "../../store/use-diagram-store";
 
 describe("RingDiagram", () => {
   // Common test data
@@ -30,7 +36,7 @@ describe("RingDiagram", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedUseDiagramStore.mockReturnValue({
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       points: mockPoints,
       selectedPoint: undefined,
       selectPoint: mockSelectPoint,
@@ -89,7 +95,7 @@ describe("RingDiagram", () => {
         },
       ];
 
-      mockedUseDiagramStore.mockReturnValue({
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         points: multiplePoints,
         selectedPoint: undefined,
         selectPoint: mockSelectPoint,
@@ -126,12 +132,12 @@ describe("RingDiagram", () => {
   describe("Store Integration", () => {
     it("should call store on mount", () => {
       render(<RingDiagram />);
-      expect(mockedUseDiagramStore).toHaveBeenCalled();
+      expect(useDiagramStore).toHaveBeenCalled();
     });
 
     it("should have access to store methods", () => {
       render(<RingDiagram />);
-      const storeResult = mockedUseDiagramStore.mock.results[0].value;
+      const storeResult = (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mock.results[0].value;
       expect(storeResult.selectPoint).toBe(mockSelectPoint);
       expect(storeResult.updatePoint).toBe(mockUpdatePoint);
       expect(storeResult.addPointAtPosition).toBe(mockAddPointAtPosition);
@@ -140,7 +146,7 @@ describe("RingDiagram", () => {
 
   describe("Empty State", () => {
     it("should render diagram with no points", () => {
-      mockedUseDiagramStore.mockReturnValue({
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         points: [],
         selectedPoint: undefined,
         selectPoint: mockSelectPoint,
