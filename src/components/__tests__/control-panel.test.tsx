@@ -49,8 +49,8 @@ describe("ControlPanel", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-      getStoreState(),
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      () => getStoreState(),
     );
   });
 

@@ -4,7 +4,9 @@ import { useDiagramStore } from "../../store/use-diagram-store";
 import { vi } from "vitest";
 
 vi.mock("../../store/use-diagram-store");
-const mockedUseDiagramStore = useDiagramStore as unknown as ReturnType<typeof vi.fn>;
+const mockedUseDiagramStore = useDiagramStore as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 // Helper functions for sorting tests
 const getColumnHeader = (columnName: string) => {

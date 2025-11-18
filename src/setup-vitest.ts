@@ -19,27 +19,32 @@ const globalProcess =
       }) as NodeJS.Process)
     : process;
 
-let env = globalProcess.env as Record<string, string | undefined> | undefined;
+let environment = globalProcess.env as
+  | Record<string, string | undefined>
+  | undefined;
 
-if (!env) {
-  env = {} as Record<string, string | undefined>;
-  globalProcess.env = env as NodeJS.ProcessEnv;
+if (!environment) {
+  environment = {} as Record<string, string | undefined>;
+  globalProcess.env = environment as NodeJS.ProcessEnv;
 }
 
-const mutableEnv = env;
+const mutableEnvironment = environment;
 
-if (!mutableEnv.NODE_ENV) {
-  mutableEnv.NODE_ENV = "test";
+if (!mutableEnvironment.NODE_ENV) {
+  mutableEnvironment.NODE_ENV = "test";
 }
 
-if (!mutableEnv.__NEXT_IMAGE_OPTS) {
-  mutableEnv.__NEXT_IMAGE_OPTS = nextImageOptions;
+if (!mutableEnvironment.__NEXT_IMAGE_OPTS) {
+  mutableEnvironment.__NEXT_IMAGE_OPTS = nextImageOptions;
 }
 
 // Vitest does not execute the Next.js image optimizer logic, so mock <Image />
 // to behave like a regular <img> while still allowing props assertions.
-const MockedNextImage = React.forwardRef<HTMLImageElement, React.ComponentProps<"img">>(
-  ({ alt, ...rest }, ref) => React.createElement("img", { alt, ref, ...rest }),
+const MockedNextImage = React.forwardRef<
+  HTMLImageElement,
+  React.ComponentProps<"img">
+>(({ alt, ...rest }, reference) =>
+  React.createElement("img", { alt, ref: reference, ...rest }),
 );
 
 MockedNextImage.displayName = "NextImageMock";

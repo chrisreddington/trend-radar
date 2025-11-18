@@ -166,9 +166,9 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>).mockRejectedValue(
-        abortError,
-      );
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(abortError);
 
       await expect(saveDiagramToFile(mockState)).resolves.toBeUndefined();
       expect(mockFileHandle.createWritable).not.toHaveBeenCalled();
@@ -176,7 +176,9 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to save");
-      (globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>).mockRejectedValue(error);
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(error);
 
       await expect(saveDiagramToFile(mockState)).rejects.toThrow(
         "Failed to save diagram",
@@ -201,9 +203,9 @@ describe("File Handlers", () => {
     });
 
     it("should load diagram from file", async () => {
-      (globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       const result = await loadDiagramFromFile();
 
@@ -225,9 +227,9 @@ describe("File Handlers", () => {
     it("should handle user cancellation", async () => {
       const abortError = new Error("User cancelled");
       abortError.name = "AbortError";
-      (globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>).mockRejectedValue(
-        abortError,
-      );
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(abortError);
 
       await expect(loadDiagramFromFile()).rejects.toEqual(abortError);
     });
@@ -236,9 +238,9 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: vi.fn().mockResolvedValue("invalid json"),
       });
-      (globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       await expect(loadDiagramFromFile()).rejects.toThrow();
     });
@@ -247,9 +249,9 @@ describe("File Handlers", () => {
       mockFileHandle.getFile.mockResolvedValue({
         text: vi.fn().mockResolvedValue(JSON.stringify({ invalid: "data" })),
       });
-      (globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>).mockResolvedValue([
-        mockFileHandle,
-      ]);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([mockFileHandle]);
 
       await expect(loadDiagramFromFile()).rejects.toThrow(
         "Invalid diagram file format",
@@ -258,7 +260,9 @@ describe("File Handlers", () => {
 
     it("should throw other errors", async () => {
       const error = new Error("Failed to load");
-      (globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>).mockRejectedValue(error);
+      (
+        globalThis.showOpenFilePicker as ReturnType<typeof vi.fn>
+      ).mockRejectedValue(error);
 
       await expect(loadDiagramFromFile()).rejects.toThrow(
         "Failed to load diagram",

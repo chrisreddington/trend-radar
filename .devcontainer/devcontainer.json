@@ -6,17 +6,13 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-24-bookworm",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
-  "features": {
-    "ghcr.io/devcontainers-extra/features/playwright:1": {
-      "browsers": "chromium"
-    }
-  },
+  features: {},
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [3000],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && sudo npx playwright install-deps",
 
   // Configure tool-specific properties.
   "customizations": {

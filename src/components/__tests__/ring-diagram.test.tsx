@@ -112,12 +112,12 @@ describe("RingDiagram", () => {
 
     it("should update on window resize", () => {
       const { container } = render(<RingDiagram />);
-      
+
       // Trigger resize event wrapped in act to handle state updates
       act(() => {
-        window.dispatchEvent(new Event("resize"));
+        globalThis.dispatchEvent(new Event("resize"));
       });
-      
+
       const svg = container.querySelector("svg");
       expect(svg).toBeInTheDocument();
     });
@@ -151,7 +151,7 @@ describe("RingDiagram", () => {
       const { container } = render(<RingDiagram />);
       const points = container.querySelectorAll("circle.point");
       expect(points.length).toBe(0);
-      
+
       // But rings should still be present
       const circles = container.querySelectorAll("circle");
       expect(circles.length).toBeGreaterThan(0);
