@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { playwright } from "@vitest/browser/providers/playwright";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,7 +13,7 @@ export default defineConfig({
     browser: {
       enabled: true,
       name: "chromium",
-      provider: "playwright",
+      provider: playwright(),
       headless: true,
     },
     setupFiles: ["./src/setup-vitest.ts"],
