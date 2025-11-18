@@ -140,9 +140,9 @@ describe("File Handlers", () => {
 
   describe("saveDiagramToFile", () => {
     it("should save diagram to file", async () => {
-      (globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockFileHandle,
-      );
+      (
+        globalThis.showSaveFilePicker as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockFileHandle);
 
       await saveDiagramToFile(mockState);
 

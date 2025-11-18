@@ -185,9 +185,9 @@ describe("ControlPanel", () => {
 
   describe("Editing Points", () => {
     beforeEach(() => {
-      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-        getStoreState("1"),
-      );
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => getStoreState("1"));
     });
 
     it("should display selected point data in edit form", () => {
@@ -333,9 +333,9 @@ describe("ControlPanel", () => {
         expect(screen.getByText("Edit Selected Point")).toBeInTheDocument();
 
         // Simulate point deselection
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreState(),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState());
         rerender(<ControlPanel />);
 
         // Verify edit form is removed
@@ -354,9 +354,9 @@ describe("ControlPanel", () => {
           ...mockActions,
         });
 
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreWithPoints("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithPoints("1"));
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -372,9 +372,9 @@ describe("ControlPanel", () => {
         expect(labelInput.value).toBe("First Point");
 
         // Change selection to second point
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreWithPoints("2"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithPoints("2"));
         rerender(<ControlPanel />);
 
         // Verify second point's label
@@ -439,9 +439,9 @@ describe("ControlPanel", () => {
         });
 
         // Start with original point
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreWithUpdatedPoint(originalPoint),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithUpdatedPoint(originalPoint));
         const { rerender } = render(<ControlPanel />);
 
         // Verify initial category
@@ -457,9 +457,9 @@ describe("ControlPanel", () => {
         expect(categorySelect.value).toBe(Category.Technological);
 
         // Simulate point data change (e.g., after drag operation)
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreWithUpdatedPoint(updatedPoint),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreWithUpdatedPoint(updatedPoint));
         rerender(<ControlPanel />);
 
         // Verify category dropdown updated to reflect new data
@@ -477,9 +477,9 @@ describe("ControlPanel", () => {
 
       it("should preserve point position when updating non-spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreState("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState("1"));
 
         render(<ControlPanel />);
 
@@ -524,9 +524,9 @@ describe("ControlPanel", () => {
 
       it("should not preserve point position when updating spatial properties", () => {
         // Setup store with a selected point
-        (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(() =>
-          getStoreState("1"),
-        );
+        (
+          useDiagramStore as unknown as ReturnType<typeof vi.fn>
+        ).mockImplementation(() => getStoreState("1"));
 
         render(<ControlPanel />);
 
