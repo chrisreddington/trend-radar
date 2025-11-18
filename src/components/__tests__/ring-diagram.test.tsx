@@ -5,7 +5,9 @@ import { vi } from "vitest";
 
 // Mock the entire store module
 vi.mock("../../store/use-diagram-store", async () => {
-  const actual = await vi.importActual<typeof import("../../store/use-diagram-store")>("../../store/use-diagram-store");
+  const actual = await vi.importActual<
+    typeof import("../../store/use-diagram-store")
+  >("../../store/use-diagram-store");
   return {
     ...actual,
     useDiagramStore: vi.fn(),
@@ -137,7 +139,9 @@ describe("RingDiagram", () => {
 
     it("should have access to store methods", () => {
       render(<RingDiagram />);
-      const storeResult = (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mock.results[0].value;
+      const storeResult = (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mock.results[0].value;
       expect(storeResult.selectPoint).toBe(mockSelectPoint);
       expect(storeResult.updatePoint).toBe(mockUpdatePoint);
       expect(storeResult.addPointAtPosition).toBe(mockAddPointAtPosition);
