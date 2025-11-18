@@ -7,7 +7,7 @@ function getDiagramDimensions(size = 800) {
   const marginAdjusted = size * 0.08;
   const diagramRadius = size / 2 - marginAdjusted;
   const categories = Object.values(Category);
-  const likelihoods = Object.values(Likelihood).reverse();
+  const likelihoods = Object.values(Likelihood).toReversed();
   const ringWidth = diagramRadius / likelihoods.length;
   const angleStep = (2 * Math.PI) / categories.length;
 

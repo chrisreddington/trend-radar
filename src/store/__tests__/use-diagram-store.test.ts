@@ -494,7 +494,7 @@ describe("useDiagramStore", () => {
       expect(angleDiff).toBeLessThanOrEqual(halfCategoryAngle);
 
       // 6. Verify radius is in correct range for Unlikely likelihood
-      const likelihoods = Object.values(Likelihood).reverse();
+      const likelihoods = Object.values(Likelihood).toReversed();
       const likelihoodIndex = likelihoods.indexOf(Likelihood.Unlikely);
       const ringWidth = 400 / likelihoods.length;
 
