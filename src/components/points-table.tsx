@@ -29,7 +29,7 @@ export const PointsTable = () => {
     }
   };
 
-  const sortedPoints = [...points].sort((a, b) => {
+  const sortedPoints = points.toSorted((a, b) => {
     const direction = sortDirection === "asc" ? 1 : -1;
     const aValue = a[sortField].toLowerCase();
     const bValue = b[sortField].toLowerCase();
