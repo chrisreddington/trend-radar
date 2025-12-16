@@ -25,7 +25,7 @@
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24",
     "@types/react": "^19",
@@ -35,7 +35,7 @@
     "@vitest/browser-playwright": "^4.0.10",
     "@vitest/ui": "^4.0.10",
     "eslint": "^9",
-    "eslint-config-next": "16.0.7",
+    "eslint-config-next": "16.0.10",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.4",
@@ -48,7 +48,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.48.1",
+    "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.10"
   }
 }
