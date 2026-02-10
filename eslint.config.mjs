@@ -3,7 +3,7 @@ import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
-import pluginVitest from "eslint-plugin-vitest";
+import pluginVitest from "@vitest/eslint-plugin";
 
 /**
  * ESLint configuration
