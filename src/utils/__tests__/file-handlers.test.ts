@@ -270,3 +270,223 @@ describe("File Handlers", () => {
     });
   });
 });
+
+describe("File Handlers - fallback (no File System Access API)", () => {
+  const mockState: DiagramState = {
+    points: [
+      {
+        id: "1",
+        label: "Fallback Test Point",
+        category: Category.Technological,
+        likelihood: Likelihood.Average,
+        relevance: Relevance.Moderate,
+        preparedness: Preparedness.ModeratelyPrepared,
+        x: 0,
+        y: 0,
+      },
+    ],
+  };
+
+  let savedShowSaveFilePicker: typeof globalThis.showSaveFilePicker | undefined;
+  let savedShowOpenFilePicker: typeof globalThis.showOpenFilePicker | undefined;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-04-12"));
+    vi.clearAllMocks();
+
+    // Remove FSA API so the fallback code path is exercised
+    savedShowSaveFilePicker = globalThis.showSaveFilePicker;
+    savedShowOpenFilePicker = globalThis.showOpenFilePicker;
+    delete (globalThis as Record<string, unknown>).showSaveFilePicker;
+    delete (globalThis as Record<string, unknown>).showOpenFilePicker;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    // Restore FSA API stubs
+    (globalThis as Record<string, unknown>).showSaveFilePicker =
+      savedShowSaveFilePicker;
+    (globalThis as Record<string, unknown>).showOpenFilePicker =
+      savedShowOpenFilePicker;
+  });
+
+  describe("saveDiagramToFile fallback", () => {
+    it("should create a downloadable anchor element and trigger click", async () => {
+      const mockAnchor = {
+        href: "",
+        download: "",
+        click: vi.fn(),
+        remove: vi.fn(),
+      };
+      const createElementSpy = vi
+        .spyOn(document, "createElement")
+        .mockImplementation((tag: string) => {
+          if (tag === "a") return mockAnchor as unknown as HTMLAnchorElement;
+          return document.createElement(tag);
+        });
+      vi.spyOn(document.body, "append").mockImplementation(vi.fn());
+      vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:fake-url");
+      vi.spyOn(URL, "revokeObjectURL").mockImplementation(vi.fn());
+
+      await saveDiagramToFile(mockState);
+
+      expect(createElementSpy).toHaveBeenCalledWith("a");
+      expect(mockAnchor.href).toBe("blob:fake-url");
+      expect(mockAnchor.download).toBe("trend-radar-2025-04-12.json");
+      expect(document.body.append).toHaveBeenCalledWith(mockAnchor);
+      expect(mockAnchor.click).toHaveBeenCalledTimes(1);
+      expect(mockAnchor.remove).toHaveBeenCalledTimes(1);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:fake-url");
+    });
+  });
+
+  describe("loadDiagramFromFile fallback", () => {
+    const mockFileContent = {
+      version: CURRENT_VERSION,
+      points: mockState.points,
+      metadata: {
+        createdAt: "2025-04-12T00:00:00.000Z",
+        lastModifiedAt: "2025-04-12T00:00:00.000Z",
+      },
+    };
+
+    it("should create a file input element, trigger click, and resolve with file data", async () => {
+      const changeListeners: Array<() => void> = [];
+      const cancelListeners: Array<() => void> = [];
+      const mockFile = new Blob([JSON.stringify(mockFileContent)], {
+        type: "application/json",
+      });
+      const fileWithText = Object.assign(mockFile, {
+        text: () => Promise.resolve(JSON.stringify(mockFileContent)),
+      });
+      const mockInput = {
+        type: "",
+        accept: "",
+        style: { display: "" },
+        files: [fileWithText],
+        click: vi.fn(),
+        remove: vi.fn(),
+        addEventListener: vi.fn(
+          (event: string, handler: EventListenerOrEventListenerObject) => {
+            if (event === "change")
+              changeListeners.push(handler as () => void);
+            if (event === "cancel")
+              cancelListeners.push(handler as () => void);
+          },
+        ),
+      };
+      vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
+        if (tag === "input")
+          return mockInput as unknown as HTMLInputElement;
+        return document.createElement(tag);
+      });
+      vi.spyOn(document.body, "append").mockImplementation(() => {
+        // Simulate file selection after input is appended
+        changeListeners[0]?.();
+      });
+
+      const result = await loadDiagramFromFile();
+
+      expect(mockInput.type).toBe("file");
+      expect(mockInput.accept).toBe(".json");
+      expect(result).toEqual(mockFileContent);
+    });
+
+    it("should reject with AbortError when user cancels file selection", async () => {
+      const cancelListeners: Array<() => void> = [];
+      const mockInput = {
+        type: "",
+        accept: "",
+        style: { display: "" },
+        files: undefined,
+        click: vi.fn(),
+        remove: vi.fn(),
+        addEventListener: vi.fn(
+          (event: string, handler: EventListenerOrEventListenerObject) => {
+            if (event === "cancel")
+              cancelListeners.push(handler as () => void);
+          },
+        ),
+      };
+      vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
+        if (tag === "input")
+          return mockInput as unknown as HTMLInputElement;
+        return document.createElement(tag);
+      });
+      vi.spyOn(document.body, "append").mockImplementation(() => {
+        cancelListeners[0]?.();
+      });
+
+      await expect(loadDiagramFromFile()).rejects.toMatchObject({
+        name: "AbortError",
+      });
+    });
+
+    it("should reject when selected file contains invalid diagram data", async () => {
+      const changeListeners: Array<() => void> = [];
+      const mockFile = new Blob([JSON.stringify({ invalid: "data" })], {
+        type: "application/json",
+      });
+      const fileWithText = Object.assign(mockFile, {
+        text: () => Promise.resolve(JSON.stringify({ invalid: "data" })),
+      });
+      const mockInput = {
+        type: "",
+        accept: "",
+        style: { display: "" },
+        files: [fileWithText],
+        click: vi.fn(),
+        remove: vi.fn(),
+        addEventListener: vi.fn(
+          (event: string, handler: EventListenerOrEventListenerObject) => {
+            if (event === "change")
+              changeListeners.push(handler as () => void);
+          },
+        ),
+      };
+      vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
+        if (tag === "input")
+          return mockInput as unknown as HTMLInputElement;
+        return document.createElement(tag);
+      });
+      vi.spyOn(document.body, "append").mockImplementation(() => {
+        changeListeners[0]?.();
+      });
+
+      await expect(loadDiagramFromFile()).rejects.toThrow(
+        "Invalid diagram file format",
+      );
+    });
+
+    it("should reject when no file is selected (empty files list)", async () => {
+      const changeListeners: Array<() => void> = [];
+      const mockInput = {
+        type: "",
+        accept: "",
+        style: { display: "" },
+        files: undefined,
+        click: vi.fn(),
+        remove: vi.fn(),
+        addEventListener: vi.fn(
+          (event: string, handler: EventListenerOrEventListenerObject) => {
+            if (event === "change")
+              changeListeners.push(handler as () => void);
+          },
+        ),
+      };
+      vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
+        if (tag === "input")
+          return mockInput as unknown as HTMLInputElement;
+        return document.createElement(tag);
+      });
+      vi.spyOn(document.body, "append").mockImplementation(() => {
+        changeListeners[0]?.();
+      });
+
+      await expect(loadDiagramFromFile()).rejects.toThrow(
+        "File selection cancelled",
+      );
+    });
+  });
+});
