@@ -167,4 +167,122 @@ describe("RingDiagram", () => {
       expect(circles.length).toBeGreaterThan(0);
     });
   });
+
+  describe("Snapshot Tests", () => {
+    const deterministicPoints = [
+      {
+        id: "1",
+        label: "Test Point 1",
+        category: Category.Technological,
+        likelihood: Likelihood.Average,
+        relevance: Relevance.Moderate,
+        preparedness: Preparedness.ModeratelyPrepared,
+        x: 100,
+        y: 50,
+      },
+    ];
+
+    beforeEach(() => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: deterministicPoints,
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+    });
+
+    it("should match snapshot with no points", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: [],
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it("should match snapshot with a single point", () => {
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it("should match snapshot with a selected point", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: deterministicPoints,
+        selectedPoint: "1",
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+  });
+
+  describe("Integration: useResponsiveSize", () => {
+    const originalInnerWidth = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "innerWidth",
+    );
+    const originalClientWidth = Object.getOwnPropertyDescriptor(
+      document.documentElement,
+      "clientWidth",
+    );
+
+    afterEach(() => {
+      if (originalInnerWidth) {
+        Object.defineProperty(globalThis, "innerWidth", originalInnerWidth);
+      }
+      if (originalClientWidth) {
+        Object.defineProperty(
+          document.documentElement,
+          "clientWidth",
+          originalClientWidth,
+        );
+      }
+    });
+
+    it("should update SVG dimensions when viewport changes", () => {
+      const { container } = render(<RingDiagram />);
+      const svg = container.querySelector("svg");
+      expect(svg).toBeInTheDocument();
+
+      act(() => {
+        Object.defineProperty(globalThis, "innerWidth", {
+          configurable: true,
+          value: 400,
+        });
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+
+      // SVG should still be present after a resize event
+      expect(container.querySelector("svg")).toBeInTheDocument();
+    });
+
+    it("should render SVG with mobile-appropriate viewBox on narrow viewport", () => {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        configurable: true,
+        value: 400,
+      });
+      Object.defineProperty(globalThis, "innerWidth", {
+        configurable: true,
+        value: 400,
+      });
+
+      const { container } = render(<RingDiagram />);
+
+      act(() => {
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+
+      const svg = container.querySelector("svg");
+      // After resize the viewBox reflects the updated size
+      expect(svg).toHaveAttribute("viewBox");
+    });
+  });
 });

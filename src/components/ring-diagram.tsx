@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import {
   useDiagramStore,
@@ -7,6 +7,7 @@ import {
 } from "../store/use-diagram-store";
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
+import { useResponsiveSize } from "../hooks/use-responsive-size";
 
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
@@ -17,31 +18,7 @@ export const RingDiagram = () => {
     updatePoint,
     addPointAtPosition,
   } = useDiagramStore();
-  const [size, setSize] = useState(800); // Default size
-
-  // Handle responsive sizing based on viewport
-  const updateSize = useCallback(() => {
-    // Determine size based on viewport width
-    const vw = Math.max(
-      document.documentElement.clientWidth || 0,
-      window.innerWidth || 0,
-    );
-    // For mobile, use nearly full viewport width
-    // For tablets and up, cap at 800px
-    const newSize =
-      vw < 640 ? Math.min(vw - 40, 500) : Math.min(vw * 0.75, 800);
-    setSize(newSize);
-  }, []);
-
-  // Set up event listeners for resize
-  useEffect(() => {
-    // Update size on first render
-    updateSize();
-
-    // Listen for window resize events
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [updateSize]);
+  const size = useResponsiveSize();
 
   // Render diagram whenever size or data changes
   useEffect(() => {
