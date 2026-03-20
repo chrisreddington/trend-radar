@@ -1,4 +1,7 @@
-import { useDiagramStore } from "../use-diagram-store";
+import {
+  useDiagramStore,
+  coordinatesToCategoryAndLikelihood,
+} from "../use-diagram-store";
 import { Likelihood, Point, Preparedness, Relevance } from "../../types";
 import { Category } from "../../types";
 import {
@@ -623,6 +626,116 @@ describe("useDiagramStore", () => {
       expect(addedPoint.label).toBe("Custom Point");
       expect(addedPoint.relevance).toBe(Relevance.High);
       expect(addedPoint.preparedness).toBe(Preparedness.HighlyPrepared);
+    });
+  });
+});
+
+describe("coordinatesToCategoryAndLikelihood", () => {
+  // With size=800: diagramRadius = 800/2 - 800*0.08 = 336, ringWidth = 336/5 = 67.2
+  // Categories (clockwise from top): Technological, Economic, Political, Social
+  // Likelihoods (inner→outer): HighlyLikely, Likely, Average, Unlikely, HighlyUnlikely
+
+  const SIZE = 800;
+  const DIAGRAM_RADIUS = 336; // 800/2 - 800*0.08
+
+  describe("returns undefined for out-of-bounds coordinates", () => {
+    it("should return undefined when radius exceeds diagram bounds", () => {
+      const result = coordinatesToCategoryAndLikelihood(400, 400, SIZE);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return undefined when radius exactly equals diagram radius plus a small delta", () => {
+      const result = coordinatesToCategoryAndLikelihood(
+        DIAGRAM_RADIUS + 1,
+        0,
+        SIZE,
+      );
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("category mapping", () => {
+    it("should map upward coordinates (negative y) to Technological", () => {
+      // x=0, y=-100: atan2(-100,0) = -π/2, normalized to 0 → categoryIndex=0
+      const result = coordinatesToCategoryAndLikelihood(0, -100, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.category).toBe(Category.Technological);
+    });
+
+    it("should map rightward coordinates (positive x) to Economic", () => {
+      // x=100, y=0: atan2(0,100) = 0, normalized to π/2 → categoryIndex=1
+      const result = coordinatesToCategoryAndLikelihood(100, 0, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.category).toBe(Category.Economic);
+    });
+
+    it("should map downward coordinates (positive y) to Political", () => {
+      // x=0, y=100: atan2(100,0) = π/2, normalized to π → categoryIndex=2
+      const result = coordinatesToCategoryAndLikelihood(0, 100, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.category).toBe(Category.Political);
+    });
+
+    it("should map leftward coordinates (negative x) to Social", () => {
+      // x=-100, y=0: atan2(0,-100) = π, normalized to 3π/2 → categoryIndex=3
+      const result = coordinatesToCategoryAndLikelihood(-100, 0, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.category).toBe(Category.Social);
+    });
+  });
+
+  describe("likelihood mapping", () => {
+    it("should map coordinates near the outer edge to HighlyUnlikely", () => {
+      // radius ≈ 325 → (336-325)/67.2 ≈ 0.16 → index=0 → HighlyUnlikely
+      const result = coordinatesToCategoryAndLikelihood(0, -325, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.likelihood).toBe(Likelihood.HighlyUnlikely);
+    });
+
+    it("should map coordinates in the second ring to Unlikely", () => {
+      // radius ≈ 250 → (336-250)/67.2 ≈ 1.28 → index=1 → Unlikely
+      const result = coordinatesToCategoryAndLikelihood(0, -250, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.likelihood).toBe(Likelihood.Unlikely);
+    });
+
+    it("should map coordinates in the middle ring to Average", () => {
+      // radius ≈ 200 → (336-200)/67.2 ≈ 2.02 → index=2 → Average
+      const result = coordinatesToCategoryAndLikelihood(0, -200, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.likelihood).toBe(Likelihood.Average);
+    });
+
+    it("should map coordinates in the fourth ring to Likely", () => {
+      // radius ≈ 120 → (336-120)/67.2 ≈ 3.21 → index=3 → Likely
+      const result = coordinatesToCategoryAndLikelihood(0, -120, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.likelihood).toBe(Likelihood.Likely);
+    });
+
+    it("should map coordinates near the centre to HighlyLikely", () => {
+      // radius ≈ 30 → (336-30)/67.2 ≈ 4.55 → clamped to 4 → HighlyLikely
+      const result = coordinatesToCategoryAndLikelihood(0, -30, SIZE);
+      expect(result).toBeDefined();
+      expect(result!.likelihood).toBe(Likelihood.HighlyLikely);
+    });
+  });
+
+  describe("custom size parameter", () => {
+    it("should respect a non-default size when mapping coordinates", () => {
+      // size=400: diagramRadius = 400/2 - 400*0.08 = 200 - 32 = 168
+      // x=0, y=-80: radius=80, category=Technological
+      // (168-80)/(168/5) = 88/33.6 ≈ 2.6 → index=2 → Average
+      const result = coordinatesToCategoryAndLikelihood(0, -80, 400);
+      expect(result).toBeDefined();
+      expect(result!.category).toBe(Category.Technological);
+      expect(result!.likelihood).toBe(Likelihood.Average);
+    });
+
+    it("should return undefined when coordinates exceed bounds for non-default size", () => {
+      // size=400: diagramRadius=168; radius of (200,0)=200 > 168
+      const result = coordinatesToCategoryAndLikelihood(200, 0, 400);
+      expect(result).toBeUndefined();
     });
   });
 });
