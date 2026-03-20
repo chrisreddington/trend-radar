@@ -64,8 +64,8 @@ describe("useResponsiveSize", () => {
     it("should cap mobile size at 500 when near-full viewport would exceed it", () => {
       setViewportWidth(600);
       const { result } = renderHook(() => useResponsiveSize());
-      // vw >= 640 → desktop path: 600 * 0.75 = 450
-      expect(result.current).toBe(450);
+      // mobile: 600 - 40 = 560, capped at 500
+      expect(result.current).toBe(500);
     });
 
     it("should cap mobile size at 500 for a very wide mobile viewport just below breakpoint", () => {

@@ -169,6 +169,29 @@ describe("RingDiagram", () => {
   });
 
   describe("Snapshot Tests", () => {
+    const deterministicPoints = [
+      {
+        id: "1",
+        label: "Test Point 1",
+        category: Category.Technological,
+        likelihood: Likelihood.Average,
+        relevance: Relevance.Moderate,
+        preparedness: Preparedness.ModeratelyPrepared,
+        x: 100,
+        y: 50,
+      },
+    ];
+
+    beforeEach(() => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: deterministicPoints,
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+    });
+
     it("should match snapshot with no points", () => {
       (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         points: [],
@@ -189,7 +212,7 @@ describe("RingDiagram", () => {
 
     it("should match snapshot with a selected point", () => {
       (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        points: mockPoints,
+        points: deterministicPoints,
         selectedPoint: "1",
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
@@ -202,6 +225,28 @@ describe("RingDiagram", () => {
   });
 
   describe("Integration: useResponsiveSize", () => {
+    const originalInnerWidth = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "innerWidth",
+    );
+    const originalClientWidth = Object.getOwnPropertyDescriptor(
+      document.documentElement,
+      "clientWidth",
+    );
+
+    afterEach(() => {
+      if (originalInnerWidth) {
+        Object.defineProperty(globalThis, "innerWidth", originalInnerWidth);
+      }
+      if (originalClientWidth) {
+        Object.defineProperty(
+          document.documentElement,
+          "clientWidth",
+          originalClientWidth,
+        );
+      }
+    });
+
     it("should update SVG dimensions when viewport changes", () => {
       const { container } = render(<RingDiagram />);
       const svg = container.querySelector("svg");
