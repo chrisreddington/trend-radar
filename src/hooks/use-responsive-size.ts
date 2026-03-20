@@ -23,9 +23,10 @@ export function useResponsiveSize(): number {
       document.documentElement.clientWidth || 0,
       window.innerWidth || 0,
     );
+    const mobileSize = Math.max(vw - MOBILE_VIEWPORT_PADDING, 0);
     const newSize =
       vw < MOBILE_BREAKPOINT
-        ? Math.min(vw - MOBILE_VIEWPORT_PADDING, MAX_MOBILE_SIZE)
+        ? Math.min(mobileSize, MAX_MOBILE_SIZE)
         : Math.min(vw * DESKTOP_VIEWPORT_FRACTION, MAX_DESKTOP_SIZE);
     setSize(newSize);
   }, []);
