@@ -33,7 +33,6 @@ export const RingDiagram = () => {
     (
       svgElement: SVGSVGElement,
       selected: string | undefined,
-      diagramSize: number,
     ) => {
       d3.select(svgElement)
         .selectAll<SVGCircleElement, unknown>("circle.point")
@@ -42,7 +41,6 @@ export const RingDiagram = () => {
             ? "var(--highlight)"
             : "none";
         })
-        .attr("stroke-width", diagramSize < 500 ? 2 : 3)
         .attr("opacity", function () {
           const pointId = this.dataset["pointId"];
           return selected && pointId !== selected ? 0.6 : 1;
@@ -54,8 +52,8 @@ export const RingDiagram = () => {
   // Cheap effect: only update selection visuals without rebuilding the SVG
   useEffect(() => {
     if (!svgReference.current) return;
-    applySelectionHighlight(svgReference.current, selectedPoint, size);
-  }, [selectedPoint, size, applySelectionHighlight]);
+    applySelectionHighlight(svgReference.current, selectedPoint);
+  }, [selectedPoint, applySelectionHighlight]);
 
   // Structural render: rebuilds the full SVG when points data or diagram size change
   useEffect(() => {
@@ -360,7 +358,7 @@ export const RingDiagram = () => {
     }
 
     // Apply selection highlight to reflect any current selection after rebuild
-    applySelectionHighlight(svgReference.current, selectedPointReference.current, size);
+    applySelectionHighlight(svgReference.current, selectedPointReference.current);
   }, [
     points,
     selectPoint,

@@ -35,7 +35,7 @@ export const PointsTable = () => {
         const direction = sortDirection === "asc" ? 1 : -1;
         const aValue = a[sortField].toLowerCase();
         const bValue = b[sortField].toLowerCase();
-        return aValue > bValue ? direction : -direction;
+        return aValue.localeCompare(bValue) * direction;
       }),
     [points, sortField, sortDirection],
   );
