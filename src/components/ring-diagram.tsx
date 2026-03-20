@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import {
   useDiagramStore,
@@ -20,7 +20,44 @@ export const RingDiagram = () => {
   } = useDiagramStore();
   const size = useResponsiveSize();
 
-  // Render diagram whenever size or data changes
+  // Keep a ref to selectedPoint so event handlers always read the latest value
+  // without needing selectedPoint in the structural render effect's dependency array.
+  const selectedPointReference = useRef(selectedPoint);
+  selectedPointReference.current = selectedPoint;
+
+  /**
+   * Updates stroke and opacity on existing point circles to reflect the current selection.
+   * Separated from the structural render so that a selection change avoids a full SVG rebuild.
+   */
+  const applySelectionHighlight = useCallback(
+    (
+      svgElement: SVGSVGElement,
+      selected: string | undefined,
+      diagramSize: number,
+    ) => {
+      d3.select(svgElement)
+        .selectAll<SVGCircleElement, unknown>("circle.point")
+        .attr("stroke", function () {
+          return this.dataset["pointId"] === selected
+            ? "var(--highlight)"
+            : "none";
+        })
+        .attr("stroke-width", diagramSize < 500 ? 2 : 3)
+        .attr("opacity", function () {
+          const pointId = this.dataset["pointId"];
+          return selected && pointId !== selected ? 0.6 : 1;
+        });
+    },
+    [],
+  );
+
+  // Cheap effect: only update selection visuals without rebuilding the SVG
+  useEffect(() => {
+    if (!svgReference.current) return;
+    applySelectionHighlight(svgReference.current, selectedPoint, size);
+  }, [selectedPoint, size, applySelectionHighlight]);
+
+  // Structural render: rebuilds the full SVG when points data or diagram size change
   useEffect(() => {
     if (!svgReference.current || size === 0) return;
 
@@ -221,13 +258,11 @@ export const RingDiagram = () => {
               ? PREPAREDNESS_COLORS.moderate
               : PREPAREDNESS_COLORS.low),
         )
-        .attr(
-          "stroke",
-          selectedPoint === point.id ? "var(--highlight)" : "none",
-        )
+        .attr("stroke", "none")
         .attr("stroke-width", size < 500 ? 2 : 3)
         .attr("cursor", "pointer")
-        .attr("opacity", selectedPoint && selectedPoint !== point.id ? 0.6 : 1)
+        .attr("opacity", 1)
+        .attr("data-point-id", point.id)
         .classed("point", true);
 
       // For mobile: Add larger touch target using the computed position
@@ -309,10 +344,10 @@ export const RingDiagram = () => {
             .attr("opacity", 1);
         })
         .on("mouseout", function () {
-          if (selectedPoint !== point.id) {
+          if (selectedPointReference.current !== point.id) {
             d3.select(this)
               .attr("stroke", "none")
-              .attr("opacity", selectedPoint ? 0.6 : 1);
+              .attr("opacity", selectedPointReference.current ? 0.6 : 1);
           }
         })
         .on("click", function (event) {
@@ -323,13 +358,16 @@ export const RingDiagram = () => {
 
       pointElement.append("title").text(point.label);
     }
+
+    // Apply selection highlight to reflect any current selection after rebuild
+    applySelectionHighlight(svgReference.current, selectedPointReference.current, size);
   }, [
     points,
-    selectedPoint,
     selectPoint,
     updatePoint,
     addPointAtPosition,
     size,
+    applySelectionHighlight,
   ]);
 
   return (

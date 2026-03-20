@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 
 type SortField =
@@ -29,12 +29,16 @@ export const PointsTable = () => {
     }
   };
 
-  const sortedPoints = points.toSorted((a, b) => {
-    const direction = sortDirection === "asc" ? 1 : -1;
-    const aValue = a[sortField].toLowerCase();
-    const bValue = b[sortField].toLowerCase();
-    return aValue > bValue ? direction : -direction;
-  });
+  const sortedPoints = useMemo(
+    () =>
+      points.toSorted((a, b) => {
+        const direction = sortDirection === "asc" ? 1 : -1;
+        const aValue = a[sortField].toLowerCase();
+        const bValue = b[sortField].toLowerCase();
+        return aValue > bValue ? direction : -direction;
+      }),
+    [points, sortField, sortDirection],
+  );
 
   return (
     <div className="w-full bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 mt-6">
