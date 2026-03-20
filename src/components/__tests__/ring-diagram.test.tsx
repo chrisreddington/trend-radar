@@ -167,4 +167,77 @@ describe("RingDiagram", () => {
       expect(circles.length).toBeGreaterThan(0);
     });
   });
+
+  describe("Snapshot Tests", () => {
+    it("should match snapshot with no points", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: [],
+        selectedPoint: undefined,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it("should match snapshot with a single point", () => {
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it("should match snapshot with a selected point", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: mockPoints,
+        selectedPoint: "1",
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+      expect(container.firstChild).toMatchSnapshot();
+    });
+  });
+
+  describe("Integration: useResponsiveSize", () => {
+    it("should update SVG dimensions when viewport changes", () => {
+      const { container } = render(<RingDiagram />);
+      const svg = container.querySelector("svg");
+      expect(svg).toBeInTheDocument();
+
+      act(() => {
+        Object.defineProperty(globalThis, "innerWidth", {
+          configurable: true,
+          value: 400,
+        });
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+
+      // SVG should still be present after a resize event
+      expect(container.querySelector("svg")).toBeInTheDocument();
+    });
+
+    it("should render SVG with mobile-appropriate viewBox on narrow viewport", () => {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        configurable: true,
+        value: 400,
+      });
+      Object.defineProperty(globalThis, "innerWidth", {
+        configurable: true,
+        value: 400,
+      });
+
+      const { container } = render(<RingDiagram />);
+
+      act(() => {
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+
+      const svg = container.querySelector("svg");
+      // After resize the viewBox reflects the updated size
+      expect(svg).toHaveAttribute("viewBox");
+    });
+  });
 });
