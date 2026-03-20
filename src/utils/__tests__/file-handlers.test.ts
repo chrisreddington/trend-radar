@@ -289,6 +289,8 @@ describe("File Handlers - fallback (no File System Access API)", () => {
 
   let savedShowSaveFilePicker: typeof globalThis.showSaveFilePicker | undefined;
   let savedShowOpenFilePicker: typeof globalThis.showOpenFilePicker | undefined;
+  let hadShowSaveFilePicker: boolean;
+  let hadShowOpenFilePicker: boolean;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -296,6 +298,8 @@ describe("File Handlers - fallback (no File System Access API)", () => {
     vi.clearAllMocks();
 
     // Remove FSA API so the fallback code path is exercised
+    hadShowSaveFilePicker = "showSaveFilePicker" in globalThis;
+    hadShowOpenFilePicker = "showOpenFilePicker" in globalThis;
     savedShowSaveFilePicker = globalThis.showSaveFilePicker;
     savedShowOpenFilePicker = globalThis.showOpenFilePicker;
     delete (globalThis as Record<string, unknown>).showSaveFilePicker;
@@ -304,11 +308,19 @@ describe("File Handlers - fallback (no File System Access API)", () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    // Restore FSA API stubs
-    (globalThis as Record<string, unknown>).showSaveFilePicker =
-      savedShowSaveFilePicker;
-    (globalThis as Record<string, unknown>).showOpenFilePicker =
-      savedShowOpenFilePicker;
+    // Restore FSA API stubs only if they existed before deletion
+    if (hadShowSaveFilePicker) {
+      (globalThis as Record<string, unknown>).showSaveFilePicker =
+        savedShowSaveFilePicker;
+    } else {
+      delete (globalThis as Record<string, unknown>).showSaveFilePicker;
+    }
+    if (hadShowOpenFilePicker) {
+      (globalThis as Record<string, unknown>).showOpenFilePicker =
+        savedShowOpenFilePicker;
+    } else {
+      delete (globalThis as Record<string, unknown>).showOpenFilePicker;
+    }
   });
 
   describe("saveDiagramToFile fallback", () => {
@@ -319,11 +331,12 @@ describe("File Handlers - fallback (no File System Access API)", () => {
         click: vi.fn(),
         remove: vi.fn(),
       };
+      const originalCreateElement = document.createElement.bind(document);
       const createElementSpy = vi
         .spyOn(document, "createElement")
         .mockImplementation((tag: string) => {
           if (tag === "a") return mockAnchor as unknown as HTMLAnchorElement;
-          return document.createElement(tag);
+          return originalCreateElement(tag);
         });
       vi.spyOn(document.body, "append").mockImplementation(vi.fn());
       vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:fake-url");
@@ -376,13 +389,15 @@ describe("File Handlers - fallback (no File System Access API)", () => {
           },
         ),
       };
+      const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
         if (tag === "input")
           return mockInput as unknown as HTMLInputElement;
-        return document.createElement(tag);
+        return originalCreateElement(tag);
       });
-      vi.spyOn(document.body, "append").mockImplementation(() => {
-        // Simulate file selection after input is appended
+      vi.spyOn(document.body, "append").mockImplementation(vi.fn());
+      mockInput.click.mockImplementation(() => {
+        // Simulate file selection after listeners are registered
         changeListeners[0]?.();
       });
 
@@ -409,12 +424,15 @@ describe("File Handlers - fallback (no File System Access API)", () => {
           },
         ),
       };
+      const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
         if (tag === "input")
           return mockInput as unknown as HTMLInputElement;
-        return document.createElement(tag);
+        return originalCreateElement(tag);
       });
-      vi.spyOn(document.body, "append").mockImplementation(() => {
+      vi.spyOn(document.body, "append").mockImplementation(vi.fn());
+      mockInput.click.mockImplementation(() => {
+        // Simulate user cancel after listeners are registered
         cancelListeners[0]?.();
       });
 
@@ -445,12 +463,15 @@ describe("File Handlers - fallback (no File System Access API)", () => {
           },
         ),
       };
+      const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
         if (tag === "input")
           return mockInput as unknown as HTMLInputElement;
-        return document.createElement(tag);
+        return originalCreateElement(tag);
       });
-      vi.spyOn(document.body, "append").mockImplementation(() => {
+      vi.spyOn(document.body, "append").mockImplementation(vi.fn());
+      mockInput.click.mockImplementation(() => {
+        // Simulate file selection after listeners are registered
         changeListeners[0]?.();
       });
 
@@ -475,12 +496,15 @@ describe("File Handlers - fallback (no File System Access API)", () => {
           },
         ),
       };
+      const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
         if (tag === "input")
           return mockInput as unknown as HTMLInputElement;
-        return document.createElement(tag);
+        return originalCreateElement(tag);
       });
-      vi.spyOn(document.body, "append").mockImplementation(() => {
+      vi.spyOn(document.body, "append").mockImplementation(vi.fn());
+      mockInput.click.mockImplementation(() => {
+        // Simulate file selection after listeners are registered
         changeListeners[0]?.();
       });
 
