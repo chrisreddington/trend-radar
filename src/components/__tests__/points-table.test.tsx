@@ -111,6 +111,16 @@ describe("PointsTable", () => {
       fireEvent.click(button);
       expect(content).not.toHaveClass("hidden");
     });
+
+    it("should render the search input and category filter", () => {
+      render(<PointsTable />);
+      expect(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("combobox", { name: "Filter by category" }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("Sorting", () => {
@@ -158,6 +168,112 @@ describe("PointsTable", () => {
       fireEvent.click(getColumnHeader("Category"));
       expect(getColumnHeader("Category")).toHaveTextContent(/↑$/);
       expect(getColumnHeader("Label")).toHaveTextContent(/^Label$/);
+    });
+  });
+
+  describe("Filtering", () => {
+    it("should filter rows by label search term", () => {
+      render(<PointsTable />);
+      const searchInput = screen.getByRole("searchbox", {
+        name: "Search points by label",
+      });
+
+      fireEvent.change(searchInput, { target: { value: "Point 1" } });
+
+      expect(screen.getByText("Test Point 1")).toBeInTheDocument();
+      expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
+    });
+
+    it("should filter rows by category", () => {
+      render(<PointsTable />);
+      const categorySelect = screen.getByRole("combobox", {
+        name: "Filter by category",
+      });
+
+      fireEvent.change(categorySelect, { target: { value: "Economic" } });
+
+      expect(screen.queryByText("Test Point 1")).not.toBeInTheDocument();
+      expect(screen.getByText("Test Point 2")).toBeInTheDocument();
+    });
+
+    it("should combine label search and category filter", () => {
+      render(<PointsTable />);
+
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "Point" } },
+      );
+      fireEvent.change(
+        screen.getByRole("combobox", { name: "Filter by category" }),
+        { target: { value: "Technological" } },
+      );
+
+      expect(screen.getByText("Test Point 1")).toBeInTheDocument();
+      expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
+    });
+
+    it("should show a result count when filters are active", () => {
+      render(<PointsTable />);
+
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "Point 1" } },
+      );
+
+      expect(screen.getByText(/1 of 2 shown/)).toBeInTheDocument();
+    });
+
+    it("should show an empty-state message when no rows match", () => {
+      render(<PointsTable />);
+
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "nonexistent" } },
+      );
+
+      expect(
+        screen.getByText("No points match the current filters."),
+      ).toBeInTheDocument();
+    });
+
+    it("should show a Clear button when filters are active and reset on click", () => {
+      render(<PointsTable />);
+      const searchInput = screen.getByRole("searchbox", {
+        name: "Search points by label",
+      });
+
+      fireEvent.change(searchInput, { target: { value: "Point 1" } });
+
+      const clearButton = screen.getByRole("button", { name: "Clear filters" });
+      expect(clearButton).toBeInTheDocument();
+
+      fireEvent.click(clearButton);
+
+      expect(searchInput).toHaveValue("");
+      expect(screen.getByText("Test Point 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Point 2")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Clear filters" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should hide the Clear button when no filters are active", () => {
+      render(<PointsTable />);
+      expect(
+        screen.queryByRole("button", { name: "Clear filters" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("should perform case-insensitive label search", () => {
+      render(<PointsTable />);
+
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "TEST POINT 1" } },
+      );
+
+      expect(screen.getByText("Test Point 1")).toBeInTheDocument();
+      expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
     });
   });
 });
