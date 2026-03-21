@@ -21,10 +21,16 @@ function getDiagramDimensions(size = 800) {
 }
 
 /**
+ * Cached diagram dimensions for the default size (800).
+ * Avoids recomputing the same trigonometric constants on every store action.
+ */
+const DEFAULT_DIAGRAM_DIMENSIONS = getDiagramDimensions();
+
+/**
  * Calculate a random position for a point within its category and likelihood segment
  */
 function calculateRandomPosition(point: Omit<Point, "id">) {
-  const dims = getDiagramDimensions();
+  const dims = DEFAULT_DIAGRAM_DIMENSIONS;
   const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
 
   const categoryIndex = categories.indexOf(point.category);
@@ -194,7 +200,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
         !preservePosition &&
         (updates.category !== undefined || updates.likelihood !== undefined)
       ) {
-        const dims = getDiagramDimensions();
+        const dims = DEFAULT_DIAGRAM_DIMENSIONS;
         const { categories, likelihoods } = dims;
 
         const categoryIndex = categories.indexOf(updatedPoint.category);

@@ -82,9 +82,11 @@ describe("PointsTable", () => {
   ];
 
   beforeEach(() => {
-    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      points: mockPoints,
-    });
+    const state = { points: mockPoints };
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+    );
   });
 
   describe("Basic Rendering", () => {
