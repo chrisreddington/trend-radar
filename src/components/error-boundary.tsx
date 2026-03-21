@@ -10,6 +10,7 @@ interface ErrorBoundaryProperties {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | undefined;
+  retryAfterError: boolean;
 }
 
 const DEFAULT_FALLBACK_HEADING = "Something went wrong";
@@ -27,11 +28,11 @@ export class ErrorBoundary extends Component<
 > {
   constructor(properties: ErrorBoundaryProperties) {
     super(properties);
-    this.state = { hasError: false, error: undefined };
+    this.state = { hasError: false, error: undefined, retryAfterError: false };
     this.reset = this.reset.bind(this);
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error };
   }
 
@@ -39,8 +40,18 @@ export class ErrorBoundary extends Component<
     console.error("ErrorBoundary caught an error:", error, info);
   }
 
+  componentDidUpdate(previousProperties: ErrorBoundaryProperties): void {
+    if (
+      this.state.hasError &&
+      this.state.retryAfterError &&
+      previousProperties.children !== this.props.children
+    ) {
+      this.setState({ hasError: false, error: undefined, retryAfterError: false });
+    }
+  }
+
   reset(): void {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false, error: undefined, retryAfterError: true });
   }
 
   render() {

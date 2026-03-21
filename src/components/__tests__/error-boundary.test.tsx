@@ -106,6 +106,42 @@ describe("ErrorBoundary", () => {
     expect(screen.getByText("Healthy content")).toBeInTheDocument();
   });
 
+  it("does not auto-reset when children change without the retry button being clicked", () => {
+    const { rerender } = render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    // Re-render with a non-throwing child but without clicking retry first
+    rerender(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+
+    // Alert should still be visible because retry was never requested
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("keeps fallback when retry is clicked but children still throw", async () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    // Click retry — same throwing child re-renders and error is re-caught
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+
+    // Fallback must still be visible because children have not changed
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
   it("passes the reset function to a custom fallback", async () => {
     const resetSpy = vi.fn();
     const customFallback = (_error: Error, reset: () => void) => (
