@@ -22,7 +22,8 @@ function getDiagramDimensions(size = 800) {
 
 /**
  * Cached diagram dimensions for the default size (800).
- * Avoids recomputing the same trigonometric constants on every store action.
+ * Avoids recomputing derived diagram dimensions and related values
+ * (such as angleStep, ringWidth, categories, and likelihoods) on every store action.
  */
 const DEFAULT_DIAGRAM_DIMENSIONS = getDiagramDimensions();
 
