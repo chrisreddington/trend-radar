@@ -6,6 +6,7 @@ import { FileOperations } from "../components/file-operations";
 import { ThemeToggle } from "../components/theme-toggle";
 import { ViewSourceOnGitHub } from "@/components/view-github-source";
 import { DiagramPersistenceWatcher } from "@/components/diagram-persistence-watcher";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export default function Home() {
   return (
@@ -13,7 +14,9 @@ export default function Home() {
       <DiagramPersistenceWatcher />
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="w-full lg:flex-1 flex justify-center">
-          <RingDiagram />
+          <ErrorBoundary>
+            <RingDiagram />
+          </ErrorBoundary>
         </div>
         <div className="w-full lg:w-auto lg:max-w-xs space-y-6">
           <ViewSourceOnGitHub repoUrl="https://github.com/chrisreddington/trend-radar" />

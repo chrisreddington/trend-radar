@@ -86,6 +86,72 @@ describe("FileOperations", () => {
     expect(console.error).toHaveBeenCalledWith(error);
   });
 
+  it("shows loading state while saving", async () => {
+    let resolveSave!: () => void;
+    mockSaveDiagram.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+
+    render(<FileOperations />);
+
+    const saveButton = screen.getByRole("button", { name: "Save Diagram" });
+    const loadButton = screen.getByRole("button", { name: "Load Diagram" });
+
+    await user.click(saveButton);
+
+    expect(screen.getByRole("button", { name: "Saving…" })).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
+    expect(loadButton).toBeDisabled();
+
+    resolveSave();
+    expect(await screen.findByRole("button", { name: "Save Diagram" })).toBeEnabled();
+  });
+
+  it("shows loading state while loading", async () => {
+    let resolveLoad!: () => void;
+    mockLoadDiagram.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        resolveLoad = resolve;
+      }),
+    );
+
+    render(<FileOperations />);
+
+    const saveButton = screen.getByRole("button", { name: "Save Diagram" });
+    const loadButton = screen.getByRole("button", { name: "Load Diagram" });
+
+    await user.click(loadButton);
+
+    expect(screen.getByRole("button", { name: "Loading…" })).toBeInTheDocument();
+    expect(saveButton).toBeDisabled();
+    expect(loadButton).toBeDisabled();
+
+    resolveLoad();
+    expect(await screen.findByRole("button", { name: "Load Diagram" })).toBeEnabled();
+  });
+
+  it("re-enables buttons after save fails", async () => {
+    mockSaveDiagram.mockRejectedValueOnce(new Error("Save failed"));
+    render(<FileOperations />);
+
+    await user.click(screen.getByRole("button", { name: "Save Diagram" }));
+
+    expect(await screen.findByRole("button", { name: "Save Diagram" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Load Diagram" })).toBeEnabled();
+  });
+
+  it("re-enables buttons after load fails", async () => {
+    mockLoadDiagram.mockRejectedValueOnce(new Error("Load failed"));
+    render(<FileOperations />);
+
+    await user.click(screen.getByRole("button", { name: "Load Diagram" }));
+
+    expect(await screen.findByRole("button", { name: "Load Diagram" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Save Diagram" })).toBeEnabled();
+  });
+
   it("clears error message when operation succeeds after previous error", async () => {
     mockSaveDiagram
       .mockRejectedValueOnce(new Error("Save failed"))
