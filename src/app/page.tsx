@@ -5,10 +5,12 @@ import { PointsTable } from "../components/points-table";
 import { FileOperations } from "../components/file-operations";
 import { ThemeToggle } from "../components/theme-toggle";
 import { ViewSourceOnGitHub } from "@/components/view-github-source";
+import { DiagramPersistenceWatcher } from "@/components/diagram-persistence-watcher";
 
 export default function Home() {
   return (
     <main className="min-h-screen p-4 sm:p-8 bg-white dark:bg-gray-900">
+      <DiagramPersistenceWatcher />
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="w-full lg:flex-1 flex justify-center">
           <RingDiagram />
