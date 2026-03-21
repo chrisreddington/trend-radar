@@ -186,14 +186,16 @@ export const PointsTable = () => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAndSortedPoints.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
-                  >
-                    No points match the current filters.
-                  </td>
-                </tr>
+                isFiltered ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                    >
+                      No points match the current filters.
+                    </td>
+                  </tr>
+                ) : null
               ) : (
                 filteredAndSortedPoints.map((point) => (
                   <tr
