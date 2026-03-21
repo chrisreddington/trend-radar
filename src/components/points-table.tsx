@@ -195,7 +195,7 @@ export const PointsTable = () => {
                       No points match the current filters.
                     </td>
                   </tr>
-                ) : null
+                ) : undefined
               ) : (
                 filteredAndSortedPoints.map((point) => (
                   <tr
