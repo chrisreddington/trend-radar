@@ -12,10 +12,18 @@ import { useDiagramStore } from "../store/use-diagram-store";
  */
 export function useDiagramPersistence(): void {
   useEffect(() => {
-    useDiagramStore.getState().loadState();
+    const diagramStoreState = useDiagramStore.getState();
 
-    let previousPoints = useDiagramStore.getState().points;
+    try {
+      diagramStoreState.loadState();
+    } catch (error) {
+      // Swallow errors from localStorage/JSON parsing so a corrupted persisted
+      // state cannot crash the app during hydration or mount.
+      // eslint-disable-next-line no-console
+      console.error("Failed to load persisted diagram state:", error);
+    }
 
+    let previousPoints = diagramStoreState.points;
     const unsubscribe = useDiagramStore.subscribe((state) => {
       if (state.points !== previousPoints) {
         previousPoints = state.points;
