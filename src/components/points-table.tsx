@@ -15,7 +15,7 @@ const ALL_CATEGORIES = "All" as const;
 type CategoryFilter = Category | typeof ALL_CATEGORIES;
 
 export const PointsTable = () => {
-  const { points } = useDiagramStore();
+  const points = useDiagramStore((state) => state.points);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
