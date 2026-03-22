@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
-import { Category } from "../types";
+import { Category, Likelihood, Preparedness, Relevance } from "../types";
 
 type SortField =
   | "label"
@@ -10,9 +10,31 @@ type SortField =
   | "preparedness"
   | "likelihood";
 type SortDirection = "asc" | "desc";
-
 const ALL_CATEGORIES = "All" as const;
 type CategoryFilter = Category | typeof ALL_CATEGORIES;
+
+/** Ordinal rank for Likelihood values (lower index = higher likelihood). */
+const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
+  [Likelihood.HighlyLikely]: 0,
+  [Likelihood.Likely]: 1,
+  [Likelihood.Average]: 2,
+  [Likelihood.Unlikely]: 3,
+  [Likelihood.HighlyUnlikely]: 4,
+};
+
+/** Ordinal rank for Relevance values (lower index = higher relevance). */
+const RELEVANCE_ORDER: Record<Relevance, number> = {
+  [Relevance.High]: 0,
+  [Relevance.Moderate]: 1,
+  [Relevance.Low]: 2,
+};
+
+/** Ordinal rank for Preparedness values (lower index = more prepared). */
+const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
+  [Preparedness.HighlyPrepared]: 0,
+  [Preparedness.ModeratelyPrepared]: 1,
+  [Preparedness.InadequatelyPrepared]: 2,
+};
 
 export const PointsTable = () => {
   const points = useDiagramStore((state) => state.points);
@@ -44,23 +66,53 @@ export const PointsTable = () => {
   const isFiltered =
     labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
-  const filteredAndSortedPoints = useMemo(() => {
-    const searchTerm = labelSearch.toLowerCase();
-    const filtered = points.filter((point) => {
-      const matchesLabel = point.label.toLowerCase().includes(searchTerm);
-      const matchesCategory =
-        categoryFilter === ALL_CATEGORIES ||
-        point.category === categoryFilter;
-      return matchesLabel && matchesCategory;
-    });
+  const filteredAndSortedPoints = useMemo(
+    () =>
+      points
+        .filter((point) => {
+          const matchesLabel = point.label
+            .toLowerCase()
+            .includes(labelSearch.toLowerCase());
+          const matchesCategory =
+            categoryFilter === ALL_CATEGORIES ||
+            point.category === categoryFilter;
 
-    return filtered.toSorted((a, b) => {
-      const direction = sortDirection === "asc" ? 1 : -1;
-      const aValue = a[sortField].toLowerCase();
-      const bValue = b[sortField].toLowerCase();
-      return aValue.localeCompare(bValue) * direction;
-    });
-  }, [points, sortField, sortDirection, labelSearch, categoryFilter]);
+          return matchesLabel && matchesCategory;
+        })
+        .toSorted((a, b) => {
+          const direction = sortDirection === "asc" ? 1 : -1;
+          switch (sortField) {
+            case "likelihood": {
+              return (
+                (LIKELIHOOD_ORDER[a.likelihood] -
+                  LIKELIHOOD_ORDER[b.likelihood]) *
+                direction
+              );
+            }
+            case "relevance": {
+              return (
+                (RELEVANCE_ORDER[a.relevance] - RELEVANCE_ORDER[b.relevance]) *
+                direction
+              );
+            }
+            case "preparedness": {
+              return (
+                (PREPAREDNESS_ORDER[a.preparedness] -
+                  PREPAREDNESS_ORDER[b.preparedness]) *
+                direction
+              );
+            }
+            default: {
+              return (
+                a[sortField]
+                  .toLowerCase()
+                  .localeCompare(b[sortField].toLowerCase()) * direction
+              );
+            }
+          }
+        }),
+    [points, sortField, sortDirection, labelSearch, categoryFilter],
+  );
 
   return (
     <div className="w-full bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 mt-6">
@@ -114,9 +166,9 @@ export const PointsTable = () => {
             className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value={ALL_CATEGORIES}>All categories</option>
-            {Object.values(Category).map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+            {Object.values(Category).map((category) => (
+              <option key={category} value={category}>
+                {category}
               </option>
             ))}
           </select>
