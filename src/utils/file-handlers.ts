@@ -102,8 +102,12 @@ export async function saveDiagramToFile(state: DiagramState): Promise<void> {
     await writableStream.write(blob);
     await writableStream.close();
   } catch (error) {
-    if ((error as Error).name !== "AbortError") {
-      throw new Error("Failed to save diagram: " + (error as Error).message, { cause: error });
+    if (!(error instanceof Error && error.name === "AbortError")) {
+      throw new Error(
+        "Failed to save diagram: " +
+          (error instanceof Error ? error.message : String(error)),
+        { cause: error },
+      );
     }
   }
 }
@@ -172,7 +176,10 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
           resolve(data);
         } catch (error) {
           reject(
-            new Error("Failed to load diagram: " + (error as Error).message),
+            new Error(
+              "Failed to load diagram: " +
+                (error instanceof Error ? error.message : String(error)),
+            ),
           );
         } finally {
           input.remove();
@@ -219,9 +226,13 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
     return data;
   } catch (error) {
     // Propagate AbortError as is, wrap other errors
-    if ((error as Error).name === "AbortError") {
+    if (error instanceof Error && error.name === "AbortError") {
       throw error;
     }
-    throw new Error("Failed to load diagram: " + (error as Error).message, { cause: error });
+    throw new Error(
+      "Failed to load diagram: " +
+        (error instanceof Error ? error.message : String(error)),
+      { cause: error },
+    );
   }
 }

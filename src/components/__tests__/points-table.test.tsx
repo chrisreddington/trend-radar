@@ -128,6 +128,7 @@ describe("PointsTable", () => {
       fireEvent.click(button);
       expect(content).not.toHaveClass("hidden");
     });
+
   });
 
   describe("Sorting", () => {
@@ -283,7 +284,6 @@ describe("PointsTable", () => {
       expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
     });
   });
-
   describe("Ordinal sorting", () => {
     // These tests use a third point so alphabetical and ordinal orders diverge.
     // "Low" relevance sorts after "Moderate" ordinally but before it alphabetically.
