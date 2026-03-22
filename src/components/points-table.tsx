@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
-import { Likelihood, Preparedness, Relevance } from "../types";
+import { Category, Likelihood, Preparedness, Relevance } from "../types";
 
 type SortField =
   | "label"
@@ -10,6 +10,8 @@ type SortField =
   | "preparedness"
   | "likelihood";
 type SortDirection = "asc" | "desc";
+const ALL_CATEGORIES = "All" as const;
+type CategoryFilter = Category | typeof ALL_CATEGORIES;
 
 /** Ordinal rank for Likelihood values (lower index = higher likelihood). */
 const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
@@ -39,6 +41,9 @@ export const PointsTable = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [labelSearch, setLabelSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] =
+    useState<CategoryFilter>(ALL_CATEGORIES);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -53,41 +58,60 @@ export const PointsTable = () => {
     }
   };
 
-  const sortedPoints = useMemo(
+  const clearFilters = () => {
+    setLabelSearch("");
+    setCategoryFilter(ALL_CATEGORIES);
+  };
+
+  const isFiltered =
+    labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
+
+  const filteredAndSortedPoints = useMemo(
     () =>
-      points.toSorted((a, b) => {
-        const direction = sortDirection === "asc" ? 1 : -1;
-        switch (sortField) {
-          case "likelihood": {
-            return (
-              (LIKELIHOOD_ORDER[a.likelihood] -
-                LIKELIHOOD_ORDER[b.likelihood]) *
-              direction
-            );
+      points
+        .filter((point) => {
+          const matchesLabel = point.label
+            .toLowerCase()
+            .includes(labelSearch.toLowerCase());
+          const matchesCategory =
+            categoryFilter === ALL_CATEGORIES ||
+            point.category === categoryFilter;
+
+          return matchesLabel && matchesCategory;
+        })
+        .toSorted((a, b) => {
+          const direction = sortDirection === "asc" ? 1 : -1;
+          switch (sortField) {
+            case "likelihood": {
+              return (
+                (LIKELIHOOD_ORDER[a.likelihood] -
+                  LIKELIHOOD_ORDER[b.likelihood]) *
+                direction
+              );
+            }
+            case "relevance": {
+              return (
+                (RELEVANCE_ORDER[a.relevance] - RELEVANCE_ORDER[b.relevance]) *
+                direction
+              );
+            }
+            case "preparedness": {
+              return (
+                (PREPAREDNESS_ORDER[a.preparedness] -
+                  PREPAREDNESS_ORDER[b.preparedness]) *
+                direction
+              );
+            }
+            default: {
+              return (
+                a[sortField]
+                  .toLowerCase()
+                  .localeCompare(b[sortField].toLowerCase()) * direction
+              );
+            }
           }
-          case "relevance": {
-            return (
-              (RELEVANCE_ORDER[a.relevance] - RELEVANCE_ORDER[b.relevance]) *
-              direction
-            );
-          }
-          case "preparedness": {
-            return (
-              (PREPAREDNESS_ORDER[a.preparedness] -
-                PREPAREDNESS_ORDER[b.preparedness]) *
-              direction
-            );
-          }
-          default: {
-            return (
-              a[sortField]
-                .toLowerCase()
-                .localeCompare(b[sortField].toLowerCase()) * direction
-            );
-          }
-        }
-      }),
-    [points, sortField, sortDirection],
+        }),
+    [points, sortField, sortDirection, labelSearch, categoryFilter],
   );
 
   return (
@@ -124,6 +148,48 @@ export const PointsTable = () => {
         className={`p-6 pt-0 ${isCollapsed ? "hidden" : ""}`}
         data-testid="points-table-content"
       >
+        <div className="flex flex-wrap gap-3 mb-4 items-center">
+          <input
+            type="search"
+            value={labelSearch}
+            onChange={(event) => setLabelSearch(event.target.value)}
+            placeholder="Search by label…"
+            aria-label="Search points by label"
+            className="flex-1 min-w-[160px] px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={categoryFilter}
+            onChange={(event) =>
+              setCategoryFilter(event.target.value as CategoryFilter)
+            }
+            aria-label="Filter by category"
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={ALL_CATEGORIES}>All categories</option>
+            {Object.values(Category).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          {isFiltered && (
+            <button
+              onClick={clearFilters}
+              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Clear filters"
+            >
+              Clear
+            </button>
+          )}
+          {isFiltered && (
+            <span
+              className="text-sm text-gray-500 dark:text-gray-400"
+              aria-live="polite"
+            >
+              {filteredAndSortedPoints.length} of {points.length} shown
+            </span>
+          )}
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
@@ -171,28 +237,41 @@ export const PointsTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedPoints.map((point) => (
-                <tr
-                  key={point.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                    {point.label}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                    {point.category}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                    {point.relevance}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                    {point.preparedness}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                    {point.likelihood}
-                  </td>
-                </tr>
-              ))}
+              {filteredAndSortedPoints.length === 0 ? (
+                isFiltered ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                    >
+                      No points match the current filters.
+                    </td>
+                  </tr>
+                ) : undefined
+              ) : (
+                filteredAndSortedPoints.map((point) => (
+                  <tr
+                    key={point.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                      {point.label}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                      {point.category}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                      {point.relevance}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                      {point.preparedness}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                      {point.likelihood}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
