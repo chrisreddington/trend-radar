@@ -3,7 +3,7 @@
   "monthly": "2026-03",
   "monthly_issue": 137,
   "cursor": 22,
-  "prs": ["eng-ci-lint-fix-2026-03-22"],
+  "prs": ["eng-ci-lint-fix-2026-03-22", "test-page-smoke-test-2026-03-22"],
   "merged": [128, 130, 135, 136, 141, 142, 143, 147, 148],
   "comments": [15, 16, 17, 18, 22, 19],
   "labelled": [15, 16, 17, 18, 19],
