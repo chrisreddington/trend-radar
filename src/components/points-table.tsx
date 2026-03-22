@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
+import { Likelihood, Preparedness, Relevance } from "../types";
 
 type SortField =
   | "label"
@@ -9,6 +10,29 @@ type SortField =
   | "preparedness"
   | "likelihood";
 type SortDirection = "asc" | "desc";
+
+/** Ordinal rank for Likelihood values (lower index = higher likelihood). */
+const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
+  [Likelihood.HighlyLikely]: 0,
+  [Likelihood.Likely]: 1,
+  [Likelihood.Average]: 2,
+  [Likelihood.Unlikely]: 3,
+  [Likelihood.HighlyUnlikely]: 4,
+};
+
+/** Ordinal rank for Relevance values (lower index = higher relevance). */
+const RELEVANCE_ORDER: Record<Relevance, number> = {
+  [Relevance.High]: 0,
+  [Relevance.Moderate]: 1,
+  [Relevance.Low]: 2,
+};
+
+/** Ordinal rank for Preparedness values (lower index = more prepared). */
+const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
+  [Preparedness.HighlyPrepared]: 0,
+  [Preparedness.ModeratelyPrepared]: 1,
+  [Preparedness.InadequatelyPrepared]: 2,
+};
 
 export const PointsTable = () => {
   const points = useDiagramStore((state) => state.points);
@@ -33,9 +57,35 @@ export const PointsTable = () => {
     () =>
       points.toSorted((a, b) => {
         const direction = sortDirection === "asc" ? 1 : -1;
-        const aValue = a[sortField].toLowerCase();
-        const bValue = b[sortField].toLowerCase();
-        return aValue.localeCompare(bValue) * direction;
+        switch (sortField) {
+          case "likelihood": {
+            return (
+              (LIKELIHOOD_ORDER[a.likelihood] -
+                LIKELIHOOD_ORDER[b.likelihood]) *
+              direction
+            );
+          }
+          case "relevance": {
+            return (
+              (RELEVANCE_ORDER[a.relevance] - RELEVANCE_ORDER[b.relevance]) *
+              direction
+            );
+          }
+          case "preparedness": {
+            return (
+              (PREPAREDNESS_ORDER[a.preparedness] -
+                PREPAREDNESS_ORDER[b.preparedness]) *
+              direction
+            );
+          }
+          default: {
+            return (
+              a[sortField]
+                .toLowerCase()
+                .localeCompare(b[sortField].toLowerCase()) * direction
+            );
+          }
+        }
       }),
     [points, sortField, sortDirection],
   );

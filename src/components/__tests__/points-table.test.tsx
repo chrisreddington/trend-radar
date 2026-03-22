@@ -56,6 +56,11 @@ const testColumnSorting = (
   expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
 };
 
+const getRowCellText = (rowIndex: number, colIndex: number) => {
+  const rows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
+  return rows[rowIndex].cells[colIndex].textContent;
+};
+
 describe("PointsTable", () => {
   // Common test data
   const mockPoints = [
@@ -160,6 +165,115 @@ describe("PointsTable", () => {
       fireEvent.click(getColumnHeader("Category"));
       expect(getColumnHeader("Category")).toHaveTextContent(/↑$/);
       expect(getColumnHeader("Label")).toHaveTextContent(/^Label$/);
+    });
+  });
+
+  describe("Ordinal sorting", () => {
+    // These tests use a third point so alphabetical and ordinal orders diverge.
+    // "Low" relevance sorts after "Moderate" ordinally but before it alphabetically.
+    // "Inadequately Prepared" sorts after "Moderately Prepared" ordinally but before alphabetically.
+    // "Unlikely" sorts after "Likely" ordinally but before alphabetically.
+    const threePoints = [
+      {
+        id: "1",
+        label: "Point A",
+        category: "Technological",
+        relevance: "High",
+        preparedness: "Highly Prepared",
+        likelihood: "Highly Likely",
+        x: 0,
+        y: 0,
+      },
+      {
+        id: "2",
+        label: "Point B",
+        category: "Economic",
+        relevance: "Moderate",
+        preparedness: "Moderately Prepared",
+        likelihood: "Likely",
+        x: 0,
+        y: 0,
+      },
+      {
+        id: "3",
+        label: "Point C",
+        category: "Social",
+        relevance: "Low",
+        preparedness: "Inadequately Prepared",
+        likelihood: "Unlikely",
+        x: 0,
+        y: 0,
+      },
+    ];
+
+    beforeEach(() => {
+      const state = { points: threePoints };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation(
+        (selector?: (s: typeof state) => unknown) =>
+          selector ? selector(state) : state,
+      );
+    });
+
+    it("should sort relevance in ordinal order (High → Moderate → Low), not alphabetically", () => {
+      expect.hasAssertions();
+      render(<PointsTable />);
+      const colIndex = screen
+        .getAllByRole("columnheader")
+        .findIndex((h) => h.textContent?.includes("Relevance"));
+
+      // Ascending: highest relevance first
+      fireEvent.click(getColumnHeader("Relevance"));
+      expect(getRowCellText(0, colIndex)).toBe("High");
+      expect(getRowCellText(1, colIndex)).toBe("Moderate");
+      expect(getRowCellText(2, colIndex)).toBe("Low");
+
+      // Descending: lowest relevance first
+      fireEvent.click(getColumnHeader("Relevance"));
+      expect(getRowCellText(0, colIndex)).toBe("Low");
+      expect(getRowCellText(1, colIndex)).toBe("Moderate");
+      expect(getRowCellText(2, colIndex)).toBe("High");
+    });
+
+    it("should sort preparedness in ordinal order (Highly Prepared → Moderately → Inadequately), not alphabetically", () => {
+      expect.hasAssertions();
+      render(<PointsTable />);
+      const colIndex = screen
+        .getAllByRole("columnheader")
+        .findIndex((h) => h.textContent?.includes("Preparedness"));
+
+      // Ascending: most prepared first
+      fireEvent.click(getColumnHeader("Preparedness"));
+      expect(getRowCellText(0, colIndex)).toBe("Highly Prepared");
+      expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
+      expect(getRowCellText(2, colIndex)).toBe("Inadequately Prepared");
+
+      // Descending: least prepared first
+      fireEvent.click(getColumnHeader("Preparedness"));
+      expect(getRowCellText(0, colIndex)).toBe("Inadequately Prepared");
+      expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
+      expect(getRowCellText(2, colIndex)).toBe("Highly Prepared");
+    });
+
+    it("should sort likelihood in ordinal order (Highly Likely → Likely → Unlikely), not alphabetically", () => {
+      expect.hasAssertions();
+      render(<PointsTable />);
+      const colIndex = screen
+        .getAllByRole("columnheader")
+        .findIndex((h) => h.textContent?.includes("Likelihood"));
+
+      // Ascending: most likely first
+      fireEvent.click(getColumnHeader("Likelihood"));
+      expect(getRowCellText(0, colIndex)).toBe("Highly Likely");
+      expect(getRowCellText(1, colIndex)).toBe("Likely");
+      expect(getRowCellText(2, colIndex)).toBe("Unlikely");
+
+      // Descending: least likely first
+      fireEvent.click(getColumnHeader("Likelihood"));
+      expect(getRowCellText(0, colIndex)).toBe("Unlikely");
+      expect(getRowCellText(1, colIndex)).toBe("Likely");
+      expect(getRowCellText(2, colIndex)).toBe("Highly Likely");
     });
   });
 });
