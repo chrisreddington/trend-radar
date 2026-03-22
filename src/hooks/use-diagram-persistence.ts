@@ -19,7 +19,6 @@ export function useDiagramPersistence(): void {
     } catch (error) {
       // Swallow errors from localStorage/JSON parsing so a corrupted persisted
       // state cannot crash the app during hydration or mount.
-      // eslint-disable-next-line no-console
       console.error("Failed to load persisted diagram state:", error);
     }
 
