@@ -77,6 +77,8 @@ export const ControlPanel = () => {
       const updates: Partial<Point> = {};
       if (editingPoint.label !== originalPoint.label)
         updates.label = editingPoint.label;
+      if (editingPoint.description !== originalPoint.description)
+        updates.description = editingPoint.description;
       if (categoryChanged) updates.category = editingPoint.category;
       if (likelihoodChanged) updates.likelihood = editingPoint.likelihood;
       if (editingPoint.relevance !== originalPoint.relevance)
@@ -101,6 +103,18 @@ export const ControlPanel = () => {
       setIsUserEditing(true);
     } else {
       setNewPoint({ ...newPoint, label: event.target.value });
+    }
+  };
+
+  const handleDescriptionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+    isEditing: boolean,
+  ) => {
+    if (isEditing && editingPoint) {
+      setEditingPoint({ ...editingPoint, description: event.target.value });
+      setIsUserEditing(true);
+    } else {
+      setNewPoint({ ...newPoint, description: event.target.value });
     }
   };
 
@@ -227,6 +241,24 @@ export const ControlPanel = () => {
           onChange={(event) => handleLabelChange(event, isEditing)}
           className={commonInputClasses}
           required
+        />
+      </div>
+
+      <div>
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+          htmlFor={isEditing ? "edit-point-description" : "point-description"}
+        >
+          Description
+        </label>
+        <textarea
+          id={isEditing ? "edit-point-description" : "point-description"}
+          name="description"
+          value={point.description ?? ""}
+          onChange={(event) => handleDescriptionChange(event, isEditing)}
+          rows={3}
+          placeholder="Optional notes or rationale…"
+          className={`${commonInputClasses} resize-y`}
         />
       </div>
 

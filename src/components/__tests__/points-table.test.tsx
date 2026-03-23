@@ -129,6 +129,34 @@ describe("PointsTable", () => {
       expect(content).not.toHaveClass("hidden");
     });
 
+    it("should show description indicator for points with a description", () => {
+      const pointsWithDescription = [
+        {
+          ...mockPoints[0],
+          description: "Some detailed rationale",
+        },
+        mockPoints[1],
+      ];
+      const state = { points: pointsWithDescription };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+
+      const indicator = screen.getByLabelText(
+        "Description: Some detailed rationale",
+      );
+      expect(indicator).toBeInTheDocument();
+      expect(indicator).toHaveAttribute("title", "Some detailed rationale");
+    });
+
+    it("should not show description indicator for points without a description", () => {
+      render(<PointsTable />);
+      expect(screen.queryByLabelText(/^Description:/)).not.toBeInTheDocument();
+    });
   });
 
   describe("Sorting", () => {
@@ -326,9 +354,8 @@ describe("PointsTable", () => {
       const state = { points: threePoints };
       (
         useDiagramStore as unknown as ReturnType<typeof vi.fn>
-      ).mockImplementation(
-        (selector?: (s: typeof state) => unknown) =>
-          selector ? selector(state) : state,
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
       );
     });
 
