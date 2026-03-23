@@ -63,6 +63,25 @@ describe("useDiagramPersistence", () => {
       renderHook(() => useDiagramPersistence());
       expect(mockSubscribe).toHaveBeenCalledTimes(1);
     });
+
+    it("should swallow errors thrown by loadState and continue subscribing", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(vi.fn());
+      mockLoadState.mockImplementation(() => {
+        throw new Error("Corrupted localStorage data");
+      });
+
+      expect(() => renderHook(() => useDiagramPersistence())).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to load persisted diagram state:",
+        expect.any(Error),
+      );
+      // Store subscription should still be set up despite the load error
+      expect(mockSubscribe).toHaveBeenCalledTimes(1);
+
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe("auto-save behaviour", () => {
