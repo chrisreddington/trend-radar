@@ -1,4 +1,10 @@
-import { DiagramState } from "../types";
+import {
+  DiagramState,
+  Category,
+  Likelihood,
+  Relevance,
+  Preparedness,
+} from "../types";
 
 // Add type declarations for the File System Access API
 declare global {
@@ -112,6 +118,32 @@ export async function saveDiagramToFile(state: DiagramState): Promise<void> {
   }
 }
 
+const VALID_CATEGORIES = new Set<string>(Object.values(Category));
+const VALID_LIKELIHOODS = new Set<string>(Object.values(Likelihood));
+const VALID_RELEVANCES = new Set<string>(Object.values(Relevance));
+const VALID_PREPAREDNESSES = new Set<string>(Object.values(Preparedness));
+
+/**
+ * Type guard that checks whether `point` is a structurally and semantically
+ * valid {@link Point} object, including verified enum values for category,
+ * likelihood, relevance, and preparedness.
+ */
+function isValidPoint(point: unknown): boolean {
+  if (typeof point !== "object" || point === null) return false;
+
+  const p = point as Record<string, unknown>;
+  return (
+    typeof p["id"] === "string" &&
+    typeof p["label"] === "string" &&
+    VALID_CATEGORIES.has(p["category"] as string) &&
+    VALID_LIKELIHOODS.has(p["likelihood"] as string) &&
+    VALID_RELEVANCES.has(p["relevance"] as string) &&
+    VALID_PREPAREDNESSES.has(p["preparedness"] as string) &&
+    typeof p["x"] === "number" &&
+    typeof p["y"] === "number"
+  );
+}
+
 export function validateDiagramData(data: unknown): data is DiagramExport {
   if (!data || typeof data !== "object") return false;
 
@@ -129,20 +161,7 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
     return false;
   }
 
-  // Validate each point has required properties
-  return exportData.points.every(
-    (point) =>
-      typeof point === "object" &&
-      point !== null &&
-      typeof point.id === "string" &&
-      typeof point.label === "string" &&
-      typeof point.category === "string" &&
-      typeof point.likelihood === "string" &&
-      typeof point.relevance === "string" &&
-      typeof point.preparedness === "string" &&
-      typeof point.x === "number" &&
-      typeof point.y === "number",
-  );
+  return exportData.points.every((point) => isValidPoint(point));
 }
 
 export async function loadDiagramFromFile(): Promise<DiagramExport> {
