@@ -33,6 +33,8 @@ const DEFAULT_STORE_STATE = {
 };
 
 describe("Home page", () => {
+  const originalMatchMedia = globalThis.matchMedia;
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -57,12 +59,11 @@ describe("Home page", () => {
     );
   });
 
-  describe("Layout structure", () => {
-    it("renders the page without crashing", () => {
-      render(<Home />);
-      expect(document.body).toBeTruthy();
-    });
+  afterEach(() => {
+    globalThis.matchMedia = originalMatchMedia;
+  });
 
+  describe("Layout structure", () => {
     it("renders a main content element", () => {
       render(<Home />);
       expect(screen.getByRole("main")).toBeInTheDocument();
