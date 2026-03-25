@@ -129,7 +129,7 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
     return false;
   }
 
-  // Validate each point has required properties
+  // Validate each point has required properties and optional fields have correct types
   return exportData.points.every(
     (point) =>
       typeof point === "object" &&
@@ -141,7 +141,8 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
       typeof point.relevance === "string" &&
       typeof point.preparedness === "string" &&
       typeof point.x === "number" &&
-      typeof point.y === "number",
+      typeof point.y === "number" &&
+      (point.description === undefined || typeof point.description === "string"),
   );
 }
 
