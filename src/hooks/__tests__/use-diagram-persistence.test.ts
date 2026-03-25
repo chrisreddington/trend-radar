@@ -50,7 +50,7 @@ describe("useDiagramPersistence", () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("on mount", () => {
@@ -79,8 +79,6 @@ describe("useDiagramPersistence", () => {
       );
       // Store subscription should still be set up despite the load error
       expect(mockSubscribe).toHaveBeenCalledTimes(1);
-
-      consoleErrorSpy.mockRestore();
     });
   });
 
