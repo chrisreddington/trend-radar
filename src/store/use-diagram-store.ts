@@ -176,6 +176,9 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
       likelihood,
       relevance: pointData.relevance || Relevance.Moderate,
       preparedness: pointData.preparedness || Preparedness.ModeratelyPrepared,
+      ...(pointData.description !== undefined && {
+        description: pointData.description,
+      }),
       x,
       y,
     };
