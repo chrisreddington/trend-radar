@@ -627,6 +627,37 @@ describe("useDiagramStore", () => {
       expect(addedPoint.relevance).toBe(Relevance.High);
       expect(addedPoint.preparedness).toBe(Preparedness.HighlyPrepared);
     });
+
+    it("should preserve description when provided in pointData", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+
+      const success = addPointAtPosition(0, -100, 800, {
+        label: "Point With Description",
+        description: "Some rationale for this item",
+      });
+
+      expect(success).toBe(true);
+
+      const state = useDiagramStore.getState();
+      const addedPoint = state.points[0];
+
+      expect(addedPoint.description).toBe("Some rationale for this item");
+    });
+
+    it("should not set description when not provided in pointData", () => {
+      const { addPointAtPosition } = useDiagramStore.getState();
+
+      const success = addPointAtPosition(0, -100, 800, {
+        label: "Point Without Description",
+      });
+
+      expect(success).toBe(true);
+
+      const state = useDiagramStore.getState();
+      const addedPoint = state.points[0];
+
+      expect(addedPoint.description).toBeUndefined();
+    });
   });
 });
 

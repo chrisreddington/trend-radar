@@ -45,6 +45,8 @@ export interface Point {
   id: string;
   /** Label/name of the point */
   label: string;
+  /** Optional free-text description or rationale for the point */
+  description?: string;
   /** Category the point belongs to */
   category: Category;
   /** Likelihood of the point occurring */
