@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Preparedness, Relevance } from "../types";
 
@@ -36,7 +36,7 @@ const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
   [Preparedness.InadequatelyPrepared]: 2,
 };
 
-export const PointsTable = () => {
+export const PointsTable = memo(function PointsTable() {
   const points = useDiagramStore((state) => state.points);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
@@ -45,23 +45,26 @@ export const PointsTable = () => {
   const [categoryFilter, setCategoryFilter] =
     useState<CategoryFilter>(ALL_CATEGORIES);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed((previous) => !previous);
+  }, []);
 
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (field === sortField) {
+        setSortDirection((previous) => (previous === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    },
+    [sortField],
+  );
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setLabelSearch("");
     setCategoryFilter(ALL_CATEGORIES);
-  };
+  }, []);
 
   const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
@@ -288,4 +291,4 @@ export const PointsTable = () => {
       </div>
     </div>
   );
-};
+});

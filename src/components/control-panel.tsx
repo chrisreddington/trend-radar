@@ -1,7 +1,82 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness, Point } from "../types";
+
+const COMMON_INPUT_CLASSES =
+  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
+const COMMON_BUTTON_CLASSES =
+  "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
+const DELETE_BUTTON_CLASSES =
+  "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
+
+function getLikelihoodFromValue(value: number): Likelihood {
+  if (value >= 80) return Likelihood.HighlyLikely;
+  if (value >= 60) return Likelihood.Likely;
+  if (value >= 40) return Likelihood.Average;
+  if (value >= 20) return Likelihood.Unlikely;
+  return Likelihood.HighlyUnlikely;
+}
+
+function getValueFromLikelihood(likelihood: Likelihood): number {
+  switch (likelihood) {
+    case Likelihood.HighlyLikely: {
+      return 100;
+    }
+    case Likelihood.Likely: {
+      return 75;
+    }
+    case Likelihood.Average: {
+      return 50;
+    }
+    case Likelihood.Unlikely: {
+      return 25;
+    }
+    case Likelihood.HighlyUnlikely: {
+      return 0;
+    }
+  }
+}
+
+function getRelevanceFromValue(value: number): Relevance {
+  if (value >= 66) return Relevance.High;
+  if (value >= 33) return Relevance.Moderate;
+  return Relevance.Low;
+}
+
+function getValueFromRelevance(relevance: Relevance): number {
+  switch (relevance) {
+    case Relevance.High: {
+      return 100;
+    }
+    case Relevance.Moderate: {
+      return 50;
+    }
+    case Relevance.Low: {
+      return 0;
+    }
+  }
+}
+
+function getPreparednessFromValue(value: number): Preparedness {
+  if (value >= 66) return Preparedness.HighlyPrepared;
+  if (value >= 33) return Preparedness.ModeratelyPrepared;
+  return Preparedness.InadequatelyPrepared;
+}
+
+function getValueFromPreparedness(preparedness: Preparedness): number {
+  switch (preparedness) {
+    case Preparedness.HighlyPrepared: {
+      return 100;
+    }
+    case Preparedness.ModeratelyPrepared: {
+      return 50;
+    }
+    case Preparedness.InadequatelyPrepared: {
+      return 0;
+    }
+  }
+}
 
 export const ControlPanel = () => {
   const {
@@ -48,88 +123,101 @@ export const ControlPanel = () => {
     }
   }, [selectedPoint, points, editingPoint, isUserEditing]);
 
-  const handleAddPoint = (event: React.FormEvent) => {
-    event.preventDefault();
-    addPoint(newPoint);
-    setNewPoint({
-      label: "",
-      category: Category.Technological,
-      likelihood: Likelihood.Average,
-      relevance: Relevance.Moderate,
-      preparedness: Preparedness.ModeratelyPrepared,
-      x: 0,
-      y: 0,
-    });
-  };
+  const handleAddPoint = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      addPoint(newPoint);
+      setNewPoint({
+        label: "",
+        category: Category.Technological,
+        likelihood: Likelihood.Average,
+        relevance: Relevance.Moderate,
+        preparedness: Preparedness.ModeratelyPrepared,
+        x: 0,
+        y: 0,
+      });
+    },
+    [addPoint, newPoint],
+  );
 
-  const handleUpdatePoint = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (selectedPoint && editingPoint) {
-      const originalPoint = points.find((p) => p.id === selectedPoint);
-      if (!originalPoint) return;
+  const handleUpdatePoint = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      if (selectedPoint && editingPoint) {
+        const originalPoint = points.find((p) => p.id === selectedPoint);
+        if (!originalPoint) return;
 
-      // Check if category or likelihood changed
-      const categoryChanged = editingPoint.category !== originalPoint.category;
-      const likelihoodChanged =
-        editingPoint.likelihood !== originalPoint.likelihood;
+        // Check if category or likelihood changed
+        const categoryChanged =
+          editingPoint.category !== originalPoint.category;
+        const likelihoodChanged =
+          editingPoint.likelihood !== originalPoint.likelihood;
 
-      // Only include fields that have actually changed
-      const updates: Partial<Point> = {};
-      if (editingPoint.label !== originalPoint.label)
-        updates.label = editingPoint.label;
-      if (editingPoint.description !== originalPoint.description)
-        updates.description = editingPoint.description;
-      if (categoryChanged) updates.category = editingPoint.category;
-      if (likelihoodChanged) updates.likelihood = editingPoint.likelihood;
-      if (editingPoint.relevance !== originalPoint.relevance)
-        updates.relevance = editingPoint.relevance;
-      if (editingPoint.preparedness !== originalPoint.preparedness)
-        updates.preparedness = editingPoint.preparedness;
+        // Only include fields that have actually changed
+        const updates: Partial<Point> = {};
+        if (editingPoint.label !== originalPoint.label)
+          updates.label = editingPoint.label;
+        if (editingPoint.description !== originalPoint.description)
+          updates.description = editingPoint.description;
+        if (categoryChanged) updates.category = editingPoint.category;
+        if (likelihoodChanged) updates.likelihood = editingPoint.likelihood;
+        if (editingPoint.relevance !== originalPoint.relevance)
+          updates.relevance = editingPoint.relevance;
+        if (editingPoint.preparedness !== originalPoint.preparedness)
+          updates.preparedness = editingPoint.preparedness;
 
-      // Preserve position if only non-spatial properties changed
-      const preservePosition = !categoryChanged && !likelihoodChanged;
+        // Preserve position if only non-spatial properties changed
+        const preservePosition = !categoryChanged && !likelihoodChanged;
 
-      updatePoint(selectedPoint, updates, preservePosition);
-      setIsUserEditing(false);
-    }
-  };
+        updatePoint(selectedPoint, updates, preservePosition);
+        setIsUserEditing(false);
+      }
+    },
+    [selectedPoint, editingPoint, points, updatePoint],
+  );
 
-  const handleLabelChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    isEditing: boolean,
-  ) => {
-    if (isEditing && editingPoint) {
-      setEditingPoint({ ...editingPoint, label: event.target.value });
-      setIsUserEditing(true);
-    } else {
-      setNewPoint({ ...newPoint, label: event.target.value });
-    }
-  };
+  const handleLabelChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, isEditing: boolean) => {
+      if (isEditing && editingPoint) {
+        setEditingPoint({ ...editingPoint, label: event.target.value });
+        setIsUserEditing(true);
+      } else {
+        setNewPoint((previous) => ({
+          ...previous,
+          label: event.target.value,
+        }));
+      }
+    },
+    [editingPoint],
+  );
 
-  const handleDescriptionChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>,
-    isEditing: boolean,
-  ) => {
-    if (isEditing && editingPoint) {
-      setEditingPoint({ ...editingPoint, description: event.target.value });
-      setIsUserEditing(true);
-    } else {
-      setNewPoint({ ...newPoint, description: event.target.value });
-    }
-  };
+  const handleDescriptionChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>, isEditing: boolean) => {
+      if (isEditing && editingPoint) {
+        setEditingPoint({ ...editingPoint, description: event.target.value });
+        setIsUserEditing(true);
+      } else {
+        setNewPoint((previous) => ({
+          ...previous,
+          description: event.target.value,
+        }));
+      }
+    },
+    [editingPoint],
+  );
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed((previous) => !previous);
+  }, []);
 
-  const handleCloseEdit = () => {
+  const handleCloseEdit = useCallback(() => {
     selectPoint();
     setEditingPoint(undefined);
     setIsUserEditing(false);
     // Keep the panel expanded when closing edit - user can manually collapse if needed
-  };
+  }, [selectPoint]);
 
-  const handleDeletePoint = () => {
+  const handleDeletePoint = useCallback(() => {
     if (selectedPoint) {
       removePoint(selectedPoint);
       // Keep the panel expanded when deleting point - user can manually collapse if needed
@@ -137,83 +225,7 @@ export const ControlPanel = () => {
       setEditingPoint(undefined);
       setIsUserEditing(false);
     }
-  };
-
-  const commonInputClasses =
-    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:ring-blue-400";
-  const commonSelectClasses = commonInputClasses;
-  const commonButtonClasses =
-    "w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 cursor-pointer";
-  const deleteButtonClasses =
-    "w-full mt-4 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-400 cursor-pointer";
-
-  const getLikelihoodFromValue = (value: number): Likelihood => {
-    if (value >= 80) return Likelihood.HighlyLikely;
-    if (value >= 60) return Likelihood.Likely;
-    if (value >= 40) return Likelihood.Average;
-    if (value >= 20) return Likelihood.Unlikely;
-    return Likelihood.HighlyUnlikely;
-  };
-
-  const getValueFromLikelihood = (likelihood: Likelihood): number => {
-    switch (likelihood) {
-      case Likelihood.HighlyLikely: {
-        return 100;
-      }
-      case Likelihood.Likely: {
-        return 75;
-      }
-      case Likelihood.Average: {
-        return 50;
-      }
-      case Likelihood.Unlikely: {
-        return 25;
-      }
-      case Likelihood.HighlyUnlikely: {
-        return 0;
-      }
-    }
-  };
-
-  const getRelevanceFromValue = (value: number): Relevance => {
-    if (value >= 66) return Relevance.High;
-    if (value >= 33) return Relevance.Moderate;
-    return Relevance.Low;
-  };
-
-  const getValueFromRelevance = (relevance: Relevance): number => {
-    switch (relevance) {
-      case Relevance.High: {
-        return 100;
-      }
-      case Relevance.Moderate: {
-        return 50;
-      }
-      case Relevance.Low: {
-        return 0;
-      }
-    }
-  };
-
-  const getPreparednessFromValue = (value: number): Preparedness => {
-    if (value >= 66) return Preparedness.HighlyPrepared;
-    if (value >= 33) return Preparedness.ModeratelyPrepared;
-    return Preparedness.InadequatelyPrepared;
-  };
-
-  const getValueFromPreparedness = (preparedness: Preparedness): number => {
-    switch (preparedness) {
-      case Preparedness.HighlyPrepared: {
-        return 100;
-      }
-      case Preparedness.ModeratelyPrepared: {
-        return 50;
-      }
-      case Preparedness.InadequatelyPrepared: {
-        return 0;
-      }
-    }
-  };
+  }, [selectedPoint, removePoint, selectPoint]);
 
   const renderPointForm = (
     point: Point | Omit<Point, "id">,
@@ -239,7 +251,7 @@ export const ControlPanel = () => {
           name="label"
           value={point.label}
           onChange={(event) => handleLabelChange(event, isEditing)}
-          className={commonInputClasses}
+          className={COMMON_INPUT_CLASSES}
           required
         />
       </div>
@@ -258,7 +270,7 @@ export const ControlPanel = () => {
           onChange={(event) => handleDescriptionChange(event, isEditing)}
           rows={3}
           placeholder="Optional notes or rationale…"
-          className={`${commonInputClasses} resize-y`}
+          className={`${COMMON_INPUT_CLASSES} resize-y`}
         />
       </div>
 
@@ -287,7 +299,7 @@ export const ControlPanel = () => {
                   category: event.target.value as Category,
                 })
           }
-          className={commonSelectClasses}
+          className={COMMON_INPUT_CLASSES}
           role="combobox"
           aria-label="Category"
         >
@@ -394,7 +406,7 @@ export const ControlPanel = () => {
         />
       </div>
 
-      <button type="submit" className={commonButtonClasses}>
+      <button type="submit" className={COMMON_BUTTON_CLASSES}>
         {submitLabel}
       </button>
     </form>
@@ -467,7 +479,7 @@ export const ControlPanel = () => {
               "Update Point",
               true,
             )}
-            <button onClick={handleDeletePoint} className={deleteButtonClasses}>
+            <button onClick={handleDeletePoint} className={DELETE_BUTTON_CLASSES}>
               Delete Point
             </button>
           </div>
