@@ -63,8 +63,7 @@ export const PointsTable = () => {
     setCategoryFilter(ALL_CATEGORIES);
   };
 
-  const isFiltered =
-    labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
+  const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
   const filteredAndSortedPoints = useMemo(
     () =>
@@ -255,7 +254,18 @@ export const PointsTable = () => {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                      {point.label}
+                      <span className="inline-flex items-center gap-1">
+                        {point.label}
+                        {point.description && (
+                          <span
+                            title={point.description}
+                            aria-label={`Description: ${point.description}`}
+                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300 text-xs cursor-help flex-shrink-0"
+                          >
+                            ?
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
                       {point.category}
