@@ -108,6 +108,26 @@ describe("ControlPanel", () => {
       );
     });
 
+    it("should add new point with description when description is provided", () => {
+      render(<ControlPanel />);
+
+      fireEvent.change(screen.getByLabelText("Label"), {
+        target: { value: "New Point" },
+      });
+      fireEvent.change(screen.getByLabelText("Description"), {
+        target: { value: "Some rationale" },
+      });
+
+      fireEvent.submit(screen.getByTestId("add-point-form"));
+
+      expect(mockActions.addPoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          label: "New Point",
+          description: "Some rationale",
+        }),
+      );
+    });
+
     describe("Form Value Conversions", () => {
       it("should convert likelihood slider values to correct enum values", () => {
         render(<ControlPanel />);
@@ -212,6 +232,30 @@ describe("ControlPanel", () => {
       expect(
         screen.getByRole("button", { name: "Delete Point" }),
       ).toBeInTheDocument();
+    });
+
+    it("should update description when edited and submitted", () => {
+      render(<ControlPanel />);
+
+      const editSection = screen
+        .getByText("Edit Selected Point")
+        .closest("div")?.parentElement;
+      if (!editSection) throw new Error("Edit section not found");
+
+      const descriptionTextarea = within(editSection).getByLabelText(
+        "Description",
+      ) as HTMLTextAreaElement;
+      fireEvent.change(descriptionTextarea, {
+        target: { value: "New rationale" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Update Point" }));
+
+      expect(mockActions.updatePoint).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ description: "New rationale" }),
+        true,
+      );
     });
 
     it("should update point when edit form is submitted", () => {
