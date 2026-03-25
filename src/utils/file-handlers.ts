@@ -4,6 +4,7 @@ import {
   Likelihood,
   Relevance,
   Preparedness,
+  Point,
 } from "../types";
 
 // Add type declarations for the File System Access API
@@ -118,27 +119,27 @@ export async function saveDiagramToFile(state: DiagramState): Promise<void> {
   }
 }
 
-const VALID_CATEGORIES = new Set<string>(Object.values(Category));
-const VALID_LIKELIHOODS = new Set<string>(Object.values(Likelihood));
-const VALID_RELEVANCES = new Set<string>(Object.values(Relevance));
-const VALID_PREPAREDNESSES = new Set<string>(Object.values(Preparedness));
+const VALID_CATEGORIES = new Set<Category>(Object.values(Category));
+const VALID_LIKELIHOODS = new Set<Likelihood>(Object.values(Likelihood));
+const VALID_RELEVANCES = new Set<Relevance>(Object.values(Relevance));
+const VALID_PREPAREDNESSES = new Set<Preparedness>(Object.values(Preparedness));
 
 /**
- * Type guard that checks whether `point` is a structurally and semantically
- * valid {@link Point} object, including verified enum values for category,
+ * Checks whether `point` is a structurally and semantically valid
+ * {@link Point} object, including verified enum values for category,
  * likelihood, relevance, and preparedness.
  */
-function isValidPoint(point: unknown): boolean {
+function isValidPoint(point: unknown): point is Point {
   if (typeof point !== "object" || point === null) return false;
 
   const p = point as Record<string, unknown>;
   return (
     typeof p["id"] === "string" &&
     typeof p["label"] === "string" &&
-    VALID_CATEGORIES.has(p["category"] as string) &&
-    VALID_LIKELIHOODS.has(p["likelihood"] as string) &&
-    VALID_RELEVANCES.has(p["relevance"] as string) &&
-    VALID_PREPAREDNESSES.has(p["preparedness"] as string) &&
+    VALID_CATEGORIES.has(p["category"] as Category) &&
+    VALID_LIKELIHOODS.has(p["likelihood"] as Likelihood) &&
+    VALID_RELEVANCES.has(p["relevance"] as Relevance) &&
+    VALID_PREPAREDNESSES.has(p["preparedness"] as Preparedness) &&
     typeof p["x"] === "number" &&
     typeof p["y"] === "number"
   );
