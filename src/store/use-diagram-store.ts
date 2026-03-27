@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { Point, DiagramState } from "../types";
 import { Category, Likelihood, Relevance, Preparedness } from "../types";
-import { saveDiagramToFile, loadDiagramFromFile } from "../utils/file-handlers";
+import {
+  saveDiagramToFile,
+  loadDiagramFromFile,
+  isValidPoint,
+} from "../utils/file-handlers";
 
 function getDiagramDimensions(size = 800) {
   const marginAdjusted = size * 0.08;
@@ -279,9 +283,26 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
 
   loadState: () => {
     const savedState = localStorage.getItem("diagramState");
-    if (savedState) {
-      const { points } = JSON.parse(savedState);
-      set({ points, selectedPoint: undefined });
+    if (!savedState) return;
+
+    const parsed: unknown = JSON.parse(savedState);
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !Array.isArray((parsed as Record<string, unknown>)["points"])
+    ) {
+      return;
     }
+
+    const rawPoints: unknown[] = (parsed as Record<string, unknown[]>)["points"];
+    const validPoints = rawPoints.filter((p) => isValidPoint(p));
+
+    if (validPoints.length < rawPoints.length) {
+      console.warn(
+        `loadState: discarded ${rawPoints.length - validPoints.length} invalid point(s) from localStorage`,
+      );
+    }
+
+    set({ points: validPoints, selectedPoint: undefined });
   },
 }));

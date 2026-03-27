@@ -9,6 +9,7 @@ import {
   generateFilename,
   exportDiagram,
   validateDiagramData,
+  isValidPoint,
   saveDiagramToFile,
   loadDiagramFromFile,
   CURRENT_VERSION,
@@ -161,6 +162,62 @@ describe("File Handlers", () => {
       expect(validateDiagramData(void 0)).toBe(false);
       expect(validateDiagramData("string")).toBe(false);
       expect(validateDiagramData(123)).toBe(false);
+    });
+  });
+
+  describe("isValidPoint", () => {
+    it("should accept a fully valid point", () => {
+      expect(isValidPoint(mockState.points[0])).toBe(true);
+    });
+
+    it("should accept a valid point with a description", () => {
+      expect(
+        isValidPoint({ ...mockState.points[0], description: "context" }),
+      ).toBe(true);
+    });
+
+    it("should reject a point with a non-string description", () => {
+      expect(isValidPoint({ ...mockState.points[0], description: 42 })).toBe(
+        false,
+      );
+    });
+
+    it("should reject a point with an invalid category", () => {
+      expect(
+        isValidPoint({ ...mockState.points[0], category: "InvalidCategory" }),
+      ).toBe(false);
+    });
+
+    it("should reject a point with an invalid likelihood", () => {
+      expect(
+        isValidPoint({ ...mockState.points[0], likelihood: "Very Likely" }),
+      ).toBe(false);
+    });
+
+    it("should reject a point with an invalid relevance", () => {
+      expect(
+        isValidPoint({ ...mockState.points[0], relevance: "Critical" }),
+      ).toBe(false);
+    });
+
+    it("should reject a point with an invalid preparedness", () => {
+      expect(
+        isValidPoint({ ...mockState.points[0], preparedness: "Not Prepared" }),
+      ).toBe(false);
+    });
+
+    it("should reject non-object values", () => {
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      expect(isValidPoint(undefined)).toBe(false);
+    });
+
+    it("should reject a non-object", () => {
+      expect(isValidPoint("string")).toBe(false);
+      expect(isValidPoint(42)).toBe(false);
+    });
+
+    it("should reject a point missing required fields", () => {
+      expect(isValidPoint({ id: "1" })).toBe(false);
     });
   });
 
