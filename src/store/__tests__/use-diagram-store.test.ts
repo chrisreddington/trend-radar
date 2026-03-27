@@ -11,10 +11,15 @@ import {
 import { vi } from "vitest";
 
 // Mock file handlers
-vi.mock("../../utils/file-handlers", () => ({
-  loadDiagramFromFile: vi.fn(),
-  saveDiagramToFile: vi.fn(),
-}));
+vi.mock("../../utils/file-handlers", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../utils/file-handlers")>();
+  return {
+    ...actual,
+    loadDiagramFromFile: vi.fn(),
+    saveDiagramToFile: vi.fn(),
+  };
+});
 
 describe("useDiagramStore", () => {
   // Set up test data and mocks
@@ -337,6 +342,58 @@ describe("useDiagramStore", () => {
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([]);
         expect(state.selectedPoint).toBeUndefined();
+      });
+
+      it("should discard points with invalid enum values and log a warning", () => {
+        const invalidPoint = { ...mockPoint, category: "NotACategory" };
+        const consoleWarnSpy = vi
+          .spyOn(console, "warn")
+          .mockImplementation(() => {});
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [mockPoint, invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("discarded 1 invalid"),
+        );
+        consoleWarnSpy.mockRestore();
+      });
+
+      it("should load empty points array when all stored points are invalid", () => {
+        const invalidPoint = { ...mockPoint, likelihood: "Impossible" };
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([]);
+      });
+
+      it("should ignore malformed localStorage data that is not an object", () => {
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify([1, 2, 3]));
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([]);
+      });
+
+      it("should ignore localStorage data where points is not an array", () => {
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: "not-an-array" }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([]);
       });
     });
   });

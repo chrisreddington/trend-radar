@@ -1,4 +1,5 @@
-import { DiagramState } from "../types";
+import { DiagramState, Point } from "../types";
+import { Category, Likelihood, Relevance, Preparedness } from "../types";
 
 // Add type declarations for the File System Access API
 declare global {
@@ -112,6 +113,35 @@ export async function saveDiagramToFile(state: DiagramState): Promise<void> {
   }
 }
 
+const VALID_CATEGORIES = new Set<Category>(Object.values(Category));
+const VALID_LIKELIHOODS = new Set<Likelihood>(Object.values(Likelihood));
+const VALID_RELEVANCES = new Set<Relevance>(Object.values(Relevance));
+const VALID_PREPAREDNESSES = new Set<Preparedness>(Object.values(Preparedness));
+
+/**
+ * Checks whether `value` is a structurally and semantically valid {@link Point},
+ * including enum-range checks for category, likelihood, relevance, and preparedness.
+ *
+ * Exported so that other layers (e.g. the store's localStorage restore path) can
+ * reuse the same validation logic without duplicating it.
+ */
+export function isValidPoint(value: unknown): value is Point {
+  if (typeof value !== "object" || value === null) return false;
+
+  const p = value as Record<string, unknown>;
+  return (
+    typeof p["id"] === "string" &&
+    typeof p["label"] === "string" &&
+    (p["description"] === undefined || typeof p["description"] === "string") &&
+    VALID_CATEGORIES.has(p["category"] as Category) &&
+    VALID_LIKELIHOODS.has(p["likelihood"] as Likelihood) &&
+    VALID_RELEVANCES.has(p["relevance"] as Relevance) &&
+    VALID_PREPAREDNESSES.has(p["preparedness"] as Preparedness) &&
+    typeof p["x"] === "number" &&
+    typeof p["y"] === "number"
+  );
+}
+
 export function validateDiagramData(data: unknown): data is DiagramExport {
   if (!data || typeof data !== "object") return false;
 
@@ -130,20 +160,7 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
   }
 
   // Validate each point has required properties and optional fields have correct types
-  return exportData.points.every(
-    (point) =>
-      typeof point === "object" &&
-      point !== null &&
-      typeof point.id === "string" &&
-      typeof point.label === "string" &&
-      typeof point.category === "string" &&
-      typeof point.likelihood === "string" &&
-      typeof point.relevance === "string" &&
-      typeof point.preparedness === "string" &&
-      typeof point.x === "number" &&
-      typeof point.y === "number" &&
-      (point.description === undefined || typeof point.description === "string"),
-  );
+  return exportData.points.every((point) => isValidPoint(point));
 }
 
 export async function loadDiagramFromFile(): Promise<DiagramExport> {
