@@ -26,7 +26,7 @@ export const RingDiagram = () => {
   selectedPointReference.current = selectedPoint;
 
   /**
-   * Updates stroke and opacity on existing point circles to reflect the current selection.
+   * Updates stroke, opacity, and aria-selected on existing point circles to reflect the current selection.
    * Separated from the structural render so that a selection change avoids a full SVG rebuild.
    */
   const applySelectionHighlight = useCallback(
@@ -44,6 +44,9 @@ export const RingDiagram = () => {
         .attr("opacity", function () {
           const pointId = this.dataset["pointId"];
           return selected && pointId !== selected ? 0.6 : 1;
+        })
+        .attr("aria-selected", function () {
+          return this.dataset["pointId"] === selected ? "true" : "false";
         });
     },
     [],
@@ -243,6 +246,8 @@ export const RingDiagram = () => {
       }
       placedPoints.push({ ...pos, size: pointSize });
 
+      const descriptiveLabel = `${point.label}, ${point.category} category, likelihood ${point.likelihood}, relevance ${point.relevance}, preparedness ${point.preparedness}`;
+
       const pointElement = diagramGroup
         .append("circle")
         .attr("cx", pos.x)
@@ -261,6 +266,10 @@ export const RingDiagram = () => {
         .attr("cursor", "pointer")
         .attr("opacity", 1)
         .attr("data-point-id", point.id)
+        .attr("role", "button")
+        .attr("tabindex", "0")
+        .attr("aria-label", descriptiveLabel)
+        .attr("aria-selected", "false")
         .classed("point", true);
 
       // For mobile: Add larger touch target using the computed position
@@ -352,6 +361,13 @@ export const RingDiagram = () => {
           // Only handle click if it wasn't a drag operation
           if (event?.defaultPrevented) return;
           selectPoint(point.id);
+        })
+        .on("keydown", function (event: KeyboardEvent) {
+          // Allow keyboard users to select points with Enter or Space
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            selectPoint(point.id);
+          }
         });
 
       pointElement.append("title").text(point.label);
@@ -375,8 +391,8 @@ export const RingDiagram = () => {
           ref={svgReference}
           className="w-full h-auto"
           style={{ display: "block" }} // Ensure SVG is visible
-          role="img"
-          aria-label="Ring diagram showing points across different categories and rings"
+          role="application"
+          aria-label="Interactive trend radar diagram. Use Tab to navigate trend points and Enter or Space to select."
         />
       </div>
     </div>
