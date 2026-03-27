@@ -394,6 +394,46 @@ describe("useDiagramStore", () => {
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([mockPoint]);
       });
+
+      it("should discard invalid stored points and log a warning", () => {
+        const invalidPoint = { ...mockPoint, category: "NotACategory" };
+        const consoleWarnSpy = vi
+          .spyOn(console, "warn")
+          .mockImplementation(() => {});
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [mockPoint, invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([mockPoint]);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("discarded 1 invalid"),
+        );
+      });
+
+      it("should load an empty points array when every stored point is invalid", () => {
+        const invalidPoint = { ...mockPoint, likelihood: "Impossible" };
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([]);
+      });
+
+      it("should ignore malformed localStorage data that is not an object", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify([1, 2, 3]));
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([mockPoint]);
+      });
     });
   });
 

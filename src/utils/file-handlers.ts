@@ -136,7 +136,7 @@ function isEnumValue<T extends string>(
  * {@link Point} object, including verified enum values for category,
  * likelihood, relevance, and preparedness.
  */
-function isValidPoint(point: unknown): point is Point {
+export function isValidPoint(point: unknown): point is Point {
   if (typeof point !== "object" || point === null) return false;
 
   const p = point as Record<string, unknown>;
