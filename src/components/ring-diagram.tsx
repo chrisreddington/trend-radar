@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as d3 from "d3";
 import {
   useDiagramStore,
@@ -24,6 +24,21 @@ export const RingDiagram = () => {
   // without needing selectedPoint in the structural render effect's dependency array.
   const selectedPointReference = useRef(selectedPoint);
   selectedPointReference.current = selectedPoint;
+
+  /**
+   * Memoises all geometry constants derived from `size` so they are computed
+   * once per resize rather than repeated across both render effects.
+   */
+  const ringGeometry = useMemo(() => {
+    if (size === 0) return;
+    const marginAdjusted = size * 0.08;
+    const diagramRadius = size / 2 - marginAdjusted;
+    const categories = Object.values(Category);
+    const likelihoods = Object.values(Likelihood).toReversed();
+    const ringWidth = diagramRadius / likelihoods.length;
+    const angleStep = (2 * Math.PI) / categories.length;
+    return { size, diagramRadius, categories, likelihoods, ringWidth, angleStep };
+  }, [size]);
 
   /**
    * Updates stroke and opacity on existing point circles to reflect the current selection.
@@ -55,141 +70,87 @@ export const RingDiagram = () => {
     applySelectionHighlight(svgReference.current, selectedPoint);
   }, [selectedPoint, applySelectionHighlight]);
 
-  // Structural render: rebuilds the full SVG when points data or diagram size change
+  /**
+   * Static structure effect: draws the background, rings, and category labels.
+   * Only re-runs when `size` changes (via `ringGeometry`), so adding or editing
+   * a point does not trigger a ring redraw.
+   */
   useEffect(() => {
-    if (!svgReference.current || size === 0) return;
+    if (!svgReference.current || !ringGeometry) return;
+
+    const { size: currentSize, diagramRadius, categories, likelihoods, ringWidth, angleStep } =
+      ringGeometry;
 
     const svg = d3.select(svgReference.current);
-    svg.selectAll("*").remove();
+    svg.selectAll(".diagram-structure").remove();
 
-    // Set up diagram dimensions
-    const width = size;
-    const height = size;
+    svg.attr("viewBox", `-${currentSize / 2} -${currentSize / 2} ${currentSize} ${currentSize}`);
 
-    // Create main diagram group
-    const diagramGroup = svg
-      .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
-      .append("g");
+    const diagramGroup = svg.append("g").attr("class", "diagram-structure");
 
     /**
-     * Handle clicks on the diagram to add points at specific coordinates
+     * Handle clicks on the diagram background or ring segments to add a new point.
      */
     const handleDiagramClick = (event: Event) => {
-      // Check if the click was directly on a ring element (not on a point)
       const clickedElement = event.target as Element;
-      const isPointClick = d3.select(clickedElement).classed("point");
-
-      if (isPointClick) {
-        return; // Let point click handlers manage point selection
-      }
-
-      // Get mouse position relative to the diagram group
+      if (d3.select(clickedElement).classed("point")) return;
       const [x, y] = d3.pointer(event, diagramGroup.node());
-
-      // Add point at the clicked coordinates
-      addPointAtPosition(x, y, size);
+      addPointAtPosition(x, y, currentSize);
     };
 
-    // Add background for click handling
+    // Background circle — deselects the current point when clicked directly
     diagramGroup
       .append("circle")
-      .attr("r", width / 2)
+      .attr("r", currentSize / 2)
       .attr("fill", "transparent")
       .style("cursor", "pointer")
       .on("click", (event) => {
-        // Only deselect if the click was directly on the background
         if (event.target === event.currentTarget) {
           selectPoint();
         }
       });
 
-    const marginAdjusted = size * 0.08;
-    const diagramRadius = size / 2 - marginAdjusted;
-
-    const categories = Object.values(Category);
-    const likelihoods = Object.values(Likelihood).toReversed();
-    const ringWidth = diagramRadius / likelihoods.length;
-
-    // Add a helper for random positioning with collision detection
-    const MIN_POINT_SPACING = 2;
-    const placedPoints: { x: number; y: number; size: number }[] = [];
-
-    const angleStep = (2 * Math.PI) / categories.length;
-    /**
-     * Calculates a random position within the specified arc segment and ring.
-     * @param point - The point being positioned.
-     * @param pointSize - The computed size for the point.
-     * @returns An object with x and y coordinates.
-     */
-
-    //
-    const calculatePointPosition = (point: Point) => {
-      const categoryIndex = categories.indexOf(point.category);
-      const likelihoodIndex = likelihoods.indexOf(point.likelihood);
-      // Apply offset so arc boundaries align with the label placement
-      const arcStart = categoryIndex * angleStep - Math.PI / 2;
-      const arcEnd = (categoryIndex + 1) * angleStep - Math.PI / 2;
-      // Calculate ring boundaries
-      const outerRadius = diagramRadius - likelihoodIndex * ringWidth;
-      const innerRadius = diagramRadius - (likelihoodIndex + 1) * ringWidth;
-      // Choose random values within the boundaries
-      const randomAngle = arcStart + Math.random() * (arcEnd - arcStart);
-      const randomRadius =
-        innerRadius + Math.random() * (outerRadius - innerRadius);
-      const x = Math.cos(randomAngle) * randomRadius;
-      const y = Math.sin(randomAngle) * randomRadius;
-      return { x, y };
-    };
-
-    // Create rings for each likelihood level
+    // Rings and quadrant dividers
     for (const [index] of likelihoods.entries()) {
       const colorIndex = likelihoods.length - 1 - index;
 
-      // Draw the main ring circle with fills, strokes, and click handler
       diagramGroup
         .append("circle")
         .attr("r", diagramRadius - index * ringWidth)
         .attr("fill", RING_COLORS[colorIndex].fill)
         .attr("fill-opacity", 1)
         .attr("stroke", RING_COLORS[colorIndex].stroke)
-        .attr("stroke-width", size < 500 ? 1 : 1.5)
+        .attr("stroke-width", currentSize < 500 ? 1 : 1.5)
         .style("cursor", "pointer")
         .on("click", handleDiagramClick);
 
-      // Draw quadrant lines
-      const angleStep = (2 * Math.PI) / categories.length;
       for (const [catIndex] of categories.entries()) {
         const angle = catIndex * angleStep;
         const innerRadius = diagramRadius - (index + 1) * ringWidth;
         const outerRadius = diagramRadius - index * ringWidth;
 
-        const startX = Math.cos(angle) * innerRadius;
-        const startY = Math.sin(angle) * innerRadius;
-        const endX = Math.cos(angle) * outerRadius;
-        const endY = Math.sin(angle) * outerRadius;
-
         diagramGroup
           .append("line")
-          .attr("x1", startX)
-          .attr("y1", startY)
-          .attr("x2", endX)
-          .attr("y2", endY)
+          .attr("x1", Math.cos(angle) * innerRadius)
+          .attr("y1", Math.sin(angle) * innerRadius)
+          .attr("x2", Math.cos(angle) * outerRadius)
+          .attr("y2", Math.sin(angle) * outerRadius)
           .attr("stroke", RING_COLORS[colorIndex].stroke)
-          .attr("stroke-width", size < 500 ? 0.8 : 1)
+          .attr("stroke-width", currentSize < 500 ? 0.8 : 1)
           .style("cursor", "pointer")
           .on("click", handleDiagramClick);
       }
     }
 
-    // Draw category labels with responsive styling
+    // Category labels
     for (const [index, category] of categories.entries()) {
       const angle = index * angleStep + angleStep / 2 - Math.PI / 2;
-      const labelRadius = diagramRadius + (size < 500 ? 20 : 40);
+      const labelRadius = diagramRadius + (currentSize < 500 ? 20 : 40);
       const x = Math.cos(angle) * labelRadius;
       const y = Math.sin(angle) * labelRadius;
 
       const displayText =
-        size < 500
+        currentSize < 500
           ? category
               .split(" ")
               .map((word) => word.slice(0, 3))
@@ -204,14 +165,51 @@ export const RingDiagram = () => {
         .attr("dominant-baseline", "middle")
         .text(displayText)
         .attr("fill", "currentColor")
-        .attr("class", size < 500 ? "font-medium" : "font-semibold")
-        .attr("font-size", size < 500 ? "0.65rem" : "0.875rem");
+        .attr("class", currentSize < 500 ? "font-medium" : "font-semibold")
+        .attr("font-size", currentSize < 500 ? "0.65rem" : "0.875rem");
     }
+  }, [ringGeometry, selectPoint, addPointAtPosition]);
 
-    // Plot points with responsive sizing and random placement while avoiding overlaps
+  /**
+   * Dynamic points effect: draws point circles with drag/click handlers.
+   * Re-runs when `points` or `size` (via `ringGeometry`) changes, but does NOT
+   * redraw the static ring structure.
+   */
+  useEffect(() => {
+    if (!svgReference.current || !ringGeometry) return;
+
+    const { size: currentSize, diagramRadius, categories, likelihoods, ringWidth, angleStep } =
+      ringGeometry;
+
+    const svg = d3.select(svgReference.current);
+    const diagramGroup = svg.select<SVGGElement>("g.diagram-structure");
+    if (diagramGroup.empty()) return;
+
+    // Clear and redraw only the points layer
+    diagramGroup.selectAll(".point-layer").remove();
+    const pointsGroup = diagramGroup.append("g").attr("class", "point-layer");
+
+    const MIN_POINT_SPACING = 2;
+    const placedPoints: { x: number; y: number; size: number }[] = [];
+
+    /**
+     * Calculates a random position within the specified arc segment and ring.
+     */
+    const calculatePointPosition = (point: Point) => {
+      const categoryIndex = categories.indexOf(point.category);
+      const likelihoodIndex = likelihoods.indexOf(point.likelihood);
+      const arcStart = categoryIndex * angleStep - Math.PI / 2;
+      const arcEnd = (categoryIndex + 1) * angleStep - Math.PI / 2;
+      const outerRadius = diagramRadius - likelihoodIndex * ringWidth;
+      const innerRadius = diagramRadius - (likelihoodIndex + 1) * ringWidth;
+      const randomAngle = arcStart + Math.random() * (arcEnd - arcStart);
+      const randomRadius =
+        innerRadius + Math.random() * (outerRadius - innerRadius);
+      return { x: Math.cos(randomAngle) * randomRadius, y: Math.sin(randomAngle) * randomRadius };
+    };
+
     for (const point of points) {
-      // Determine point size based on relevance
-      const sizeScale = size < 500 ? 0.7 : 1;
+      const sizeScale = currentSize < 500 ? 0.7 : 1;
       const pointSize =
         point.relevance === Relevance.High
           ? 14 * sizeScale
@@ -219,7 +217,6 @@ export const RingDiagram = () => {
             ? 10 * sizeScale
             : 7 * sizeScale);
 
-      // Use existing position if available, otherwise calculate a new one
       let pos: { x: number; y: number } =
         point.x !== 0 || point.y !== 0
           ? { x: point.x, y: point.y }
@@ -243,7 +240,7 @@ export const RingDiagram = () => {
       }
       placedPoints.push({ ...pos, size: pointSize });
 
-      const pointElement = diagramGroup
+      const pointElement = pointsGroup
         .append("circle")
         .attr("cx", pos.x)
         .attr("cy", pos.y)
@@ -257,15 +254,15 @@ export const RingDiagram = () => {
               : PREPAREDNESS_COLORS.low),
         )
         .attr("stroke", "none")
-        .attr("stroke-width", size < 500 ? 2 : 3)
+        .attr("stroke-width", currentSize < 500 ? 2 : 3)
         .attr("cursor", "pointer")
         .attr("opacity", 1)
         .attr("data-point-id", point.id)
         .classed("point", true);
 
       // For mobile: Add larger touch target using the computed position
-      if (size < 500) {
-        diagramGroup
+      if (currentSize < 500) {
+        pointsGroup
           .append("circle")
           .attr("cx", pos.x)
           .attr("cy", pos.y)
@@ -281,16 +278,13 @@ export const RingDiagram = () => {
       const handleDrag = d3
         .drag<SVGCircleElement, unknown>()
         .on("start", function () {
-          // Select the point when dragging starts
           selectPoint(point.id);
-          // Add visual feedback during drag
           d3.select(this)
             .attr("stroke", "var(--highlight)")
-            .attr("stroke-width", size < 500 ? 3 : 4)
+            .attr("stroke-width", currentSize < 500 ? 3 : 4)
             .style("cursor", "grabbing");
         })
         .on("drag", function (event) {
-          // Update position during drag
           const [newX, newY] = d3.pointer(
             event,
             diagramGroup.node?.() || undefined,
@@ -298,22 +292,18 @@ export const RingDiagram = () => {
           d3.select(this).attr("cx", newX).attr("cy", newY);
         })
         .on("end", function (event) {
-          // Get final position after drag
           const [finalX, finalY] = d3.pointer(
             event,
             diagramGroup.node?.() || undefined,
           );
 
-          // Check if the position is within diagram bounds and convert to category/likelihood
           const result = coordinatesToCategoryAndLikelihood(
             finalX,
             finalY,
-            size,
+            currentSize,
           );
 
           if (result) {
-            // Update the point with exact position and derived category/likelihood
-            // Use preservePosition flag to prevent automatic position recalculation
             updatePoint(
               point.id,
               {
@@ -323,13 +313,11 @@ export const RingDiagram = () => {
                 likelihood: result.likelihood,
               },
               true,
-            ); // preservePosition = true
+            );
           } else {
-            // If dropped outside bounds, revert to original position
             d3.select(this).attr("cx", pos.x).attr("cy", pos.y);
           }
 
-          // Reset cursor
           d3.select(this).style("cursor", "pointer");
         });
 
@@ -338,7 +326,7 @@ export const RingDiagram = () => {
         .on("mouseover", function () {
           d3.select(this)
             .attr("stroke", "var(--highlight)")
-            .attr("stroke-width", size < 500 ? 2 : 3)
+            .attr("stroke-width", currentSize < 500 ? 2 : 3)
             .attr("opacity", 1);
         })
         .on("mouseout", function () {
@@ -349,7 +337,6 @@ export const RingDiagram = () => {
           }
         })
         .on("click", function (event) {
-          // Only handle click if it wasn't a drag operation
           if (event?.defaultPrevented) return;
           selectPoint(point.id);
         });
@@ -357,16 +344,8 @@ export const RingDiagram = () => {
       pointElement.append("title").text(point.label);
     }
 
-    // Apply selection highlight to reflect any current selection after rebuild
     applySelectionHighlight(svgReference.current, selectedPointReference.current);
-  }, [
-    points,
-    selectPoint,
-    updatePoint,
-    addPointAtPosition,
-    size,
-    applySelectionHighlight,
-  ]);
+  }, [points, ringGeometry, selectPoint, updatePoint, applySelectionHighlight]);
 
   return (
     <div className="flex justify-center items-center w-full">
