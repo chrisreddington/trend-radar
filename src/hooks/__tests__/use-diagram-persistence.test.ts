@@ -1,5 +1,8 @@
 import { renderHook } from "@testing-library/react";
-import { useDiagramPersistence } from "../use-diagram-persistence";
+import {
+  SAVE_DEBOUNCE_MS,
+  useDiagramPersistence,
+} from "../use-diagram-persistence";
 import { useDiagramStore } from "../../store/use-diagram-store";
 import { vi } from "vitest";
 
@@ -24,13 +27,18 @@ describe("useDiagramPersistence", () => {
   let mockLoadState: ReturnType<typeof vi.fn>;
   let mockSaveState: ReturnType<typeof vi.fn>;
   let mockPoints: unknown[];
+  let currentPoints: unknown[];
   let mockSubscribe: ReturnType<typeof vi.fn>;
-  let capturedListener: ((state: { points: unknown[]; saveState: () => void }) => void) | undefined;
+  let capturedListener:
+    | ((state: { points: unknown[]; saveState: () => void }) => void)
+    | undefined;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     mockLoadState = vi.fn();
     mockSaveState = vi.fn();
     mockPoints = [];
+    currentPoints = mockPoints;
     capturedListener = undefined;
 
     mockSubscribe = vi.fn((listener) => {
@@ -38,11 +46,13 @@ describe("useDiagramPersistence", () => {
       return vi.fn();
     });
 
-    (useDiagramStore.getState as ReturnType<typeof vi.fn>).mockReturnValue({
-      loadState: mockLoadState,
-      saveState: mockSaveState,
-      points: mockPoints,
-    });
+    (useDiagramStore.getState as ReturnType<typeof vi.fn>).mockImplementation(
+      () => ({
+        loadState: mockLoadState,
+        saveState: mockSaveState,
+        points: currentPoints,
+      }),
+    );
 
     (useDiagramStore.subscribe as ReturnType<typeof vi.fn>).mockImplementation(
       mockSubscribe,
@@ -50,21 +60,22 @@ describe("useDiagramPersistence", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
   describe("on mount", () => {
-    it("should call loadState once to restore persisted diagram", () => {
+    it("loads persisted state once", () => {
       renderHook(() => useDiagramPersistence());
       expect(mockLoadState).toHaveBeenCalledTimes(1);
     });
 
-    it("should subscribe to the store to watch for point changes", () => {
+    it("subscribes to the store", () => {
       renderHook(() => useDiagramPersistence());
       expect(mockSubscribe).toHaveBeenCalledTimes(1);
     });
 
-    it("should swallow errors thrown by loadState and continue subscribing", () => {
+    it("continues subscribing when loadState throws", () => {
       const consoleErrorSpy = vi
         .spyOn(console, "error")
         .mockImplementation(vi.fn());
@@ -77,49 +88,101 @@ describe("useDiagramPersistence", () => {
         "Failed to load persisted diagram state:",
         expect.any(Error),
       );
-      // Store subscription should still be set up despite the load error
       expect(mockSubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it("initializes previous points from the hydrated store state", () => {
+      currentPoints = [];
+      mockLoadState.mockImplementation(() => {
+        currentPoints = [{ id: "hydrated" }];
+      });
+
+      renderHook(() => useDiagramPersistence());
+      capturedListener?.({ points: currentPoints, saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+
+      expect(mockSaveState).not.toHaveBeenCalled();
     });
   });
 
   describe("auto-save behaviour", () => {
-    it("should call saveState when points reference changes", () => {
+    it("saves only after the debounce delay elapses", () => {
       renderHook(() => useDiagramPersistence());
 
       const newPoints = [{ id: "1" }];
-      capturedListener?.({ points: newPoints, saveState: mockSaveState as unknown as () => void });
+      capturedListener?.({ points: newPoints, saveState: mockSaveState });
 
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
+      expect(mockSaveState).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
       expect(mockSaveState).toHaveBeenCalledTimes(1);
     });
 
-    it("should not call saveState when points reference is unchanged", () => {
+    it("does not save when the points reference is unchanged", () => {
       renderHook(() => useDiagramPersistence());
 
-      capturedListener?.({ points: mockPoints, saveState: mockSaveState as unknown as () => void });
+      capturedListener?.({ points: mockPoints, saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
 
       expect(mockSaveState).not.toHaveBeenCalled();
     });
 
-    it("should track updated points reference to avoid duplicate saves", () => {
+    it("coalesces rapid updates into a single save", () => {
+      renderHook(() => useDiagramPersistence());
+
+      capturedListener?.({ points: [{ id: "1" }], saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
+      capturedListener?.({ points: [{ id: "1" }, { id: "2" }], saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
+      capturedListener?.({ points: [{ id: "1" }, { id: "2" }, { id: "3" }], saveState: mockSaveState });
+
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
+      expect(mockSaveState).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(mockSaveState).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores repeated notifications for the same points reference", () => {
       renderHook(() => useDiagramPersistence());
 
       const firstPoints = [{ id: "1" }];
-      capturedListener?.({ points: firstPoints, saveState: mockSaveState as unknown as () => void });
+      capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
-      // Firing again with the same reference should not trigger another save
-      capturedListener?.({ points: firstPoints, saveState: mockSaveState as unknown as () => void });
+      capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
-      // A new reference should trigger a save
       const secondPoints = [{ id: "1" }, { id: "2" }];
-      capturedListener?.({ points: secondPoints, saveState: mockSaveState as unknown as () => void });
+      capturedListener?.({ points: secondPoints, saveState: mockSaveState });
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
       expect(mockSaveState).toHaveBeenCalledTimes(2);
+    });
+
+    it("swallows saveState errors raised by the debounced callback", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(vi.fn());
+      mockSaveState.mockImplementation(() => {
+        throw new Error("Quota exceeded");
+      });
+
+      renderHook(() => useDiagramPersistence());
+      capturedListener?.({ points: [{ id: "1" }], saveState: mockSaveState });
+
+      expect(() => vi.advanceTimersByTime(SAVE_DEBOUNCE_MS)).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to persist diagram state:",
+        expect.any(Error),
+      );
     });
   });
 
   describe("cleanup", () => {
-    it("should unsubscribe from the store on unmount", () => {
+    it("unsubscribes from the store on unmount", () => {
       const mockUnsubscribe = vi.fn();
       (
         useDiagramStore.subscribe as ReturnType<typeof vi.fn>
@@ -129,6 +192,16 @@ describe("useDiagramPersistence", () => {
       unmount();
 
       expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancels any pending debounced save on unmount", () => {
+      const { unmount } = renderHook(() => useDiagramPersistence());
+
+      capturedListener?.({ points: [{ id: "1" }], saveState: mockSaveState });
+      unmount();
+      vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
+
+      expect(mockSaveState).not.toHaveBeenCalled();
     });
   });
 });
