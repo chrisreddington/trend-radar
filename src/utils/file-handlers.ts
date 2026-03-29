@@ -11,8 +11,8 @@ declare global {
     ) => Promise<FileSystemFileHandle[]>;
   }
 
-  const showSaveFilePicker: Window["showSaveFilePicker"];
-  const showOpenFilePicker: Window["showOpenFilePicker"];
+  var showSaveFilePicker: Window["showSaveFilePicker"];
+  var showOpenFilePicker: Window["showOpenFilePicker"];
 }
 
 interface SaveFilePickerOptions {
