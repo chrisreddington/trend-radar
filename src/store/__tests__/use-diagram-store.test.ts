@@ -338,6 +338,43 @@ describe("useDiagramStore", () => {
         expect(state.points).toEqual([]);
         expect(state.selectedPoint).toBeUndefined();
       });
+
+      it("should not update state when localStorage has valid JSON but no points field", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ foo: "bar" }));
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
+
+      it("should not update state when localStorage points field is not an array", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: "not-an-array" }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
+
+      it("should not update state when localStorage points field is a number", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: 42 }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
     });
   });
 

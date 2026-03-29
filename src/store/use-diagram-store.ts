@@ -280,8 +280,18 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
   loadState: () => {
     const savedState = localStorage.getItem("diagramState");
     if (savedState) {
-      const { points } = JSON.parse(savedState);
-      set({ points, selectedPoint: undefined });
+      const parsed = JSON.parse(savedState) as unknown;
+      if (
+        parsed !== null &&
+        typeof parsed === "object" &&
+        "points" in parsed &&
+        Array.isArray((parsed as { points: unknown }).points)
+      ) {
+        set({
+          points: (parsed as { points: Point[] }).points,
+          selectedPoint: undefined,
+        });
+      }
     }
   },
 }));
