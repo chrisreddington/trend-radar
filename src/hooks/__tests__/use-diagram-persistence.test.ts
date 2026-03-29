@@ -25,9 +25,12 @@ describe("useDiagramPersistence", () => {
   let mockSaveState: ReturnType<typeof vi.fn>;
   let mockPoints: unknown[];
   let mockSubscribe: ReturnType<typeof vi.fn>;
-  let capturedListener: ((state: { points: unknown[]; saveState: () => void }) => void) | undefined;
+  let capturedListener:
+    | ((state: { points: unknown[]; saveState: () => void }) => void)
+    | undefined;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     mockLoadState = vi.fn();
     mockSaveState = vi.fn();
     mockPoints = [];
@@ -50,6 +53,7 @@ describe("useDiagramPersistence", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -83,12 +87,17 @@ describe("useDiagramPersistence", () => {
   });
 
   describe("auto-save behaviour", () => {
-    it("should call saveState when points reference changes", () => {
+    it("should call saveState after the debounce delay when points reference changes", () => {
       renderHook(() => useDiagramPersistence());
 
       const newPoints = [{ id: "1" }];
       capturedListener?.({ points: newPoints, saveState: mockSaveState });
 
+      // Should not save immediately
+      expect(mockSaveState).not.toHaveBeenCalled();
+
+      // Should save after the debounce delay
+      vi.runAllTimers();
       expect(mockSaveState).toHaveBeenCalledTimes(1);
     });
 
@@ -96,8 +105,26 @@ describe("useDiagramPersistence", () => {
       renderHook(() => useDiagramPersistence());
 
       capturedListener?.({ points: mockPoints, saveState: mockSaveState });
+      vi.runAllTimers();
 
       expect(mockSaveState).not.toHaveBeenCalled();
+    });
+
+    it("should debounce rapid updates so saveState is called only once", () => {
+      renderHook(() => useDiagramPersistence());
+
+      // Simulate rapid updates (e.g. drag events firing at 60fps)
+      const firstPoints = [{ id: "1" }];
+      const secondPoints = [{ id: "1" }, { id: "2" }];
+      const thirdPoints = [{ id: "1" }, { id: "2" }, { id: "3" }];
+
+      capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      capturedListener?.({ points: secondPoints, saveState: mockSaveState });
+      capturedListener?.({ points: thirdPoints, saveState: mockSaveState });
+
+      // Only one save should be scheduled after all rapid updates settle
+      vi.runAllTimers();
+      expect(mockSaveState).toHaveBeenCalledTimes(1);
     });
 
     it("should track updated points reference to avoid duplicate saves", () => {
@@ -105,15 +132,18 @@ describe("useDiagramPersistence", () => {
 
       const firstPoints = [{ id: "1" }];
       capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      vi.runAllTimers();
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
       // Firing again with the same reference should not trigger another save
       capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      vi.runAllTimers();
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
       // A new reference should trigger a save
       const secondPoints = [{ id: "1" }, { id: "2" }];
       capturedListener?.({ points: secondPoints, saveState: mockSaveState });
+      vi.runAllTimers();
       expect(mockSaveState).toHaveBeenCalledTimes(2);
     });
   });
@@ -129,6 +159,20 @@ describe("useDiagramPersistence", () => {
       unmount();
 
       expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it("should cancel any pending debounced save on unmount", () => {
+      const { unmount } = renderHook(() => useDiagramPersistence());
+
+      const newPoints = [{ id: "1" }];
+      capturedListener?.({ points: newPoints, saveState: mockSaveState });
+
+      // Unmount before the debounce delay fires
+      unmount();
+      vi.runAllTimers();
+
+      // saveState should not be called after unmount
+      expect(mockSaveState).not.toHaveBeenCalled();
     });
   });
 });
