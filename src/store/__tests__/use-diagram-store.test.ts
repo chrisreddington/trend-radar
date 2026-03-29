@@ -329,7 +329,8 @@ describe("useDiagramStore", () => {
       });
 
       it("should maintain empty state when no data in localStorage", () => {
-        mockLocalStorage.getItem.mockReturnValue();
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        mockLocalStorage.getItem.mockReturnValue(undefined);
 
         const { loadState } = useDiagramStore.getState();
         loadState();
