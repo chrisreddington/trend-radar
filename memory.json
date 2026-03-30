@@ -1,1 +1,13 @@
-{"last":"2026-03-30","monthly":"2026-03","monthly_issue":137,"cursor":22,"prs":["eng-playwright-cache-20260330","eng-nextjs-16.2.1-20260330"],"merged":[128,130,135,136,141,142,143,147,148,150,152,156,154],"open_prs":[157,159,165,171,172,174,176,177,178,179],"issues":[173,175],"comments":[15,17],"closed_issues":[16,18,19,22],"notes":"PR #178 overlaps with #172 (localStorage guard vs comprehensive validation). Issues #173 and #175 now have PRs created this run (branches eng-nextjs-16.2.1-20260330 and eng-playwright-cache-20260330). New PR numbers will be around 180-181 pending push."}
+{
+  "last": "2026-03-30",
+  "monthly": "2026-03",
+  "monthly_issue": 137,
+  "cursor": 22,
+  "merged": [128, 130, 135, 136, 141, 142, 143, 147, 148, 150, 152, 156, 154, 164, 167, 168, 170],
+  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179],
+  "new_prs_this_run": ["improve-threshold-converters-20260330-b9cd53f-36162297", "eng-playwright-cache-ci-20260330-b9cd53f-614c5288"],
+  "issues": [173, 175],
+  "comments": [15, 17],
+  "closed_issues": [16, 18, 19, 22],
+  "notes": "This run (2026-03-30): Task 4 = CI playwright caching PR (eng-playwright-cache-ci branch). Task 5 = threshold converters extracted from control-panel.tsx to utils/threshold-converters.ts with tests (improve-threshold-converters branch). PR #178 overlaps with #172. Open PRs [157,159,165,171,172,174,176,177,178,179] still pending review."
+}
