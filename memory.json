@@ -3,8 +3,7 @@
   "monthly": "2026-03",
   "monthly_issue": 137,
   "cursor": 22,
-  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179],
-  "issues_open": [173, 175],
+  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182],
   "comments": [15, 17],
-  "notes": "2026-03-31: Fixed conflict in PR #157 (isValidPoint+description). New perf PR: ControlPanel memo+selectors (branch perf-control-panel-memo-selectors-20260331). Issues #173/#175 open, branches exist but no PRs. All 10 PRs pending review."
+  "notes": "2026-03-31: Removed dead Jest infra (babel.config.test.js, __mocks__/) via eng-remove-dead-test-infra-20260331 branch. 11 Repo Assist PRs pending. Protected-files issues: #180, #181."
 }
