@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Relevance, Preparedness, Point } from "../types";
 
@@ -78,15 +78,17 @@ function getValueFromPreparedness(preparedness: Preparedness): number {
   }
 }
 
-export const ControlPanel = () => {
-  const {
-    points,
-    selectedPoint,
-    addPoint,
-    updatePoint,
-    removePoint,
-    selectPoint,
-  } = useDiagramStore();
+export const ControlPanel = memo(function ControlPanel() {
+  const selectedPointId = useDiagramStore((state) => state.selectedPoint);
+  const selectedPointData = useDiagramStore((state) =>
+    state.selectedPoint
+      ? state.points.find((p) => p.id === state.selectedPoint)
+      : undefined,
+  );
+  const addPoint = useDiagramStore((state) => state.addPoint);
+  const updatePoint = useDiagramStore((state) => state.updatePoint);
+  const removePoint = useDiagramStore((state) => state.removePoint);
+  const selectPoint = useDiagramStore((state) => state.selectPoint);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | undefined>();
   const [isUserEditing, setIsUserEditing] = useState(false);
@@ -101,19 +103,17 @@ export const ControlPanel = () => {
   });
 
   useEffect(() => {
-    if (selectedPoint) {
-      const point = points.find((p) => p.id === selectedPoint);
+    if (selectedPointData) {
       if (
-        point &&
-        (!editingPoint ||
-          editingPoint.id !== point.id ||
-          (!isUserEditing &&
-            (editingPoint.category !== point.category ||
-              editingPoint.likelihood !== point.likelihood)))
+        !editingPoint ||
+        editingPoint.id !== selectedPointData.id ||
+        (!isUserEditing &&
+          (editingPoint.category !== selectedPointData.category ||
+            editingPoint.likelihood !== selectedPointData.likelihood))
       ) {
         // Update editingPoint when point data changes (e.g., after drag operations)
         // but don't reset user's active edits
-        setEditingPoint({ ...point });
+        setEditingPoint({ ...selectedPointData });
         setIsUserEditing(false);
       }
       // Don't auto-collapse when a point is selected - let user control panel state
@@ -121,7 +121,7 @@ export const ControlPanel = () => {
       setEditingPoint(undefined);
       setIsUserEditing(false);
     }
-  }, [selectedPoint, points, editingPoint, isUserEditing]);
+  }, [selectedPointData, editingPoint, isUserEditing]);
 
   const handleAddPoint = useCallback(
     (event: React.FormEvent) => {
@@ -143,9 +143,8 @@ export const ControlPanel = () => {
   const handleUpdatePoint = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      if (selectedPoint && editingPoint) {
-        const originalPoint = points.find((p) => p.id === selectedPoint);
-        if (!originalPoint) return;
+      if (selectedPointId && editingPoint && selectedPointData) {
+        const originalPoint = selectedPointData;
 
         // Check if category or likelihood changed
         const categoryChanged =
@@ -184,11 +183,11 @@ export const ControlPanel = () => {
         // Preserve position if only non-spatial properties changed
         const preservePosition = !categoryChanged && !likelihoodChanged;
 
-        updatePoint(selectedPoint, updates, preservePosition);
+        updatePoint(selectedPointId, updates, preservePosition);
         setIsUserEditing(false);
       }
     },
-    [selectedPoint, editingPoint, points, updatePoint],
+    [selectedPointId, editingPoint, selectedPointData, updatePoint],
   );
 
   const handleLabelChange = useCallback(
@@ -233,14 +232,14 @@ export const ControlPanel = () => {
   }, [selectPoint]);
 
   const handleDeletePoint = useCallback(() => {
-    if (selectedPoint) {
-      removePoint(selectedPoint);
+    if (selectedPointId) {
+      removePoint(selectedPointId);
       // Keep the panel expanded when deleting point - user can manually collapse if needed
       selectPoint();
       setEditingPoint(undefined);
       setIsUserEditing(false);
     }
-  }, [selectedPoint, removePoint, selectPoint]);
+  }, [selectedPointId, removePoint, selectPoint]);
 
   const renderPointForm = (
     point: Point | Omit<Point, "id">,
@@ -516,4 +515,4 @@ export const ControlPanel = () => {
       </div>
     </div>
   );
-};
+});
