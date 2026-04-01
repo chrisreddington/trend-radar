@@ -324,6 +324,84 @@ describe("PointsTable", () => {
       expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
     });
   });
+  describe("Empty State", () => {
+    it("should show an empty-state message when there are no points at all", () => {
+      const state = { points: [] };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+
+      expect(
+        screen.getByText(
+          "No points added yet. Use the controls above to add your first point.",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("Keyboard Accessibility", () => {
+    it("should have aria-sort='none' on non-active sort columns", () => {
+      render(<PointsTable />);
+      const categoryHeader = getColumnHeader("Category");
+      expect(categoryHeader).toHaveAttribute("aria-sort", "none");
+    });
+
+    it("should update aria-sort to 'ascending' after first click on a column", () => {
+      render(<PointsTable />);
+      fireEvent.click(getColumnHeader("Label"));
+      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+    });
+
+    it("should update aria-sort to 'descending' after second click on the same column", () => {
+      render(<PointsTable />);
+      fireEvent.click(getColumnHeader("Label"));
+      fireEvent.click(getColumnHeader("Label"));
+      expect(getColumnHeader("Label")).toHaveAttribute(
+        "aria-sort",
+        "descending",
+      );
+    });
+
+    it("should sort when Enter is pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getColumnHeader("Label"), { key: "Enter" });
+      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+    });
+
+    it("should sort when Space is pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getColumnHeader("Category"), { key: " " });
+      expect(getColumnHeader("Category")).toHaveAttribute(
+        "aria-sort",
+        "ascending",
+      );
+    });
+
+    it("should not sort when other keys are pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getColumnHeader("Label"), { key: "Tab" });
+      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "none");
+    });
+
+    it("should have tabIndex=0 on all column headers", () => {
+      render(<PointsTable />);
+      for (const header of screen.getAllByRole("columnheader")) {
+        expect(header).toHaveAttribute("tabIndex", "0");
+      }
+    });
+
+    it("should have scope='col' on all column headers", () => {
+      render(<PointsTable />);
+      for (const header of screen.getAllByRole("columnheader")) {
+        expect(header).toHaveAttribute("scope", "col");
+      }
+    });
+  });
+
   describe("Ordinal sorting", () => {
     // These tests use a third point so alphabetical and ordinal orders diverge.
     // "Low" relevance sorts after "Moderate" ordinally but before it alphabetically.

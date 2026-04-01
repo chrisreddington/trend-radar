@@ -67,6 +67,16 @@ export const PointsTable = memo(function PointsTable() {
     setCategoryFilter(ALL_CATEGORIES);
   }, []);
 
+  const handleSortKeyDown = useCallback(
+    (event: React.KeyboardEvent, field: SortField) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleSort(field);
+      }
+    },
+    [handleSort],
+  );
+
   const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
   const filteredAndSortedPoints = useMemo(
@@ -209,60 +219,47 @@ export const PointsTable = memo(function PointsTable() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th
-                  onClick={() => handleSort("label")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Label{" "}
-                  {sortField === "label" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("category")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Category{" "}
-                  {sortField === "category" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("relevance")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Relevance{" "}
-                  {sortField === "relevance" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("preparedness")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Preparedness{" "}
-                  {sortField === "preparedness" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("likelihood")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Likelihood{" "}
-                  {sortField === "likelihood" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
+                {(
+                  [
+                    ["label", "Label"],
+                    ["category", "Category"],
+                    ["relevance", "Relevance"],
+                    ["preparedness", "Preparedness"],
+                    ["likelihood", "Likelihood"],
+                  ] as [SortField, string][]
+                ).map(([field, label]) => (
+                  <th
+                    key={field}
+                    scope="col"
+                    onClick={() => handleSort(field)}
+                    onKeyDown={(event) => handleSortKeyDown(event, field)}
+                    tabIndex={0}
+                    aria-sort={
+                      sortField === field
+                        ? (sortDirection === "asc" ? "ascending" : "descending")
+                        : "none"
+                    }
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                  >
+                    {label}{" "}
+                    {sortField === field &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAndSortedPoints.length === 0 ? (
-                isFiltered ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
-                    >
-                      No points match the current filters.
-                    </td>
-                  </tr>
-                ) : undefined
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                  >
+                    {isFiltered
+                      ? "No points match the current filters."
+                      : "No points added yet. Use the controls above to add your first point."}
+                  </td>
+                </tr>
               ) : (
                 filteredAndSortedPoints.map((point) => (
                   <tr
