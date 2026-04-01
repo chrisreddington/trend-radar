@@ -49,6 +49,8 @@ const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
 
 export const PointsTable = memo(function PointsTable() {
   const points = useDiagramStore((state) => state.points);
+  const selectedPoint = useDiagramStore((state) => state.selectedPoint);
+  const selectPoint = useDiagramStore((state) => state.selectPoint);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -103,6 +105,41 @@ export const PointsTable = memo(function PointsTable() {
       }
     },
     [handleSort],
+  );
+
+  const handleRowClick = useCallback(
+    (id: string) => {
+      selectPoint(selectedPoint === id ? undefined : id);
+    },
+    [selectPoint, selectedPoint],
+  );
+
+  const handleRowKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, id: string) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleRowClick(id);
+      }
+    },
+    [handleRowClick],
+  );
+
+  const handleRowKeyUp = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, id: string) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        handleRowClick(id);
+      }
+    },
+    [handleRowClick],
   );
 
   const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
@@ -294,7 +331,16 @@ export const PointsTable = memo(function PointsTable() {
                 filteredAndSortedPoints.map((point) => (
                   <tr
                     key={point.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleRowClick(point.id)}
+                    onKeyDown={(event) => handleRowKeyDown(event, point.id)}
+                    onKeyUp={(event) => handleRowKeyUp(event, point.id)}
+                    tabIndex={0}
+                    aria-selected={selectedPoint === point.id}
+                    className={`cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
+                      selectedPoint === point.id
+                        ? "bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    }`}
                   >
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
                       <span className="inline-flex items-center gap-1">

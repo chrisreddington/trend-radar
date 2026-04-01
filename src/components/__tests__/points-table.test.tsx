@@ -79,6 +79,12 @@ const getRowCellText = (rowIndex: number, colIndex: number) => {
   return rows[rowIndex].cells[colIndex].textContent;
 };
 
+const getPointRow = (label: string) => {
+  const row = screen.getByText(label).closest("tr");
+  expect(row).not.toBeNull();
+  return row as HTMLTableRowElement;
+};
+
 describe("PointsTable", () => {
   // Common test data
   const mockPoints = [
@@ -104,8 +110,15 @@ describe("PointsTable", () => {
     },
   ];
 
+  let mockSelectPoint: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
-    const state = { points: mockPoints };
+    mockSelectPoint = vi.fn();
+    const state = {
+      points: mockPoints,
+      selectedPoint: undefined as string | undefined,
+      selectPoint: mockSelectPoint,
+    };
     (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (selector?: (s: typeof state) => unknown) =>
         selector ? selector(state) : state,
@@ -449,7 +462,11 @@ describe("PointsTable", () => {
     ];
 
     beforeEach(() => {
-      const state = { points: threePoints };
+      const state = {
+        points: threePoints,
+        selectedPoint: undefined as string | undefined,
+        selectPoint: vi.fn(),
+      };
       (
         useDiagramStore as unknown as ReturnType<typeof vi.fn>
       ).mockImplementation((selector?: (s: typeof state) => unknown) =>
@@ -566,6 +583,87 @@ describe("PointsTable", () => {
       expect(
         screen.getByRole("button", { name: "Download visible points as CSV" }),
       ).toBeDisabled();
+    });
+  });
+
+  describe("Row Selection", () => {
+    it("should call selectPoint with the point id when a row is clicked", () => {
+      render(<PointsTable />);
+      fireEvent.click(getPointRow("Test Point 1"));
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should call selectPoint with undefined when clicking the already-selected row", () => {
+      const state = {
+        points: mockPoints,
+        selectedPoint: "1",
+        selectPoint: mockSelectPoint,
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+      fireEvent.click(getPointRow("Test Point 1"));
+      expect(mockSelectPoint).toHaveBeenCalledWith(undefined);
+    });
+
+    it("should mark the selected row with aria-selected=true", () => {
+      const state = {
+        points: mockPoints,
+        selectedPoint: "2",
+        selectPoint: mockSelectPoint,
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+      expect(getPointRow("Test Point 1")).toHaveAttribute(
+        "aria-selected",
+        "false",
+      );
+      expect(getPointRow("Test Point 2")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+    });
+
+    it("should activate row selection with Enter key", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getPointRow("Test Point 1"), { key: "Enter" });
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should activate row selection with Space key", () => {
+      render(<PointsTable />);
+      fireEvent.keyUp(getPointRow("Test Point 1"), { key: " " });
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should ignore repeated keyboard selection events", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getPointRow("Test Point 1"), {
+        key: "Enter",
+        repeat: true,
+      });
+      fireEvent.keyUp(getPointRow("Test Point 1"), {
+        key: " ",
+        repeat: true,
+      });
+      expect(mockSelectPoint).not.toHaveBeenCalled();
+    });
+
+    it("should make data rows focusable with tabIndex", () => {
+      render(<PointsTable />);
+      const rows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
+      for (const row of rows) {
+        expect(row).toHaveAttribute("tabIndex", "0");
+      }
     });
   });
 });
