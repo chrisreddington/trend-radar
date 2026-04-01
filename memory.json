@@ -1,9 +1,9 @@
 {
-  "last": "2026-03-31",
-  "monthly": "2026-03",
-  "monthly_issue": 137,
+  "last": "2026-04-01",
+  "monthly": "2026-04",
+  "monthly_issue": null,
   "cursor": 22,
-  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182],
+  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182, 183],
   "comments": [15, 17],
-  "notes": "2026-03-31: Removed dead Jest infra (babel.config.test.js, __mocks__/) via eng-remove-dead-test-infra-20260331 branch. 11 Repo Assist PRs pending. Protected-files issues: #180, #181."
+  "notes": "2026-04-01: Created fix PR for PointsTable keyboard accessibility (sort headers: tabIndex, aria-sort, scope, onKeyDown, empty state). Monthly activity updated: closed #137 (March), created April 2026 issue. 12+ Repo Assist PRs pending review. Protected-file issues: #149, #180, #181."
 }
