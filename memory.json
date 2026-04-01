@@ -1,9 +1,9 @@
 {
   "last": "2026-04-01",
   "monthly": "2026-04",
-  "monthly_issue": null,
+  "monthly_issue": 185,
   "cursor": 22,
-  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182, 183],
+  "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182, 183, 184],
   "comments": [15, 17],
-  "notes": "2026-04-01: Created fix PR for PointsTable keyboard accessibility (sort headers: tabIndex, aria-sort, scope, onKeyDown, empty state). Monthly activity updated: closed #137 (March), created April 2026 issue. 12+ Repo Assist PRs pending review. Protected-file issues: #149, #180, #181."
+  "notes": "2026-04-01T13: Created PR (this run) feat(points-table) click-to-select row. 2026-04-01T01: Created fix PR #184 for PointsTable keyboard accessibility (sort headers: tabIndex, aria-sort, scope, onKeyDown, empty state). Monthly activity issue #185 created for April 2026. 12+ Repo Assist PRs pending review. Protected-file issues: #149, #180, #181."
 }
