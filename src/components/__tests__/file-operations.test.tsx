@@ -25,10 +25,14 @@ describe("FileOperations", () => {
 
   beforeEach(() => {
     console.error = vi.fn();
-    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+    const mockState = {
       saveDiagram: mockSaveDiagram,
       loadDiagram: mockLoadDiagram,
-    });
+    };
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector?: (state: typeof mockState) => unknown) =>
+        selector ? selector(mockState) : mockState,
+    );
   });
 
   afterEach(() => {

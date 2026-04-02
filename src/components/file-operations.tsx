@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 
-export const FileOperations = () => {
-  const { saveDiagram, loadDiagram } = useDiagramStore();
+export const FileOperations = memo(function FileOperations() {
+  const saveDiagram = useDiagramStore((state) => state.saveDiagram);
+  const loadDiagram = useDiagramStore((state) => state.loadDiagram);
   const [error, setError] = useState<string | undefined>();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -11,7 +12,7 @@ export const FileOperations = () => {
   const commonButtonClasses =
     "px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
       setError(undefined);
       setIsSaving(true);
@@ -22,9 +23,9 @@ export const FileOperations = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [saveDiagram]);
 
-  const handleLoad = async () => {
+  const handleLoad = useCallback(async () => {
     try {
       setError(undefined);
       setIsLoading(true);
@@ -35,7 +36,7 @@ export const FileOperations = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadDiagram]);
 
   const isOperationInProgress = isSaving || isLoading;
 
@@ -74,4 +75,4 @@ export const FileOperations = () => {
       </div>
     </div>
   );
-};
+});
