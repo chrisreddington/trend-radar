@@ -240,16 +240,17 @@ export const PointsTable = memo(function PointsTable() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAndSortedPoints.length === 0 ? (
-                isFiltered ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
-                    >
-                      No points match the current filters.
-                    </td>
-                  </tr>
-                ) : undefined
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                    data-testid="points-table-empty"
+                  >
+                    {isFiltered
+                      ? "No points match the current filters."
+                      : "No points yet. Add a point using the control panel."}
+                  </td>
+                </tr>
               ) : (
                 filteredAndSortedPoints.map((point) => (
                   <tr

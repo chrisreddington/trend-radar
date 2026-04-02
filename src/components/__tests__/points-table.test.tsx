@@ -157,6 +157,21 @@ describe("PointsTable", () => {
       render(<PointsTable />);
       expect(screen.queryByLabelText(/^Description:/)).not.toBeInTheDocument();
     });
+
+    it("should show an empty-state message when there are no points at all", () => {
+      const emptyState = { points: [] };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof emptyState) => unknown) =>
+        selector ? selector(emptyState) : emptyState,
+      );
+
+      render(<PointsTable />);
+
+      expect(
+        screen.getByTestId("points-table-empty"),
+      ).toHaveTextContent("No points yet. Add a point using the control panel.");
+    });
   });
 
   describe("Sorting", () => {
@@ -268,8 +283,8 @@ describe("PointsTable", () => {
       );
 
       expect(
-        screen.getByText("No points match the current filters."),
-      ).toBeInTheDocument();
+        screen.getByTestId("points-table-empty"),
+      ).toHaveTextContent("No points match the current filters.");
     });
 
     it("should show a Clear button when filters are active and reset on click", () => {
