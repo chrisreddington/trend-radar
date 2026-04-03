@@ -57,6 +57,46 @@ describe("ThemeToggle", () => {
     });
   });
 
+  it("defaults to system theme when localStorage returns an invalid value", () => {
+    localStorageMock.setItem("theme", "invalid-theme-value");
+    render(<ThemeToggle />);
+    expect(
+      screen.getByLabelText("System theme").getAttribute("aria-pressed"),
+    ).toBe("true");
+  });
+
+  it("defaults to system theme when localStorage throws (e.g. private-browsing)", () => {
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      get: () => {
+        throw new Error("localStorage is not available");
+      },
+    });
+    expect(() => render(<ThemeToggle />)).not.toThrow();
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: localStorageMock,
+    });
+  });
+
+  it("does not throw when localStorage.setItem throws during theme change", () => {
+    const throwingStorage = {
+      ...localStorageMock,
+      setItem: () => {
+        throw new Error("QuotaExceededError");
+      },
+      removeItem: () => {
+        throw new Error("QuotaExceededError");
+      },
+    } as Storage;
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: throwingStorage,
+    });
+    render(<ThemeToggle />);
+    expect(() => fireEvent.click(screen.getByLabelText("Light theme"))).not.toThrow();
+  });
+
   it("renders all theme options", () => {
     render(<ThemeToggle />);
     expect(screen.getByLabelText("Light theme")).toBeInTheDocument();
