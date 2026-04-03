@@ -1,1 +1,1 @@
-{"last":"2026-04-03","monthly":"2026-04","monthly_issue":185,"cursor":22,"open_prs":[165,171,172,174,177,178,179,182,183,184,186,187,188],"notes":"04-03: next 16.2.2 eng PR + theme-toggle fix PR created. Many open repo-assist PRs. Protected: #149,#180,#181."}
+{"monthly": "2026-04", "monthly_issue": 185, "cursor": 22, "open_prs": [157, 159, 165, 171, 172, 174, 176, 177, 178, 179, 182, 183, 184, 186, 187, 188, 194], "comments": {"187": "2026-04-03"}, "notes": "PRs#184+#187 conflict(empty-state). Protected:#149,#180,#181."}
