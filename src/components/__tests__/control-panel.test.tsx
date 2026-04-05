@@ -371,6 +371,54 @@ describe("ControlPanel", () => {
       expect(mockActions.updatePoint).toHaveBeenCalled();
     });
 
+    it("should not call updatePoint when nothing has changed", () => {
+      render(<ControlPanel />);
+
+      // Submit the update form without making any changes
+      const updateButton = screen.getByRole("button", { name: "Update Point" });
+      fireEvent.click(updateButton);
+
+      // No store update should be triggered since nothing changed
+      expect(mockActions.updatePoint).not.toHaveBeenCalled();
+    });
+
+    it("should normalise an empty description string to undefined on update", () => {
+      // Simulate a point that already has a description
+      const pointWithDescription = {
+        ...mockPoint,
+        description: "Existing description",
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => ({
+        points: [pointWithDescription],
+        selectedPoint: "1",
+        ...mockActions,
+      }));
+
+      render(<ControlPanel />);
+
+      const editSection = screen
+        .getByText("Edit Selected Point")
+        .closest("div")?.parentElement;
+      if (!editSection) throw new Error("Edit section not found");
+
+      // Clear the description field
+      const descriptionTextarea = within(editSection).getByLabelText(
+        "Description",
+      ) as HTMLTextAreaElement;
+      fireEvent.change(descriptionTextarea, { target: { value: "" } });
+
+      fireEvent.click(screen.getByRole("button", { name: "Update Point" }));
+
+      // description should be normalised to undefined (not empty string)
+      expect(mockActions.updatePoint).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ description: undefined }),
+        true,
+      );
+    });
+
     describe("State Management", () => {
       it("should clear editing state when point is deselected", () => {
         const { rerender } = render(<ControlPanel />);
