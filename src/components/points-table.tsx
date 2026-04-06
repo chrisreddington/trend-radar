@@ -2,6 +2,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Preparedness, Relevance } from "../types";
+import { downloadPointsAsCsv } from "../utils/csv-export";
 
 type SortField =
   | "label"
@@ -116,6 +117,10 @@ export const PointsTable = memo(function PointsTable() {
     [points, sortField, sortDirection, labelSearch, categoryFilter],
   );
 
+  const handleDownloadCsv = useCallback(() => {
+    downloadPointsAsCsv(filteredAndSortedPoints);
+  }, [filteredAndSortedPoints]);
+
   return (
     <div className="w-full bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 mt-6">
       <div className="p-4">
@@ -191,6 +196,14 @@ export const PointsTable = memo(function PointsTable() {
               {filteredAndSortedPoints.length} of {points.length} shown
             </span>
           )}
+          <button
+            onClick={handleDownloadCsv}
+            disabled={filteredAndSortedPoints.length === 0}
+            className="ml-auto px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Download visible points as CSV"
+          >
+            Download CSV
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

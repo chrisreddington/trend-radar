@@ -13,8 +13,20 @@ vi.mock("../../store/use-diagram-store", async () => {
   };
 });
 
+// Mock the csv-export module so we can verify download is triggered
+vi.mock("../../utils/csv-export", async () => {
+  const actual = await vi.importActual<
+    typeof import("../../utils/csv-export")
+  >("../../utils/csv-export");
+  return {
+    ...actual,
+    downloadPointsAsCsv: vi.fn(),
+  };
+});
+
 // Import after mocking
 import { useDiagramStore } from "../../store/use-diagram-store";
+import { downloadPointsAsCsv } from "../../utils/csv-export";
 
 // Helper functions for sorting tests
 const getColumnHeader = (columnName: string) => {
@@ -417,6 +429,57 @@ describe("PointsTable", () => {
       expect(getRowCellText(0, colIndex)).toBe("Unlikely");
       expect(getRowCellText(1, colIndex)).toBe("Likely");
       expect(getRowCellText(2, colIndex)).toBe("Highly Likely");
+    });
+  });
+
+  describe("CSV Download", () => {
+    beforeEach(() => {
+      vi.mocked(downloadPointsAsCsv).mockReset();
+    });
+
+    it("should render the Download CSV button", () => {
+      render(<PointsTable />);
+      expect(
+        screen.getByRole("button", { name: "Download visible points as CSV" }),
+      ).toBeInTheDocument();
+    });
+
+    it("should call downloadPointsAsCsv with all visible points when clicked", () => {
+      render(<PointsTable />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "Download visible points as CSV" }),
+      );
+      expect(downloadPointsAsCsv).toHaveBeenCalledExactlyOnceWith(
+        expect.arrayContaining([
+          expect.objectContaining({ label: "Test Point 1" }),
+          expect.objectContaining({ label: "Test Point 2" }),
+        ]),
+      );
+    });
+
+    it("should call downloadPointsAsCsv with only filtered points when a filter is active", () => {
+      render(<PointsTable />);
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "Point 1" } },
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: "Download visible points as CSV" }),
+      );
+      const [calledWith] = vi.mocked(downloadPointsAsCsv).mock.calls[0];
+      expect(calledWith).toHaveLength(1);
+      expect(calledWith[0]).toMatchObject({ label: "Test Point 1" });
+    });
+
+    it("should disable the Download CSV button when no points are visible", () => {
+      render(<PointsTable />);
+      fireEvent.change(
+        screen.getByRole("searchbox", { name: "Search points by label" }),
+        { target: { value: "nonexistent" } },
+      );
+      expect(
+        screen.getByRole("button", { name: "Download visible points as CSV" }),
+      ).toBeDisabled();
     });
   });
 });
