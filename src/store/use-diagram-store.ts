@@ -126,6 +126,10 @@ interface DiagramStore extends DiagramState {
   selectPoint: (id?: string) => void;
   /** Import points from file, replacing current points */
   importPoints: (points: Point[]) => void;
+  /** Apply x/y position updates to multiple points in a single state update */
+  batchUpdatePositions: (
+    updates: ReadonlyArray<{ id: string; x: number; y: number }>,
+  ) => void;
   /** Save current diagram to a file */
   saveDiagram: () => Promise<void>;
   /** Load diagram from a file */
@@ -244,6 +248,32 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
   selectPoint: (id) => set({ selectedPoint: id }),
 
   importPoints: (points) => set({ points, selectedPoint: undefined }),
+
+  batchUpdatePositions: (updates) =>
+    set((state) => {
+      if (updates.length === 0) {
+        return state;
+      }
+
+      const positionById = new Map(updates.map((update) => [update.id, update]));
+      let didChange = false;
+
+      const nextPoints = state.points.map((point) => {
+        const update = positionById.get(point.id);
+        if (!update) {
+          return point;
+        }
+
+        if (point.x === update.x && point.y === update.y) {
+          return point;
+        }
+
+        didChange = true;
+        return { ...point, x: update.x, y: update.y };
+      });
+
+      return didChange ? { points: nextPoints } : state;
+    }),
 
   saveDiagram: async () => {
     try {

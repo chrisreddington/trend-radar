@@ -22,6 +22,7 @@ export const RingDiagram = () => {
     selectedPoint,
     selectPoint,
     updatePoint,
+    batchUpdatePositions,
     addPointAtPosition,
   } = useDiagramStore();
   const size = useResponsiveSize();
@@ -216,6 +217,8 @@ export const RingDiagram = () => {
     }
 
     // Plot points with responsive sizing and random placement while avoiding overlaps
+    const pendingPositionUpdates: Array<{ id: string; x: number; y: number }> =
+      [];
     for (const point of points) {
       // Determine point size based on relevance
       const sizeScale = size < 500 ? 0.7 : 1;
@@ -245,8 +248,8 @@ export const RingDiagram = () => {
           pos = calculatePointPosition(point);
           attempts++;
         }
-        // Record only the computed position in the store so the point won't move on re-render.
-        updatePoint(point.id, { x: pos.x, y: pos.y }, true);
+        // Collect position updates to flush in a single store update after the loop.
+        pendingPositionUpdates.push({ id: point.id, x: pos.x, y: pos.y });
       }
       placedPoints.push({ ...pos, size: pointSize });
 
@@ -376,12 +379,19 @@ export const RingDiagram = () => {
       pointElement.append("title").text(point.label);
     }
 
+    // Flush all pending position assignments in a single store update to avoid
+    // one re-render per newly-placed point (reduces N re-renders to 1).
+    if (pendingPositionUpdates.length > 0) {
+      batchUpdatePositions(pendingPositionUpdates);
+    }
+
     // Apply selection highlight to reflect any current selection after rebuild
     applySelectionHighlight(svgReference.current, selectedPointReference.current);
   }, [
     points,
     selectPoint,
     updatePoint,
+    batchUpdatePositions,
     addPointAtPosition,
     size,
     ringGeometry,
