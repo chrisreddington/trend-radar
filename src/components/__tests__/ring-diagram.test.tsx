@@ -310,6 +310,143 @@ describe("RingDiagram", () => {
     });
   });
 
+  describe("Interaction: ring click adds point", () => {
+    it("should call addPointAtPosition when clicking a ring circle", () => {
+      const { container } = render(<RingDiagram />);
+
+      // Ring circles follow the background circle in SVG z-order.
+      // circles[0] is the transparent background; circles[1] is the outermost ring.
+      const allCircles = container.querySelectorAll("circle");
+      const firstRingCircle = allCircles[1];
+      expect(firstRingCircle).toBeInTheDocument();
+      expect(firstRingCircle).not.toHaveClass("point");
+
+      fireEvent.click(firstRingCircle!);
+
+      expect(mockAddPointAtPosition).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not call addPointAtPosition when clicking a point circle", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toBeInTheDocument();
+
+      fireEvent.click(pointCircle!);
+
+      expect(mockAddPointAtPosition).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Interaction: point selection", () => {
+    it("should call selectPoint with the point ID when a point circle is clicked", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toBeInTheDocument();
+
+      fireEvent.click(pointCircle!);
+
+      expect(mockSelectPoint).toHaveBeenCalledWith(mockPoints[0].id);
+    });
+
+    it("should not call addPointAtPosition when clicking on a point circle", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toBeInTheDocument();
+
+      fireEvent.click(pointCircle!);
+
+      expect(mockAddPointAtPosition).not.toHaveBeenCalled();
+    });
+
+    it("should call selectPoint with no args when clicking the transparent background circle", () => {
+      const { container } = render(<RingDiagram />);
+
+      // The first circle in the SVG is the transparent background click-target.
+      const allCircles = container.querySelectorAll("circle");
+      const backgroundCircle = allCircles[0];
+      expect(backgroundCircle).toBeInTheDocument();
+
+      fireEvent.click(backgroundCircle, { target: backgroundCircle });
+
+      expect(mockSelectPoint).toHaveBeenCalledWith();
+    });
+  });
+
+  describe("Interaction: point data attributes", () => {
+    it("should set data-point-id attribute on point circles", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toHaveAttribute("data-point-id", mockPoints[0].id);
+    });
+
+    it("should set cursor:pointer style on point circles", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toHaveAttribute("cursor", "pointer");
+    });
+  });
+
+  describe("Interaction: selection highlight", () => {
+    it("should apply highlighted stroke to selected point circle", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: mockPoints,
+        selectedPoint: mockPoints[0].id,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toHaveAttribute("stroke", "var(--highlight)");
+    });
+
+    it("should set reduced opacity on non-selected points when a point is selected", () => {
+      const twoPoints = [
+        ...mockPoints,
+        {
+          id: "2",
+          label: "Second Point",
+          category: Category.Economic,
+          likelihood: Likelihood.Likely,
+          relevance: Relevance.High,
+          preparedness: Preparedness.HighlyPrepared,
+          x: 100,
+          y: 100,
+        },
+      ];
+
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: twoPoints,
+        selectedPoint: twoPoints[0].id,
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+
+      const allPointCircles = container.querySelectorAll("circle.point");
+      expect(allPointCircles).toHaveLength(2);
+
+      const nonSelectedPoint = allPointCircles[1];
+      expect(nonSelectedPoint).toHaveAttribute("opacity", "0.6");
+    });
+
+    it("should set full opacity on all points when nothing is selected", () => {
+      const { container } = render(<RingDiagram />);
+
+      const pointCircle = container.querySelector("circle.point");
+      expect(pointCircle).toHaveAttribute("opacity", "1");
+    });
+  });
+
   describe("Integration: useResponsiveSize", () => {
     const originalInnerWidth = Object.getOwnPropertyDescriptor(
       globalThis,
