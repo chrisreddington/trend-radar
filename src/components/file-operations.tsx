@@ -1,6 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
+import { downloadSvg } from "../utils/svg-export";
+
+/** aria-label set on the ring diagram SVG element */
+const DIAGRAM_SVG_ARIA_LABEL = "Ring diagram showing points across different categories and rings";
 
 export const FileOperations = () => {
   const { saveDiagram, loadDiagram } = useDiagramStore();
@@ -37,6 +41,23 @@ export const FileOperations = () => {
     }
   };
 
+  const handleExportSvg = () => {
+    try {
+      setError(undefined);
+      const svgElement = document.querySelector<SVGSVGElement>(
+        `svg[aria-label="${DIAGRAM_SVG_ARIA_LABEL}"]`,
+      );
+      if (!svgElement) {
+        setError("Diagram not found — please try again");
+        return;
+      }
+      downloadSvg(svgElement);
+    } catch (error) {
+      setError("Failed to export diagram as SVG");
+      console.error(error);
+    }
+  };
+
   const isOperationInProgress = isSaving || isLoading;
 
   return (
@@ -62,6 +83,14 @@ export const FileOperations = () => {
             {isLoading ? "Loading…" : "Load Diagram"}
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={handleExportSvg}
+          className={`${commonButtonClasses} bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 dark:bg-purple-700 dark:hover:bg-purple-800`}
+        >
+          Export as SVG
+        </button>
 
         {error && (
           <div
