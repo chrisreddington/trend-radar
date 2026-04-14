@@ -2,7 +2,7 @@
   "m": "2026-04",
   "mi": 185,
   "lr": "2026-04-14",
-  "ri": "24375530709",
+  "ri": "24400915268",
   "comments_made": {
     "15": "2026-03-22",
     "17": "2026-03-22"
@@ -34,12 +34,18 @@
     "205": "open",
     "212": "open"
   },
-  "notes": "SAFEOUTPUTS_MCP_UNAVAILABLE in run 24375530709. Work done: rebased PRs #203 #204 #205 onto main (only pkg.json/lock changed, no conflicts). PR #210 (eng-next-16.2.3) is superseded by merged #211. Issues #195 #197 #199 #140 still open for closure. Human issues #15 #17 commented 2026-03-22. NEXT RUN PRIORITY: (1) rebase+push PRs #203 #204 #205 (trivial), (2) comment on PR #210 as superseded, (3) comment on #192 TypeScript 6 bump, (4) update monthly summary #185.",
+  "notes": "SAFEOUTPUTS_MCP_UNAVAILABLE in runs 24375530709 and 24400915268. Work done run 24400915268: (1) Task 8: created new branch repo-assist/perf-memoize-diagram-dimensions-20260414-26946f9-6ababf37eefe0e31 with getDiagramDimensions() memoization - commit c917b97 - needs pushing + PR creation. (2) Task 6: rebased 6 branches onto main (26946f9): fix-control-panel-update-noop-20260405, fix-ring-legend-labels-20260404, perf-batch-position-updates-20260406, feat-csv-export-20260406, feat-svg-export-20260409, test-ring-diagram-interactions-20260407 - all need force-push. NEXT RUN: push rebased branches + create PR for perf-memoize branch. Monthly summary issue #185 not yet updated this run.",
   "issue_cursor": 17,
   "checked_off_items": [],
   "rebased_pending": [
-    "203",
-    "204",
-    "205"
+    "fix-control-panel-update-noop-20260405-5015d4b8d8368327",
+    "fix-ring-legend-labels-20260404-17017c6-10457ef34b78e37c",
+    "perf-batch-position-updates-20260406-b26d61977924ee2c",
+    "feat-csv-export-20260406-17017c6-654a3f9b17f0dfac",
+    "feat-svg-export-20260409-0da0616-f8964977c86d7f0e",
+    "test-ring-diagram-interactions-20260407-0da0616-973bdd0c3e730acd"
+  ],
+  "pending_new_prs": [
+    "repo-assist/perf-memoize-diagram-dimensions-20260414-26946f9-6ababf37eefe0e31"
   ]
 }
