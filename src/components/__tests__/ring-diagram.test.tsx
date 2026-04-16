@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { RingDiagram } from "../ring-diagram";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import { vi } from "vitest";
@@ -118,15 +118,15 @@ describe("RingDiagram", () => {
       }
     });
 
-    it("should mark unselected points with aria-selected false", () => {
+    it("should mark unselected points with aria-pressed false", () => {
       const { container } = render(<RingDiagram />);
       const pointCircles = container.querySelectorAll("circle.point");
       for (const point of pointCircles) {
-        expect(point).toHaveAttribute("aria-selected", "false");
+        expect(point).toHaveAttribute("aria-pressed", "false");
       }
     });
 
-    it("should mark the selected point with aria-selected true", () => {
+    it("should mark the selected point with aria-pressed true", () => {
       (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         points: mockPoints,
         selectedPoint: "1",
@@ -139,7 +139,31 @@ describe("RingDiagram", () => {
       const selectedCircle = container.querySelector(
         'circle.point[data-point-id="1"]',
       );
-      expect(selectedCircle).toHaveAttribute("aria-selected", "true");
+      expect(selectedCircle).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("should select the point when Enter is pressed", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircle = container.querySelector(
+        'circle.point[data-point-id="1"]',
+      );
+
+      expect(pointCircle).not.toBeNull();
+      fireEvent.keyDown(pointCircle!, { key: "Enter" });
+
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should select the point when Space is pressed", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircle = container.querySelector(
+        'circle.point[data-point-id="1"]',
+      );
+
+      expect(pointCircle).not.toBeNull();
+      fireEvent.keyDown(pointCircle!, { key: " " });
+
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
     });
   });
 

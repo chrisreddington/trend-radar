@@ -26,7 +26,7 @@ export const RingDiagram = () => {
   selectedPointReference.current = selectedPoint;
 
   /**
-   * Updates stroke, opacity, and aria-selected on existing point circles to reflect the current selection.
+   * Updates stroke, opacity, and aria-pressed on existing point circles to reflect the current selection.
    * Separated from the structural render so that a selection change avoids a full SVG rebuild.
    */
   const applySelectionHighlight = useCallback(
@@ -45,7 +45,7 @@ export const RingDiagram = () => {
           const pointId = this.dataset["pointId"];
           return selected && pointId !== selected ? 0.6 : 1;
         })
-        .attr("aria-selected", function () {
+        .attr("aria-pressed", function () {
           return this.dataset["pointId"] === selected ? "true" : "false";
         });
     },
@@ -269,7 +269,7 @@ export const RingDiagram = () => {
         .attr("role", "button")
         .attr("tabindex", "0")
         .attr("aria-label", descriptiveLabel)
-        .attr("aria-selected", "false")
+        .attr("aria-pressed", "false")
         .classed("point", true);
 
       // For mobile: Add larger touch target using the computed position
