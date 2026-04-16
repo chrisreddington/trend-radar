@@ -27,6 +27,7 @@ const DEFAULT_STORE_STATE = {
   updatePoint: vi.fn(),
   addPointAtPosition: vi.fn(),
   addPoint: vi.fn(),
+  batchUpdatePositions: vi.fn(),
   removePoint: vi.fn(),
   saveDiagram: vi.fn(),
   loadDiagram: vi.fn(),

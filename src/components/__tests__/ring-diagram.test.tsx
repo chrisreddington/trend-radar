@@ -35,6 +35,7 @@ describe("RingDiagram", () => {
   const mockSelectPoint = vi.fn();
   const mockUpdatePoint = vi.fn();
   const mockAddPointAtPosition = vi.fn();
+  const mockBatchUpdatePositions = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,6 +45,7 @@ describe("RingDiagram", () => {
       selectPoint: mockSelectPoint,
       updatePoint: mockUpdatePoint,
       addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
     });
   });
 
@@ -133,6 +135,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -189,6 +192,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -242,6 +246,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -275,6 +280,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
     });
 
@@ -285,6 +291,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -303,6 +310,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -399,6 +407,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -428,6 +437,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
+      batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
