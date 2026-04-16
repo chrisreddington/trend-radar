@@ -15,10 +15,10 @@
   "dependencies": {
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",
-    "next": "16.1.7",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "zustand": "^5.0.11"
+    "next": "16.2.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zustand": "^5.0.12"
   },
   "overrides": {
     "eslint": "$eslint"
@@ -35,24 +35,24 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.4",
-    "@vitest/browser": "^4.1.0",
+    "@vitest/browser": "^4.1.4",
     "@vitest/browser-playwright": "^4.0.10",
-    "@vitest/eslint-plugin": "^1.6.10",
+    "@vitest/eslint-plugin": "^1.6.15",
     "@vitest/ui": "^4.0.10",
     "eslint": "^10",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.2.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-unicorn": "^63.0.0",
-    "playwright": "^1.58.2",
+    "playwright": "^1.59.1",
     "prettier": "3.8.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.57.0",
+    "typescript-eslint": "^8.58.1",
     "vitest": "^4.0.10"
   }
 }

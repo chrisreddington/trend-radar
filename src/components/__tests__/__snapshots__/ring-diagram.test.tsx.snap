@@ -8,9 +8,9 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a selected po
     class="max-w-[800px] w-full text-gray-900 dark:text-gray-100"
   >
     <svg
-      aria-label="Ring diagram showing points across different categories and rings"
+      aria-label="Interactive trend radar diagram. Use Tab to navigate trend points and Enter or Space to select."
       class="w-full h-auto"
-      role="img"
+      role="application"
       style="display: block;"
       viewBox="-187 -187 374 374"
     >
@@ -285,6 +285,8 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a selected po
           Soc
         </text>
         <circle
+          aria-label="Test Point 1, Technological category, likelihood Average, relevance Moderate, preparedness Moderately Prepared"
+          aria-pressed="true"
           class="point"
           cursor="pointer"
           cx="100"
@@ -293,8 +295,10 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a selected po
           fill="#f59e0b"
           opacity="1"
           r="7"
+          role="button"
           stroke="var(--highlight)"
           stroke-width="2"
+          tabindex="0"
         >
           <title>
             Test Point 1
@@ -323,9 +327,9 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a single poin
     class="max-w-[800px] w-full text-gray-900 dark:text-gray-100"
   >
     <svg
-      aria-label="Ring diagram showing points across different categories and rings"
+      aria-label="Interactive trend radar diagram. Use Tab to navigate trend points and Enter or Space to select."
       class="w-full h-auto"
-      role="img"
+      role="application"
       style="display: block;"
       viewBox="-187 -187 374 374"
     >
@@ -600,6 +604,8 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a single poin
           Soc
         </text>
         <circle
+          aria-label="Test Point 1, Technological category, likelihood Average, relevance Moderate, preparedness Moderately Prepared"
+          aria-pressed="false"
           class="point"
           cursor="pointer"
           cx="100"
@@ -608,8 +614,10 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with a single poin
           fill="#f59e0b"
           opacity="1"
           r="7"
+          role="button"
           stroke="none"
           stroke-width="2"
+          tabindex="0"
         >
           <title>
             Test Point 1
@@ -638,9 +646,9 @@ exports[`RingDiagram > Snapshot Tests > should match snapshot with no points 1`]
     class="max-w-[800px] w-full text-gray-900 dark:text-gray-100"
   >
     <svg
-      aria-label="Ring diagram showing points across different categories and rings"
+      aria-label="Interactive trend radar diagram. Use Tab to navigate trend points and Enter or Space to select."
       class="w-full h-auto"
-      role="img"
+      role="application"
       style="display: block;"
       viewBox="-187 -187 374 374"
     >

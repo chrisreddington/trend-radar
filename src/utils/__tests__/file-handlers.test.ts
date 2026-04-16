@@ -141,6 +141,52 @@ describe("File Handlers", () => {
       expect(validateDiagramData(invalidData)).toBe(false);
     });
 
+    it("should reject points with an invalid category value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], category: "InvalidCategory" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid likelihood value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], likelihood: "Very Likely" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid relevance value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], relevance: "Critical" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid preparedness value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], preparedness: "Not Prepared" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should accept points with all valid enum values", () => {
+      const validData = exportDiagram({
+        points: [
+          {
+            ...mockState.points[0],
+            category: Category.Economic,
+            likelihood: Likelihood.Likely,
+            relevance: Relevance.Low,
+            preparedness: Preparedness.InadequatelyPrepared,
+          },
+        ],
+      });
+      expect(validateDiagramData(validData)).toBe(true);
+    });
     it("should reject data without metadata", () => {
       const invalidData = {
         ...exportDiagram(mockState),
