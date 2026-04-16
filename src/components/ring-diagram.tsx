@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as d3 from "d3";
 import {
   useDiagramStore,
@@ -8,6 +8,12 @@ import {
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 import { useResponsiveSize } from "../hooks/use-responsive-size";
+
+/** All category values in definition order. Computed once at module load. */
+const DIAGRAM_CATEGORIES = Object.values(Category);
+
+/** All likelihood values in reverse order (outermost ring first). Computed once at module load. */
+const DIAGRAM_LIKELIHOODS = Object.values(Likelihood).toReversed();
 
 export const RingDiagram = () => {
   const svgReference = useRef<SVGSVGElement>(null);
@@ -19,6 +25,15 @@ export const RingDiagram = () => {
     addPointAtPosition,
   } = useDiagramStore();
   const size = useResponsiveSize();
+
+  /** Ring geometry derived from the current diagram size. Re-computed only when size changes. */
+  const ringGeometry = useMemo(() => {
+    const marginAdjusted = size * 0.08;
+    const diagramRadius = size / 2 - marginAdjusted;
+    const ringWidth = diagramRadius / DIAGRAM_LIKELIHOODS.length;
+    const angleStep = (2 * Math.PI) / DIAGRAM_CATEGORIES.length;
+    return { diagramRadius, ringWidth, angleStep };
+  }, [size]);
 
   // Keep a ref to selectedPoint so event handlers always read the latest value
   // without needing selectedPoint in the structural render effect's dependency array.
@@ -74,6 +89,8 @@ export const RingDiagram = () => {
       .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
       .append("g");
 
+    const { diagramRadius, ringWidth, angleStep } = ringGeometry;
+
     /**
      * Handle clicks on the diagram to add points at specific coordinates
      */
@@ -106,29 +123,17 @@ export const RingDiagram = () => {
         }
       });
 
-    const marginAdjusted = size * 0.08;
-    const diagramRadius = size / 2 - marginAdjusted;
-
-    const categories = Object.values(Category);
-    const likelihoods = Object.values(Likelihood).toReversed();
-    const ringWidth = diagramRadius / likelihoods.length;
-
     // Add a helper for random positioning with collision detection
     const MIN_POINT_SPACING = 2;
     const placedPoints: { x: number; y: number; size: number }[] = [];
-
-    const angleStep = (2 * Math.PI) / categories.length;
     /**
      * Calculates a random position within the specified arc segment and ring.
      * @param point - The point being positioned.
-     * @param pointSize - The computed size for the point.
      * @returns An object with x and y coordinates.
      */
-
-    //
     const calculatePointPosition = (point: Point) => {
-      const categoryIndex = categories.indexOf(point.category);
-      const likelihoodIndex = likelihoods.indexOf(point.likelihood);
+      const categoryIndex = DIAGRAM_CATEGORIES.indexOf(point.category);
+      const likelihoodIndex = DIAGRAM_LIKELIHOODS.indexOf(point.likelihood);
       // Apply offset so arc boundaries align with the label placement
       const arcStart = categoryIndex * angleStep - Math.PI / 2;
       const arcEnd = (categoryIndex + 1) * angleStep - Math.PI / 2;
@@ -145,8 +150,8 @@ export const RingDiagram = () => {
     };
 
     // Create rings for each likelihood level
-    for (const [index] of likelihoods.entries()) {
-      const colorIndex = likelihoods.length - 1 - index;
+    for (const [index] of DIAGRAM_LIKELIHOODS.entries()) {
+      const colorIndex = DIAGRAM_LIKELIHOODS.length - 1 - index;
 
       // Draw the main ring circle with fills, strokes, and click handler
       diagramGroup
@@ -160,8 +165,7 @@ export const RingDiagram = () => {
         .on("click", handleDiagramClick);
 
       // Draw quadrant lines
-      const angleStep = (2 * Math.PI) / categories.length;
-      for (const [catIndex] of categories.entries()) {
+      for (const [catIndex] of DIAGRAM_CATEGORIES.entries()) {
         const angle = catIndex * angleStep;
         const innerRadius = diagramRadius - (index + 1) * ringWidth;
         const outerRadius = diagramRadius - index * ringWidth;
@@ -185,7 +189,7 @@ export const RingDiagram = () => {
     }
 
     // Draw category labels with responsive styling
-    for (const [index, category] of categories.entries()) {
+    for (const [index, category] of DIAGRAM_CATEGORIES.entries()) {
       const angle = index * angleStep + angleStep / 2 - Math.PI / 2;
       const labelRadius = diagramRadius + (size < 500 ? 20 : 40);
       const x = Math.cos(angle) * labelRadius;
@@ -241,8 +245,8 @@ export const RingDiagram = () => {
           pos = calculatePointPosition(point);
           attempts++;
         }
-        // Record the computed position in the store so the point won't move on re-render.
-        updatePoint(point.id, { ...point, x: pos.x, y: pos.y }, true);
+        // Record only the computed position in the store so the point won't move on re-render.
+        updatePoint(point.id, { x: pos.x, y: pos.y }, true);
       }
       placedPoints.push({ ...pos, size: pointSize });
 
@@ -381,6 +385,7 @@ export const RingDiagram = () => {
     updatePoint,
     addPointAtPosition,
     size,
+    ringGeometry,
     applySelectionHighlight,
   ]);
 
