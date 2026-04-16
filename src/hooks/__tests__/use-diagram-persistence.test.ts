@@ -87,7 +87,7 @@ describe("useDiagramPersistence", () => {
       renderHook(() => useDiagramPersistence());
 
       const newPoints = [{ id: "1" }];
-      capturedListener?.({ points: newPoints, saveState: mockSaveState });
+      capturedListener?.({ points: newPoints, saveState: mockSaveState as unknown as () => void });
 
       expect(mockSaveState).toHaveBeenCalledTimes(1);
     });
@@ -95,7 +95,7 @@ describe("useDiagramPersistence", () => {
     it("should not call saveState when points reference is unchanged", () => {
       renderHook(() => useDiagramPersistence());
 
-      capturedListener?.({ points: mockPoints, saveState: mockSaveState });
+      capturedListener?.({ points: mockPoints, saveState: mockSaveState as unknown as () => void });
 
       expect(mockSaveState).not.toHaveBeenCalled();
     });
@@ -104,16 +104,16 @@ describe("useDiagramPersistence", () => {
       renderHook(() => useDiagramPersistence());
 
       const firstPoints = [{ id: "1" }];
-      capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      capturedListener?.({ points: firstPoints, saveState: mockSaveState as unknown as () => void });
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
       // Firing again with the same reference should not trigger another save
-      capturedListener?.({ points: firstPoints, saveState: mockSaveState });
+      capturedListener?.({ points: firstPoints, saveState: mockSaveState as unknown as () => void });
       expect(mockSaveState).toHaveBeenCalledTimes(1);
 
       // A new reference should trigger a save
       const secondPoints = [{ id: "1" }, { id: "2" }];
-      capturedListener?.({ points: secondPoints, saveState: mockSaveState });
+      capturedListener?.({ points: secondPoints, saveState: mockSaveState as unknown as () => void });
       expect(mockSaveState).toHaveBeenCalledTimes(2);
     });
   });
