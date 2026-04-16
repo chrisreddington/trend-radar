@@ -1,5 +1,8 @@
 import { renderHook, act } from "@testing-library/react";
-import { useResponsiveSize } from "../use-responsive-size";
+import {
+  RESIZE_DEBOUNCE_MS,
+  useResponsiveSize,
+} from "../use-responsive-size";
 
 /**
  * Helper to set the mocked viewport width for tests.
@@ -26,7 +29,12 @@ describe("useResponsiveSize", () => {
     "innerWidth",
   );
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     if (originalClientWidth) {
       Object.defineProperty(
         document.documentElement,
@@ -77,7 +85,7 @@ describe("useResponsiveSize", () => {
   });
 
   describe("Resize handling", () => {
-    it("should update size when the window is resized to a desktop width", () => {
+    it("should update size after the debounce delay when resized to a desktop width", () => {
       setViewportWidth(300);
       const { result } = renderHook(() => useResponsiveSize());
       const initialSize = result.current;
@@ -85,13 +93,19 @@ describe("useResponsiveSize", () => {
       act(() => {
         setViewportWidth(1200);
         globalThis.dispatchEvent(new Event("resize"));
+        // Size should not update immediately (debounce pending)
+      });
+      expect(result.current).toBe(initialSize);
+
+      act(() => {
+        vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS);
       });
 
       expect(result.current).not.toBe(initialSize);
       expect(result.current).toBe(800);
     });
 
-    it("should update size when the window is resized to a narrow mobile width", () => {
+    it("should update size after the debounce delay when resized to a narrow mobile width", () => {
       setViewportWidth(1200);
       const { result } = renderHook(() => useResponsiveSize());
 
@@ -99,9 +113,39 @@ describe("useResponsiveSize", () => {
         setViewportWidth(320);
         globalThis.dispatchEvent(new Event("resize"));
       });
+      // Still old size until debounce fires
+      expect(result.current).toBe(800);
+
+      act(() => {
+        vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS);
+      });
 
       // 320 - 40 = 280
       expect(result.current).toBe(280);
+    });
+
+    it("should apply only the last resize value when multiple events fire within the debounce window", () => {
+      setViewportWidth(1200);
+      const { result } = renderHook(() => useResponsiveSize());
+
+      act(() => {
+        // Simulate rapid resize events — only the final width should take effect
+        setViewportWidth(700);
+        globalThis.dispatchEvent(new Event("resize"));
+        setViewportWidth(900);
+        globalThis.dispatchEvent(new Event("resize"));
+        setViewportWidth(1000);
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+      // No update yet
+      expect(result.current).toBe(800);
+
+      act(() => {
+        vi.advanceTimersByTime(RESIZE_DEBOUNCE_MS);
+      });
+
+      // Only the last resize (1000px → 750, capped at 800) should be applied
+      expect(result.current).toBe(750);
     });
 
     it("should remove the resize event listener on unmount", () => {
@@ -116,6 +160,27 @@ describe("useResponsiveSize", () => {
         expect.any(Function),
       );
       removeEventListenerSpy.mockRestore();
+    });
+
+    it("should cancel the pending debounce timer on unmount", () => {
+      const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+      setViewportWidth(1200);
+      const { unmount } = renderHook(() => useResponsiveSize());
+
+      act(() => {
+        setViewportWidth(800);
+        globalThis.dispatchEvent(new Event("resize"));
+      });
+
+      const clearTimeoutCallCountBeforeUnmount =
+        clearTimeoutSpy.mock.calls.length;
+
+      unmount();
+
+      expect(clearTimeoutSpy.mock.calls.length).toBe(
+        clearTimeoutCallCountBeforeUnmount + 1,
+      );
+      clearTimeoutSpy.mockRestore();
     });
   });
 
