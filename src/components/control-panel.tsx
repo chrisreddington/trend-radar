@@ -157,14 +157,29 @@ export const ControlPanel = () => {
         const updates: Partial<Point> = {};
         if (editingPoint.label !== originalPoint.label)
           updates.label = editingPoint.label;
-        if (editingPoint.description !== originalPoint.description)
-          updates.description = editingPoint.description;
+
+        // Treat empty string and undefined as equivalent for description;
+        // always normalise to undefined when the field is blank.
+        const normalisedDescription =
+          editingPoint.description || undefined;
+        const normalisedOriginalDescription =
+          originalPoint.description || undefined;
+        if (normalisedDescription !== normalisedOriginalDescription)
+          updates.description = normalisedDescription;
+
         if (categoryChanged) updates.category = editingPoint.category;
         if (likelihoodChanged) updates.likelihood = editingPoint.likelihood;
         if (editingPoint.relevance !== originalPoint.relevance)
           updates.relevance = editingPoint.relevance;
         if (editingPoint.preparedness !== originalPoint.preparedness)
           updates.preparedness = editingPoint.preparedness;
+
+        // Skip the store update entirely if nothing changed, preventing
+        // an unnecessary re-render of every component subscribed to points.
+        if (Object.keys(updates).length === 0) {
+          setIsUserEditing(false);
+          return;
+        }
 
         // Preserve position if only non-spatial properties changed
         const preservePosition = !categoryChanged && !likelihoodChanged;
