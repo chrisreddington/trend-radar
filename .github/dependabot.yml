@@ -5,10 +5,13 @@ updates:
     schedule:
       interval: weekly
     cooldown:
-      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 3
+      semver-patch-days: 3
     groups:
-      actions-minor:
+      actions-all:
         update-types:
+          - major
           - minor
           - patch
 
@@ -17,14 +20,18 @@ updates:
     schedule:
       interval: weekly
     cooldown:
-      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 3
+      semver-patch-days: 3
     groups:
       npm-development:
         dependency-type: development
         update-types:
+          - major
           - minor
           - patch
       npm-production:
         dependency-type: production
         update-types:
+          - minor
           - patch
