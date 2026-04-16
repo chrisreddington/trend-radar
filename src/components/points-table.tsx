@@ -13,6 +13,16 @@ type SortField =
 type SortDirection = "asc" | "desc";
 const ALL_CATEGORIES = "All" as const;
 type CategoryFilter = Category | typeof ALL_CATEGORIES;
+const SORTABLE_COLUMNS: ReadonlyArray<{
+  field: SortField;
+  label: string;
+}> = [
+  { field: "label", label: "Label" },
+  { field: "category", label: "Category" },
+  { field: "relevance", label: "Relevance" },
+  { field: "preparedness", label: "Preparedness" },
+  { field: "likelihood", label: "Likelihood" },
+];
 
 /** Ordinal rank for Likelihood values (lower index = higher likelihood). */
 const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
@@ -39,6 +49,8 @@ const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
 
 export const PointsTable = memo(function PointsTable() {
   const points = useDiagramStore((state) => state.points);
+  const selectedPoint = useDiagramStore((state) => state.selectedPoint);
+  const selectPoint = useDiagramStore((state) => state.selectPoint);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -66,6 +78,69 @@ export const PointsTable = memo(function PointsTable() {
     setLabelSearch("");
     setCategoryFilter(ALL_CATEGORIES);
   }, []);
+
+  const handleSortButtonKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, field: SortField) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSort(field);
+      }
+    },
+    [handleSort],
+  );
+
+  const handleSortButtonKeyUp = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, field: SortField) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        handleSort(field);
+      }
+    },
+    [handleSort],
+  );
+
+  const handleRowClick = useCallback(
+    (id: string) => {
+      selectPoint(selectedPoint === id ? undefined : id);
+    },
+    [selectPoint, selectedPoint],
+  );
+
+  const handleRowKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, id: string) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleRowClick(id);
+      }
+    },
+    [handleRowClick],
+  );
+
+  const handleRowKeyUp = useCallback(
+    (event: React.KeyboardEvent<HTMLTableRowElement>, id: string) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        handleRowClick(id);
+      }
+    },
+    [handleRowClick],
+  );
 
   const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
@@ -209,65 +284,63 @@ export const PointsTable = memo(function PointsTable() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th
-                  onClick={() => handleSort("label")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Label{" "}
-                  {sortField === "label" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("category")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Category{" "}
-                  {sortField === "category" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("relevance")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Relevance{" "}
-                  {sortField === "relevance" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("preparedness")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Preparedness{" "}
-                  {sortField === "preparedness" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  onClick={() => handleSort("likelihood")}
-                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Likelihood{" "}
-                  {sortField === "likelihood" &&
-                    (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
+                {SORTABLE_COLUMNS.map(({ field, label }) => (
+                  <th
+                    key={field}
+                    scope="col"
+                    aria-sort={
+                      sortField === field
+                        ? (sortDirection === "asc" ? "ascending" : "descending")
+                        : "none"
+                    }
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleSort(field)}
+                      onKeyDown={(event) =>
+                        handleSortButtonKeyDown(event, field)
+                      }
+                      onKeyUp={(event) => handleSortButtonKeyUp(event, field)}
+                      className="flex w-full items-center gap-1 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                    >
+                      <span>{label}</span>
+                      {sortField === field && (
+                        <span aria-hidden="true">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </button>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredAndSortedPoints.length === 0 ? (
-                isFiltered ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
-                    >
-                      No points match the current filters.
-                    </td>
-                  </tr>
-                ) : undefined
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                  >
+                    {isFiltered
+                      ? "No points match the current filters."
+                      : "No points added yet. Use the controls above to add your first point."}
+                  </td>
+                </tr>
               ) : (
                 filteredAndSortedPoints.map((point) => (
                   <tr
                     key={point.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={() => handleRowClick(point.id)}
+                    onKeyDown={(event) => handleRowKeyDown(event, point.id)}
+                    onKeyUp={(event) => handleRowKeyUp(event, point.id)}
+                    tabIndex={0}
+                    aria-selected={selectedPoint === point.id}
+                    className={`cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
+                      selectedPoint === point.id
+                        ? "bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    }`}
                   >
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
                       <span className="inline-flex items-center gap-1">

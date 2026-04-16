@@ -35,6 +35,12 @@ const getColumnHeader = (columnName: string) => {
   });
 };
 
+const getSortButton = (columnName: string) => {
+  return screen.getByRole("button", {
+    name: new RegExp(`^${columnName}( ↑| ↓)?$`),
+  });
+};
+
 const testColumnSorting = (
   columnName: string,
   firstValue: string,
@@ -51,26 +57,32 @@ const testColumnSorting = (
     row.cells[cellIndex].textContent;
 
   // Initial click for ascending sort
-  fireEvent.click(getColumnHeader(columnName));
+  fireEvent.click(getSortButton(columnName));
 
   let sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   const cellIndex = getCellIndex();
   expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
   expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
-  expect(getColumnHeader(columnName)).toHaveTextContent(/↑$/);
+  expect(getSortButton(columnName)).toHaveTextContent(/↑$/);
 
   // Click again for descending sort
-  fireEvent.click(getColumnHeader(columnName));
+  fireEvent.click(getSortButton(columnName));
 
   sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
   expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
-  expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
+  expect(getSortButton(columnName)).toHaveTextContent(/↓$/);
 };
 
 const getRowCellText = (rowIndex: number, colIndex: number) => {
   const rows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   return rows[rowIndex].cells[colIndex].textContent;
+};
+
+const getPointRow = (label: string) => {
+  const row = screen.getByText(label).closest("tr");
+  expect(row).not.toBeNull();
+  return row as HTMLTableRowElement;
 };
 
 describe("PointsTable", () => {
@@ -98,8 +110,15 @@ describe("PointsTable", () => {
     },
   ];
 
+  let mockSelectPoint: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
-    const state = { points: mockPoints };
+    mockSelectPoint = vi.fn();
+    const state = {
+      points: mockPoints,
+      selectedPoint: undefined as string | undefined,
+      selectPoint: mockSelectPoint,
+    };
     (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (selector?: (s: typeof state) => unknown) =>
         selector ? selector(state) : state,
@@ -210,12 +229,12 @@ describe("PointsTable", () => {
       expect.hasAssertions();
       render(<PointsTable />);
 
-      fireEvent.click(getColumnHeader("Label"));
-      expect(getColumnHeader("Label")).toHaveTextContent(/↑$/);
+      fireEvent.click(getSortButton("Label"));
+      expect(getSortButton("Label")).toHaveTextContent(/↑$/);
 
-      fireEvent.click(getColumnHeader("Category"));
-      expect(getColumnHeader("Category")).toHaveTextContent(/↑$/);
-      expect(getColumnHeader("Label")).toHaveTextContent(/^Label$/);
+      fireEvent.click(getSortButton("Category"));
+      expect(getSortButton("Category")).toHaveTextContent(/↑$/);
+      expect(getSortButton("Label")).toHaveTextContent(/^Label$/);
     });
   });
 
@@ -324,6 +343,86 @@ describe("PointsTable", () => {
       expect(screen.queryByText("Test Point 2")).not.toBeInTheDocument();
     });
   });
+  describe("Empty State", () => {
+    it("should show an empty-state message when there are no points at all", () => {
+      const state = { points: [] };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+
+      expect(
+        screen.getByText(
+          "No points added yet. Use the controls above to add your first point.",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("Keyboard Accessibility", () => {
+    it("should have aria-sort='none' on non-active sort columns", () => {
+      render(<PointsTable />);
+      const categoryHeader = getColumnHeader("Category");
+      expect(categoryHeader).toHaveAttribute("aria-sort", "none");
+    });
+
+    it("should update aria-sort to 'ascending' after first click on a column", () => {
+      render(<PointsTable />);
+      fireEvent.click(getSortButton("Label"));
+      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+    });
+
+    it("should update aria-sort to 'descending' after second click on the same column", () => {
+      render(<PointsTable />);
+      fireEvent.click(getSortButton("Label"));
+      fireEvent.click(getSortButton("Label"));
+      expect(getColumnHeader("Label")).toHaveAttribute(
+        "aria-sort",
+        "descending",
+      );
+    });
+
+    it("should sort when Enter is pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getSortButton("Label"), { key: "Enter" });
+      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+    });
+
+    it("should sort when Space is pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyUp(getSortButton("Category"), { key: " " });
+      expect(getColumnHeader("Category")).toHaveAttribute(
+        "aria-sort",
+        "ascending",
+      );
+    });
+
+    it("should not sort when other keys are pressed on a column header", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getSortButton("Category"), { key: "Tab" });
+      expect(getColumnHeader("Category")).toHaveAttribute("aria-sort", "none");
+    });
+
+    it("should render a keyboard-focusable sort button in each column header", () => {
+      render(<PointsTable />);
+      for (const header of screen.getAllByRole("columnheader")) {
+        const sortButton = header.querySelector("button");
+        expect(sortButton).toBeInTheDocument();
+        expect(sortButton).toHaveAttribute("type", "button");
+      }
+    });
+
+    it("should have scope='col' on all column headers", () => {
+      render(<PointsTable />);
+      for (const header of screen.getAllByRole("columnheader")) {
+        expect(header).toHaveAttribute("scope", "col");
+      }
+    });
+  });
+
   describe("Ordinal sorting", () => {
     // These tests use a third point so alphabetical and ordinal orders diverge.
     // "Low" relevance sorts after "Moderate" ordinally but before it alphabetically.
@@ -363,7 +462,11 @@ describe("PointsTable", () => {
     ];
 
     beforeEach(() => {
-      const state = { points: threePoints };
+      const state = {
+        points: threePoints,
+        selectedPoint: undefined as string | undefined,
+        selectPoint: vi.fn(),
+      };
       (
         useDiagramStore as unknown as ReturnType<typeof vi.fn>
       ).mockImplementation((selector?: (s: typeof state) => unknown) =>
@@ -379,13 +482,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Relevance"));
 
       // Ascending: highest relevance first
-      fireEvent.click(getColumnHeader("Relevance"));
+      fireEvent.click(getSortButton("Relevance"));
       expect(getRowCellText(0, colIndex)).toBe("High");
       expect(getRowCellText(1, colIndex)).toBe("Moderate");
       expect(getRowCellText(2, colIndex)).toBe("Low");
 
       // Descending: lowest relevance first
-      fireEvent.click(getColumnHeader("Relevance"));
+      fireEvent.click(getSortButton("Relevance"));
       expect(getRowCellText(0, colIndex)).toBe("Low");
       expect(getRowCellText(1, colIndex)).toBe("Moderate");
       expect(getRowCellText(2, colIndex)).toBe("High");
@@ -399,13 +502,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Preparedness"));
 
       // Ascending: most prepared first
-      fireEvent.click(getColumnHeader("Preparedness"));
+      fireEvent.click(getSortButton("Preparedness"));
       expect(getRowCellText(0, colIndex)).toBe("Highly Prepared");
       expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
       expect(getRowCellText(2, colIndex)).toBe("Inadequately Prepared");
 
       // Descending: least prepared first
-      fireEvent.click(getColumnHeader("Preparedness"));
+      fireEvent.click(getSortButton("Preparedness"));
       expect(getRowCellText(0, colIndex)).toBe("Inadequately Prepared");
       expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
       expect(getRowCellText(2, colIndex)).toBe("Highly Prepared");
@@ -419,13 +522,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Likelihood"));
 
       // Ascending: most likely first
-      fireEvent.click(getColumnHeader("Likelihood"));
+      fireEvent.click(getSortButton("Likelihood"));
       expect(getRowCellText(0, colIndex)).toBe("Highly Likely");
       expect(getRowCellText(1, colIndex)).toBe("Likely");
       expect(getRowCellText(2, colIndex)).toBe("Unlikely");
 
       // Descending: least likely first
-      fireEvent.click(getColumnHeader("Likelihood"));
+      fireEvent.click(getSortButton("Likelihood"));
       expect(getRowCellText(0, colIndex)).toBe("Unlikely");
       expect(getRowCellText(1, colIndex)).toBe("Likely");
       expect(getRowCellText(2, colIndex)).toBe("Highly Likely");
@@ -480,6 +583,87 @@ describe("PointsTable", () => {
       expect(
         screen.getByRole("button", { name: "Download visible points as CSV" }),
       ).toBeDisabled();
+    });
+  });
+
+  describe("Row Selection", () => {
+    it("should call selectPoint with the point id when a row is clicked", () => {
+      render(<PointsTable />);
+      fireEvent.click(getPointRow("Test Point 1"));
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should call selectPoint with undefined when clicking the already-selected row", () => {
+      const state = {
+        points: mockPoints,
+        selectedPoint: "1",
+        selectPoint: mockSelectPoint,
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+      fireEvent.click(getPointRow("Test Point 1"));
+      expect(mockSelectPoint).toHaveBeenCalledWith(undefined);
+    });
+
+    it("should mark the selected row with aria-selected=true", () => {
+      const state = {
+        points: mockPoints,
+        selectedPoint: "2",
+        selectPoint: mockSelectPoint,
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      );
+
+      render(<PointsTable />);
+      expect(getPointRow("Test Point 1")).toHaveAttribute(
+        "aria-selected",
+        "false",
+      );
+      expect(getPointRow("Test Point 2")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+    });
+
+    it("should activate row selection with Enter key", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getPointRow("Test Point 1"), { key: "Enter" });
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should activate row selection with Space key", () => {
+      render(<PointsTable />);
+      fireEvent.keyUp(getPointRow("Test Point 1"), { key: " " });
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should ignore repeated keyboard selection events", () => {
+      render(<PointsTable />);
+      fireEvent.keyDown(getPointRow("Test Point 1"), {
+        key: "Enter",
+        repeat: true,
+      });
+      fireEvent.keyUp(getPointRow("Test Point 1"), {
+        key: " ",
+        repeat: true,
+      });
+      expect(mockSelectPoint).not.toHaveBeenCalled();
+    });
+
+    it("should make data rows focusable with tabIndex", () => {
+      render(<PointsTable />);
+      const rows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
+      for (const row of rows) {
+        expect(row).toHaveAttribute("tabIndex", "0");
+      }
     });
   });
 });
