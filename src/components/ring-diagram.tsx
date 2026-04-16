@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import * as d3 from "d3";
+import { select, pointer, drag } from "d3";
 import {
   useDiagramStore,
   coordinatesToCategoryAndLikelihood,
@@ -49,7 +49,7 @@ export const RingDiagram = () => {
       svgElement: SVGSVGElement,
       selected: string | undefined,
     ) => {
-      d3.select(svgElement)
+      select(svgElement)
         .selectAll<SVGCircleElement, unknown>("circle.point")
         .attr("stroke", function () {
           return this.dataset["pointId"] === selected
@@ -77,7 +77,7 @@ export const RingDiagram = () => {
   useEffect(() => {
     if (!svgReference.current || size === 0) return;
 
-    const svg = d3.select(svgReference.current);
+    const svg = select(svgReference.current);
     svg.selectAll("*").remove();
 
     // Set up diagram dimensions
@@ -97,14 +97,14 @@ export const RingDiagram = () => {
     const handleDiagramClick = (event: Event) => {
       // Check if the click was directly on a ring element (not on a point)
       const clickedElement = event.target as Element;
-      const isPointClick = d3.select(clickedElement).classed("point");
+      const isPointClick = select(clickedElement).classed("point");
 
       if (isPointClick) {
         return; // Let point click handlers manage point selection
       }
 
       // Get mouse position relative to the diagram group
-      const [x, y] = d3.pointer(event, diagramGroup.node());
+      const [x, y] = pointer(event, diagramGroup.node());
 
       // Add point at the clicked coordinates
       addPointAtPosition(x, y, size);
@@ -291,28 +291,27 @@ export const RingDiagram = () => {
       }
 
       // Handle drag behavior for moving points
-      const handleDrag = d3
-        .drag<SVGCircleElement, unknown>()
+      const handleDrag = drag<SVGCircleElement, unknown>()
         .on("start", function () {
           // Select the point when dragging starts
           selectPoint(point.id);
           // Add visual feedback during drag
-          d3.select(this)
+          select(this)
             .attr("stroke", "var(--highlight)")
             .attr("stroke-width", size < 500 ? 3 : 4)
             .style("cursor", "grabbing");
         })
         .on("drag", function (event) {
           // Update position during drag
-          const [newX, newY] = d3.pointer(
+          const [newX, newY] = pointer(
             event,
             diagramGroup.node?.() || undefined,
           );
-          d3.select(this).attr("cx", newX).attr("cy", newY);
+          select(this).attr("cx", newX).attr("cy", newY);
         })
         .on("end", function (event) {
           // Get final position after drag
-          const [finalX, finalY] = d3.pointer(
+          const [finalX, finalY] = pointer(
             event,
             diagramGroup.node?.() || undefined,
           );
@@ -339,24 +338,24 @@ export const RingDiagram = () => {
             ); // preservePosition = true
           } else {
             // If dropped outside bounds, revert to original position
-            d3.select(this).attr("cx", pos.x).attr("cy", pos.y);
+            select(this).attr("cx", pos.x).attr("cy", pos.y);
           }
 
           // Reset cursor
-          d3.select(this).style("cursor", "pointer");
+          select(this).style("cursor", "pointer");
         });
 
       pointElement
         .call(handleDrag)
         .on("mouseover", function () {
-          d3.select(this)
+          select(this)
             .attr("stroke", "var(--highlight)")
             .attr("stroke-width", size < 500 ? 2 : 3)
             .attr("opacity", 1);
         })
         .on("mouseout", function () {
           if (selectedPointReference.current !== point.id) {
-            d3.select(this)
+            select(this)
               .attr("stroke", "none")
               .attr("opacity", selectedPointReference.current ? 0.6 : 1);
           }
