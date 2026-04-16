@@ -7,7 +7,7 @@ const DESKTOP_VIEWPORT_FRACTION = 0.75;
 const MAX_DESKTOP_SIZE = 800;
 const DEFAULT_SIZE = 800;
 /** Milliseconds to wait after the last resize event before recalculating size. */
-const RESIZE_DEBOUNCE_MS = 150;
+export const RESIZE_DEBOUNCE_MS = 150;
 
 /**
  * Returns a reactive size value for the ring diagram that responds to viewport changes.
@@ -39,16 +39,22 @@ export function useResponsiveSize(): number {
   useEffect(() => {
     updateSize();
 
-    let debounceTimer: ReturnType<typeof setTimeout>;
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const clearDebounceTimer = () => {
+      if (debounceTimer !== undefined) {
+        clearTimeout(debounceTimer);
+      }
+    };
 
     const handleResize = () => {
-      clearTimeout(debounceTimer);
+      clearDebounceTimer();
       debounceTimer = setTimeout(updateSize, RESIZE_DEBOUNCE_MS);
     };
 
     window.addEventListener("resize", handleResize);
     return () => {
-      clearTimeout(debounceTimer);
+      clearDebounceTimer();
       window.removeEventListener("resize", handleResize);
     };
   }, [updateSize]);

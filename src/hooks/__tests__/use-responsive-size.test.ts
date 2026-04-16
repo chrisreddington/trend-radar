@@ -1,7 +1,8 @@
 import { renderHook, act } from "@testing-library/react";
-import { useResponsiveSize } from "../use-responsive-size";
-
-const RESIZE_DEBOUNCE_MS = 150;
+import {
+  RESIZE_DEBOUNCE_MS,
+  useResponsiveSize,
+} from "../use-responsive-size";
 
 /**
  * Helper to set the mocked viewport width for tests.
@@ -171,9 +172,14 @@ describe("useResponsiveSize", () => {
         globalThis.dispatchEvent(new Event("resize"));
       });
 
+      const clearTimeoutCallCountBeforeUnmount =
+        clearTimeoutSpy.mock.calls.length;
+
       unmount();
 
-      expect(clearTimeoutSpy).toHaveBeenCalled();
+      expect(clearTimeoutSpy.mock.calls.length).toBe(
+        clearTimeoutCallCountBeforeUnmount + 1,
+      );
       clearTimeoutSpy.mockRestore();
     });
   });
