@@ -110,4 +110,59 @@ describe("ThemeToggle", () => {
       document.documentElement.dataset.theme,
     );
   });
+
+  describe("aria-pressed attribute", () => {
+    it("should set aria-pressed=true only on the active theme button", () => {
+      render(<ThemeToggle />);
+
+      fireEvent.click(screen.getByLabelText("Light theme"));
+
+      expect(screen.getByLabelText("Light theme")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(screen.getByLabelText("Dark theme")).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(screen.getByLabelText("System theme")).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    });
+
+    it("should update aria-pressed when dark theme is selected", () => {
+      render(<ThemeToggle />);
+
+      fireEvent.click(screen.getByLabelText("Dark theme"));
+
+      expect(screen.getByLabelText("Dark theme")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(screen.getByLabelText("Light theme")).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    });
+  });
+
+  describe("localStorage initialisation", () => {
+    it("should initialise to the theme stored in localStorage", () => {
+      localStorageMock.setItem("theme", THEME_OPTIONS.DARK);
+      render(<ThemeToggle />);
+      expect(screen.getByLabelText("Dark theme")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("should default to system theme when localStorage has no stored value", () => {
+      render(<ThemeToggle />);
+      expect(screen.getByLabelText("System theme")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+  });
 });
