@@ -23,6 +23,31 @@ export type ThemeOption = (typeof THEME_OPTIONS)[keyof typeof THEME_OPTIONS];
  */
 const THEME_STORAGE_KEY = "theme";
 
+const VALID_THEME_OPTIONS = new Set<string>(Object.values(THEME_OPTIONS));
+
+/**
+ * Returns true when the value is a recognised ThemeOption.
+ * @param {unknown} value - The value to check.
+ * @returns {boolean}
+ */
+function isValidThemeOption(value: unknown): value is ThemeOption {
+  return typeof value === "string" && VALID_THEME_OPTIONS.has(value);
+}
+
+/**
+ * Reads the persisted theme from localStorage, returning undefined when the
+ * key is absent, the value is unrecognised, or localStorage is inaccessible.
+ * @returns {ThemeOption | undefined}
+ */
+function readPersistedTheme(): ThemeOption | undefined {
+  try {
+    const stored = globalThis.localStorage.getItem(THEME_STORAGE_KEY);
+    return isValidThemeOption(stored) ? stored : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Returns the user's OS-level color scheme preference.
  * @returns {ThemeOption}
@@ -116,13 +141,9 @@ function CogIcon({ className }: { className?: string }) {
  * @returns {JSX.Element}
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = React.useState<ThemeOption>(() => {
-    if (globalThis.window === undefined) return THEME_OPTIONS.SYSTEM;
-    return (
-      (globalThis.localStorage.getItem(THEME_STORAGE_KEY) as ThemeOption) ||
-      THEME_OPTIONS.SYSTEM
-    );
-  });
+  const [theme, setTheme] = React.useState<ThemeOption>(
+    () => readPersistedTheme() ?? THEME_OPTIONS.SYSTEM,
+  );
 
   // Listen for system theme changes if "system" is selected
   React.useEffect(() => {
@@ -136,10 +157,15 @@ export function ThemeToggle() {
   // Apply theme on mount and whenever theme changes
   React.useEffect(() => {
     applyTheme(theme);
-    if (theme === THEME_OPTIONS.SYSTEM) {
-      globalThis.localStorage.removeItem(THEME_STORAGE_KEY);
-    } else {
-      globalThis.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    try {
+      if (theme === THEME_OPTIONS.SYSTEM) {
+        globalThis.localStorage.removeItem(THEME_STORAGE_KEY);
+      } else {
+        globalThis.localStorage.setItem(THEME_STORAGE_KEY, theme);
+      }
+    } catch {
+      // localStorage may be unavailable (e.g. private-browsing restrictions);
+      // the in-memory state still reflects the user's selection.
     }
   }, [theme]);
 

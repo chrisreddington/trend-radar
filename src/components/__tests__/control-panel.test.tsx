@@ -19,6 +19,26 @@ vi.mock("../../store/use-diagram-store", async () => {
 // Import after mocking
 import { useDiagramStore } from "../../store/use-diagram-store";
 
+/** Creates a mocked Zustand hook implementation that supports selector callbacks. */
+function createMockStoreImplementation<TState>(state: TState) {
+  return function mockSelector(
+    selector?: (storeState: TState) => unknown,
+  ) {
+    return selector ? selector(state) : state;
+  };
+}
+
+/**
+ * Forces the memoized control panel to remount after mocked store data changes.
+ * The mocked hook does not notify Zustand subscribers in tests.
+ */
+function remountControlPanel(
+  rerender: ReturnType<typeof render>["rerender"],
+  instanceKey: string,
+) {
+  rerender(<ControlPanel key={instanceKey} />);
+}
+
 describe("ControlPanel", () => {
   // Common test data and setup
   const mockPoint = {
@@ -52,7 +72,7 @@ describe("ControlPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      () => getStoreState(),
+      createMockStoreImplementation(getStoreState()),
     );
   });
 
@@ -209,7 +229,7 @@ describe("ControlPanel", () => {
     beforeEach(() => {
       (
         useDiagramStore as unknown as ReturnType<typeof vi.fn>
-      ).mockImplementation(() => getStoreState("1"));
+      ).mockImplementation(createMockStoreImplementation(getStoreState("1")));
     });
 
     it("should display selected point data in edit form", () => {
@@ -371,6 +391,56 @@ describe("ControlPanel", () => {
       expect(mockActions.updatePoint).toHaveBeenCalled();
     });
 
+    it("should not call updatePoint when nothing has changed", () => {
+      render(<ControlPanel />);
+
+      // Submit the update form without making any changes
+      const updateButton = screen.getByRole("button", { name: "Update Point" });
+      fireEvent.click(updateButton);
+
+      // No store update should be triggered since nothing changed
+      expect(mockActions.updatePoint).not.toHaveBeenCalled();
+    });
+
+    it("should normalise an empty description string to undefined on update", () => {
+      // Simulate a point that already has a description
+      const pointWithDescription = {
+        ...mockPoint,
+        description: "Existing description",
+      };
+      (
+        useDiagramStore as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation(
+        createMockStoreImplementation({
+          points: [pointWithDescription],
+          selectedPoint: "1",
+          ...mockActions,
+        }),
+      );
+
+      render(<ControlPanel />);
+
+      const editSection = screen
+        .getByText("Edit Selected Point")
+        .closest("div")?.parentElement;
+      if (!editSection) throw new Error("Edit section not found");
+
+      // Clear the description field
+      const descriptionTextarea = within(editSection).getByLabelText(
+        "Description",
+      ) as HTMLTextAreaElement;
+      fireEvent.change(descriptionTextarea, { target: { value: "" } });
+
+      fireEvent.click(screen.getByRole("button", { name: "Update Point" }));
+
+      // description should be normalised to undefined (not empty string)
+      expect(mockActions.updatePoint).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ description: undefined }),
+        true,
+      );
+    });
+
     describe("State Management", () => {
       it("should clear editing state when point is deselected", () => {
         const { rerender } = render(<ControlPanel />);
@@ -381,8 +451,8 @@ describe("ControlPanel", () => {
         // Simulate point deselection
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreState());
-        rerender(<ControlPanel />);
+        ).mockImplementation(createMockStoreImplementation(getStoreState()));
+        remountControlPanel(rerender, "deselected");
 
         // Verify edit form is removed
         expect(
@@ -402,7 +472,7 @@ describe("ControlPanel", () => {
 
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreWithPoints("1"));
+        ).mockImplementation(createMockStoreImplementation(getStoreWithPoints("1")));
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -420,8 +490,8 @@ describe("ControlPanel", () => {
         // Change selection to second point
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreWithPoints("2"));
-        rerender(<ControlPanel />);
+        ).mockImplementation(createMockStoreImplementation(getStoreWithPoints("2")));
+        remountControlPanel(rerender, "selected-second-point");
 
         // Verify second point's label
         const newEditSection = screen
@@ -487,7 +557,9 @@ describe("ControlPanel", () => {
         // Start with original point
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreWithUpdatedPoint(originalPoint));
+        ).mockImplementation(
+          createMockStoreImplementation(getStoreWithUpdatedPoint(originalPoint)),
+        );
         const { rerender } = render(<ControlPanel />);
 
         // Verify initial category
@@ -505,8 +577,10 @@ describe("ControlPanel", () => {
         // Simulate point data change (e.g., after drag operation)
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreWithUpdatedPoint(updatedPoint));
-        rerender(<ControlPanel />);
+        ).mockImplementation(
+          createMockStoreImplementation(getStoreWithUpdatedPoint(updatedPoint)),
+        );
+        remountControlPanel(rerender, "updated-point-data");
 
         // Verify category dropdown updated to reflect new data
         const newEditSection = screen
@@ -525,7 +599,7 @@ describe("ControlPanel", () => {
         // Setup store with a selected point
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreState("1"));
+        ).mockImplementation(createMockStoreImplementation(getStoreState("1")));
 
         render(<ControlPanel />);
 
@@ -572,7 +646,7 @@ describe("ControlPanel", () => {
         // Setup store with a selected point
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(() => getStoreState("1"));
+        ).mockImplementation(createMockStoreImplementation(getStoreState("1")));
 
         render(<ControlPanel />);
 

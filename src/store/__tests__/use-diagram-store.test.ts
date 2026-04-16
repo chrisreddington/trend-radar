@@ -11,10 +11,15 @@ import {
 import { vi } from "vitest";
 
 // Mock file handlers
-vi.mock("../../utils/file-handlers", () => ({
-  loadDiagramFromFile: vi.fn(),
-  saveDiagramToFile: vi.fn(),
-}));
+vi.mock("../../utils/file-handlers", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../utils/file-handlers")>();
+  return {
+    ...actual,
+    loadDiagramFromFile: vi.fn(),
+    saveDiagramToFile: vi.fn(),
+  };
+});
 
 describe("useDiagramStore", () => {
   // Set up test data and mocks
@@ -312,6 +317,24 @@ describe("useDiagramStore", () => {
           JSON.stringify({ points: [mockPoint] }),
         );
       });
+
+      it("should log an error and not throw when localStorage.setItem throws", () => {
+        const consoleErrorSpy = vi
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+        mockLocalStorage.setItem.mockImplementation(() => {
+          throw new DOMException("QuotaExceededError", "QuotaExceededError");
+        });
+
+        useDiagramStore.setState({ points: [mockPoint] });
+        const { saveState } = useDiagramStore.getState();
+
+        expect(() => saveState()).not.toThrow();
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to save diagram state:",
+          expect.any(DOMException),
+        );
+      });
     });
 
     describe("loadState", () => {
@@ -329,7 +352,8 @@ describe("useDiagramStore", () => {
       });
 
       it("should maintain empty state when no data in localStorage", () => {
-        mockLocalStorage.getItem.mockReturnValue();
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        mockLocalStorage.getItem.mockReturnValue(undefined);
 
         const { loadState } = useDiagramStore.getState();
         loadState();
@@ -337,6 +361,83 @@ describe("useDiagramStore", () => {
         const state = useDiagramStore.getState();
         expect(state.points).toEqual([]);
         expect(state.selectedPoint).toBeUndefined();
+      });
+
+      it("should not update state when localStorage has valid JSON but no points field", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ foo: "bar" }));
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
+
+      it("should not update state when localStorage points field is not an array", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: "not-an-array" }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
+
+      it("should not update state when localStorage points field is a number", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: 42 }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        const state = useDiagramStore.getState();
+        expect(state.points).toEqual([mockPoint]);
+      });
+
+      it("should discard invalid stored points and log a warning", () => {
+        const invalidPoint = { ...mockPoint, category: "NotACategory" };
+        const consoleWarnSpy = vi
+          .spyOn(console, "warn")
+          .mockImplementation(() => {});
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [mockPoint, invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([mockPoint]);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("discarded 1 invalid"),
+        );
+      });
+
+      it("should load an empty points array when every stored point is invalid", () => {
+        const invalidPoint = { ...mockPoint, likelihood: "Impossible" };
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ points: [invalidPoint] }),
+        );
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([]);
+      });
+
+      it("should ignore malformed localStorage data that is not an object", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify([1, 2, 3]));
+
+        const { loadState } = useDiagramStore.getState();
+        loadState();
+
+        expect(useDiagramStore.getState().points).toEqual([mockPoint]);
       });
     });
   });
@@ -433,6 +534,90 @@ describe("useDiagramStore", () => {
         const state = useDiagramStore.getState();
         expect(state.points).toEqual(newPoints);
         expect(state.selectedPoint).toBeUndefined();
+      });
+    });
+
+    describe("batchUpdatePositions", () => {
+      it("should update x/y coordinates for all specified points with a single subscriber notification", () => {
+        const pointA: Point = { ...mockPoint, id: "a", x: 0, y: 0 };
+        const pointB: Point = {
+          ...mockPoint,
+          id: "b",
+          label: "B",
+          x: 0,
+          y: 0,
+        };
+        const subscriber = vi.fn();
+        useDiagramStore.setState({ points: [pointA, pointB] });
+        const unsubscribe = useDiagramStore.subscribe(subscriber);
+
+        const { batchUpdatePositions } = useDiagramStore.getState();
+        batchUpdatePositions([
+          { id: "a", x: 10, y: 20 },
+          { id: "b", x: 30, y: 40 },
+        ]);
+
+        const { points } = useDiagramStore.getState();
+        expect(points[0]).toMatchObject({ id: "a", x: 10, y: 20 });
+        expect(points[1]).toMatchObject({ id: "b", x: 30, y: 40 });
+        expect(subscriber).toHaveBeenCalledTimes(1);
+        unsubscribe();
+      });
+
+      it("should leave points not in the update list unchanged", () => {
+        const pointA: Point = { ...mockPoint, id: "a", x: 5, y: 5 };
+        const pointB: Point = {
+          ...mockPoint,
+          id: "b",
+          label: "B",
+          x: 15,
+          y: 15,
+        };
+        useDiagramStore.setState({ points: [pointA, pointB] });
+
+        const { batchUpdatePositions } = useDiagramStore.getState();
+        batchUpdatePositions([{ id: "a", x: 100, y: 200 }]);
+
+        const { points } = useDiagramStore.getState();
+        expect(points[0]).toMatchObject({ id: "a", x: 100, y: 200 });
+        expect(points[1]).toMatchObject({ id: "b", x: 15, y: 15 });
+      });
+
+      it("should not modify other point properties when updating positions", () => {
+        useDiagramStore.setState({ points: [mockPoint] });
+
+        const { batchUpdatePositions } = useDiagramStore.getState();
+        batchUpdatePositions([{ id: mockUUID, x: 50, y: 60 }]);
+
+        const { points } = useDiagramStore.getState();
+        expect(points[0]).toMatchObject({
+          id: mockUUID,
+          label: mockPoint.label,
+          category: mockPoint.category,
+          likelihood: mockPoint.likelihood,
+          x: 50,
+          y: 60,
+        });
+      });
+
+      it("should avoid changing state when every update targets an unknown ID", () => {
+        const originalPoints = [mockPoint];
+        useDiagramStore.setState({ points: originalPoints });
+
+        const { batchUpdatePositions } = useDiagramStore.getState();
+        batchUpdatePositions([{ id: "nonexistent", x: 99, y: 99 }]);
+
+        expect(useDiagramStore.getState().points).toBe(originalPoints);
+      });
+
+      it("should handle an empty update array without changing state", () => {
+        const originalPoints = [mockPoint];
+        useDiagramStore.setState({ points: originalPoints });
+
+        const { batchUpdatePositions } = useDiagramStore.getState();
+        batchUpdatePositions([]);
+
+        expect(useDiagramStore.getState().points).toBe(originalPoints);
       });
     });
   });

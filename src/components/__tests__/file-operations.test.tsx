@@ -14,8 +14,14 @@ vi.mock("../../store/use-diagram-store", async () => {
   };
 });
 
+// Mock the svg-export utility
+vi.mock("../../utils/svg-export", () => ({
+  downloadSvg: vi.fn(),
+}));
+
 // Import after mocking
 import { useDiagramStore } from "../../store/use-diagram-store";
+import { downloadSvg } from "../../utils/svg-export";
 
 describe("FileOperations", () => {
   const mockSaveDiagram = vi.fn();
@@ -25,10 +31,14 @@ describe("FileOperations", () => {
 
   beforeEach(() => {
     console.error = vi.fn();
-    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+    const mockState = {
       saveDiagram: mockSaveDiagram,
       loadDiagram: mockLoadDiagram,
-    });
+    };
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector?: (state: typeof mockState) => unknown) =>
+        selector ? selector(mockState) : mockState,
+    );
   });
 
   afterEach(() => {
@@ -169,5 +179,71 @@ describe("FileOperations", () => {
     expect(
       screen.queryByText("Failed to save diagram"),
     ).not.toBeInTheDocument();
+  });
+
+  describe("SVG export", () => {
+    const DIAGRAM_ARIA_LABEL =
+      "Ring diagram showing points across different categories and rings";
+
+    it("renders an Export as SVG button", () => {
+      render(<FileOperations />);
+      expect(
+        screen.getByRole("button", { name: "Export as SVG" }),
+      ).toBeInTheDocument();
+    });
+
+    it("calls downloadSvg with the diagram SVG element when export button is clicked", async () => {
+      // Insert a fake SVG element that will be found by the component's querySelector
+      const fakeSvg = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      fakeSvg.setAttribute("aria-label", DIAGRAM_ARIA_LABEL);
+      document.body.append(fakeSvg);
+
+      render(<FileOperations />);
+      await user.click(screen.getByRole("button", { name: "Export as SVG" }));
+
+      expect(downloadSvg).toHaveBeenCalledWith(fakeSvg);
+
+      fakeSvg.remove();
+    });
+
+    it("shows an error when the diagram SVG element is not found", async () => {
+      // Make sure no SVG with the diagram aria-label is present
+      for (const element of document.querySelectorAll(
+        `svg[aria-label="${DIAGRAM_ARIA_LABEL}"]`,
+      )) {
+        element.remove();
+      }
+
+      render(<FileOperations />);
+      await user.click(screen.getByRole("button", { name: "Export as SVG" }));
+
+      const alert = await screen.findByRole("alert");
+      expect(alert).toHaveTextContent("Diagram not found");
+    });
+
+    it("shows an error when downloadSvg throws", async () => {
+      const fakeSvg = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      fakeSvg.setAttribute("aria-label", DIAGRAM_ARIA_LABEL);
+      document.body.append(fakeSvg);
+
+      (downloadSvg as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+        throw new Error("Export failed");
+      });
+
+      render(<FileOperations />);
+      await user.click(screen.getByRole("button", { name: "Export as SVG" }));
+
+      const alert = await screen.findByRole("alert");
+      expect(alert).toHaveTextContent("Failed to export diagram as SVG");
+      expect(console.error).toHaveBeenCalled();
+
+      fakeSvg.remove();
+    });
   });
 });

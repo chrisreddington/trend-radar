@@ -6,12 +6,17 @@ const MOBILE_VIEWPORT_PADDING = 40;
 const DESKTOP_VIEWPORT_FRACTION = 0.75;
 const MAX_DESKTOP_SIZE = 800;
 const DEFAULT_SIZE = 800;
+/** Milliseconds to wait after the last resize event before recalculating size. */
+export const RESIZE_DEBOUNCE_MS = 150;
 
 /**
  * Returns a reactive size value for the ring diagram that responds to viewport changes.
  *
  * On mobile (viewport < 640px): nearly full width, capped at 500px.
  * On larger screens: 75% of viewport width, capped at 800px.
+ *
+ * Resize events are debounced by {@link RESIZE_DEBOUNCE_MS} ms to avoid
+ * triggering a full SVG rebuild on every pixel of window resize movement.
  *
  * @returns Current diagram size in pixels.
  */
@@ -33,8 +38,25 @@ export function useResponsiveSize(): number {
 
   useEffect(() => {
     updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const clearDebounceTimer = () => {
+      if (debounceTimer !== undefined) {
+        clearTimeout(debounceTimer);
+      }
+    };
+
+    const handleResize = () => {
+      clearDebounceTimer();
+      debounceTimer = setTimeout(updateSize, RESIZE_DEBOUNCE_MS);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearDebounceTimer();
+      window.removeEventListener("resize", handleResize);
+    };
   }, [updateSize]);
 
   return size;

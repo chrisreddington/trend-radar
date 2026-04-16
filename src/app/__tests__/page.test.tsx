@@ -27,6 +27,7 @@ const DEFAULT_STORE_STATE = {
   updatePoint: vi.fn(),
   addPointAtPosition: vi.fn(),
   addPoint: vi.fn(),
+  batchUpdatePositions: vi.fn(),
   removePoint: vi.fn(),
   saveDiagram: vi.fn(),
   loadDiagram: vi.fn(),
@@ -71,11 +72,11 @@ describe("Home page", () => {
   });
 
   describe("Diagram section", () => {
-    it("renders the ring diagram as an accessible image", () => {
+    it("renders the ring diagram as an interactive application", () => {
       render(<Home />);
       expect(
-        screen.getByRole("img", {
-          name: /ring diagram showing points across different categories and rings/i,
+        screen.getByRole("application", {
+          name: /interactive trend radar diagram\. use tab to navigate trend points and enter or space to select\./i,
         }),
       ).toBeInTheDocument();
     });

@@ -1,9 +1,14 @@
 "use client";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
+import { downloadSvg } from "../utils/svg-export";
 
-export const FileOperations = () => {
-  const { saveDiagram, loadDiagram } = useDiagramStore();
+/** aria-label set on the ring diagram SVG element */
+const DIAGRAM_SVG_ARIA_LABEL = "Ring diagram showing points across different categories and rings";
+
+export const FileOperations = memo(function FileOperations() {
+  const saveDiagram = useDiagramStore((state) => state.saveDiagram);
+  const loadDiagram = useDiagramStore((state) => state.loadDiagram);
   const [error, setError] = useState<string | undefined>();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -11,7 +16,7 @@ export const FileOperations = () => {
   const commonButtonClasses =
     "px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
       setError(undefined);
       setIsSaving(true);
@@ -22,9 +27,9 @@ export const FileOperations = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [saveDiagram]);
 
-  const handleLoad = async () => {
+  const handleLoad = useCallback(async () => {
     try {
       setError(undefined);
       setIsLoading(true);
@@ -34,6 +39,23 @@ export const FileOperations = () => {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  }, [loadDiagram]);
+
+  const handleExportSvg = () => {
+    try {
+      setError(undefined);
+      const svgElement = document.querySelector<SVGSVGElement>(
+        `svg[aria-label="${DIAGRAM_SVG_ARIA_LABEL}"]`,
+      );
+      if (!svgElement) {
+        setError("Diagram not found — please try again");
+        return;
+      }
+      downloadSvg(svgElement);
+    } catch (error) {
+      setError("Failed to export diagram as SVG");
+      console.error(error);
     }
   };
 
@@ -63,6 +85,14 @@ export const FileOperations = () => {
           </button>
         </div>
 
+        <button
+          type="button"
+          onClick={handleExportSvg}
+          className={`${commonButtonClasses} bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 dark:bg-purple-700 dark:hover:bg-purple-800`}
+        >
+          Export as SVG
+        </button>
+
         {error && (
           <div
             className="p-3 text-sm text-red-600 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-200"
@@ -74,4 +104,4 @@ export const FileOperations = () => {
       </div>
     </div>
   );
-};
+});
