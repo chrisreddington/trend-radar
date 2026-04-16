@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { RingDiagram } from "../ring-diagram";
 import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import { vi } from "vitest";
@@ -48,9 +48,11 @@ describe("RingDiagram", () => {
   });
 
   describe("Basic Rendering", () => {
-    it("should render SVG element with proper accessibility", () => {
+    it("should render SVG element with proper accessibility attributes", () => {
       render(<RingDiagram />);
-      expect(screen.getByRole("img")).toBeInTheDocument();
+      const svg = screen.getByRole("application");
+      expect(svg).toBeInTheDocument();
+      expect(svg).toHaveAttribute("aria-label");
     });
 
     it("should render SVG with viewBox attribute", () => {
@@ -78,6 +80,90 @@ describe("RingDiagram", () => {
       const labels = container.querySelectorAll("text");
       // Should include point labels and category labels
       expect(labels.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should render SVG with application role for interactive content", () => {
+      render(<RingDiagram />);
+      const svg = screen.getByRole("application");
+      expect(svg).toBeInTheDocument();
+    });
+
+    it("should render SVG with descriptive aria-label including keyboard instructions", () => {
+      render(<RingDiagram />);
+      const svg = screen.getByRole("application");
+      expect(svg).toHaveAttribute("aria-label");
+      const label = svg.getAttribute("aria-label") ?? "";
+      expect(label.toLowerCase()).toContain("tab");
+    });
+
+    it("should give each point circle role button and tabindex for keyboard navigation", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircles = container.querySelectorAll("circle.point");
+      for (const point of pointCircles) {
+        expect(point).toHaveAttribute("role", "button");
+        expect(point).toHaveAttribute("tabindex", "0");
+      }
+    });
+
+    it("should give each point circle a descriptive aria-label", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircles = container.querySelectorAll("circle.point");
+      for (const point of pointCircles) {
+        const label = point.getAttribute("aria-label");
+        expect(label).toBeTruthy();
+        expect(label).toContain("Test Point 1");
+        expect(label).toContain("Technological");
+      }
+    });
+
+    it("should mark unselected points with aria-pressed false", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircles = container.querySelectorAll("circle.point");
+      for (const point of pointCircles) {
+        expect(point).toHaveAttribute("aria-pressed", "false");
+      }
+    });
+
+    it("should mark the selected point with aria-pressed true", () => {
+      (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        points: mockPoints,
+        selectedPoint: "1",
+        selectPoint: mockSelectPoint,
+        updatePoint: mockUpdatePoint,
+        addPointAtPosition: mockAddPointAtPosition,
+      });
+
+      const { container } = render(<RingDiagram />);
+      const selectedCircle = container.querySelector(
+        'circle.point[data-point-id="1"]',
+      );
+      expect(selectedCircle).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("should select the point when Enter is pressed", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircle = container.querySelector(
+        'circle.point[data-point-id="1"]',
+      );
+
+      expect(pointCircle).not.toBeNull();
+      fireEvent.keyDown(pointCircle!, { key: "Enter" });
+
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
+    });
+
+    it("should select the point when Space is pressed", () => {
+      const { container } = render(<RingDiagram />);
+      const pointCircle = container.querySelector(
+        'circle.point[data-point-id="1"]',
+      );
+
+      expect(pointCircle).not.toBeNull();
+      fireEvent.keyDown(pointCircle!, { key: " " });
+
+      expect(mockSelectPoint).toHaveBeenCalledWith("1");
     });
   });
 
