@@ -312,6 +312,24 @@ describe("useDiagramStore", () => {
           JSON.stringify({ points: [mockPoint] }),
         );
       });
+
+      it("should log an error and not throw when localStorage.setItem throws", () => {
+        const consoleErrorSpy = vi
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+        mockLocalStorage.setItem.mockImplementation(() => {
+          throw new DOMException("QuotaExceededError", "QuotaExceededError");
+        });
+
+        useDiagramStore.setState({ points: [mockPoint] });
+        const { saveState } = useDiagramStore.getState();
+
+        expect(() => saveState()).not.toThrow();
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to save diagram state:",
+          expect.any(DOMException),
+        );
+      });
     });
 
     describe("loadState", () => {

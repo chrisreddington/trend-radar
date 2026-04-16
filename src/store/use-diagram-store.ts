@@ -268,13 +268,20 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
   },
 
   saveState: () => {
-    const state = get();
-    localStorage.setItem(
-      "diagramState",
-      JSON.stringify({
-        points: state.points,
-      }),
-    );
+    try {
+      const state = get();
+      localStorage.setItem(
+        "diagramState",
+        JSON.stringify({
+          points: state.points,
+        }),
+      );
+    } catch (error) {
+      // localStorage may throw when storage is full or access is denied
+      // (e.g. QuotaExceededError, SecurityError in Safari private mode).
+      // Log the error but do not crash — the in-memory state remains intact.
+      console.error("Failed to save diagram state:", error);
+    }
   },
 
   loadState: () => {
