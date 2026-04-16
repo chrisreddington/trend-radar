@@ -35,6 +35,12 @@ const getColumnHeader = (columnName: string) => {
   });
 };
 
+const getSortButton = (columnName: string) => {
+  return screen.getByRole("button", {
+    name: new RegExp(`^${columnName}( ↑| ↓)?$`),
+  });
+};
+
 const testColumnSorting = (
   columnName: string,
   firstValue: string,
@@ -51,21 +57,21 @@ const testColumnSorting = (
     row.cells[cellIndex].textContent;
 
   // Initial click for ascending sort
-  fireEvent.click(getColumnHeader(columnName));
+  fireEvent.click(getSortButton(columnName));
 
   let sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   const cellIndex = getCellIndex();
   expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
   expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
-  expect(getColumnHeader(columnName)).toHaveTextContent(/↑$/);
+  expect(getSortButton(columnName)).toHaveTextContent(/↑$/);
 
   // Click again for descending sort
-  fireEvent.click(getColumnHeader(columnName));
+  fireEvent.click(getSortButton(columnName));
 
   sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
   expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
-  expect(getColumnHeader(columnName)).toHaveTextContent(/↓$/);
+  expect(getSortButton(columnName)).toHaveTextContent(/↓$/);
 };
 
 const getRowCellText = (rowIndex: number, colIndex: number) => {
@@ -210,12 +216,12 @@ describe("PointsTable", () => {
       expect.hasAssertions();
       render(<PointsTable />);
 
-      fireEvent.click(getColumnHeader("Label"));
-      expect(getColumnHeader("Label")).toHaveTextContent(/↑$/);
+      fireEvent.click(getSortButton("Label"));
+      expect(getSortButton("Label")).toHaveTextContent(/↑$/);
 
-      fireEvent.click(getColumnHeader("Category"));
-      expect(getColumnHeader("Category")).toHaveTextContent(/↑$/);
-      expect(getColumnHeader("Label")).toHaveTextContent(/^Label$/);
+      fireEvent.click(getSortButton("Category"));
+      expect(getSortButton("Category")).toHaveTextContent(/↑$/);
+      expect(getSortButton("Label")).toHaveTextContent(/^Label$/);
     });
   });
 
@@ -352,14 +358,14 @@ describe("PointsTable", () => {
 
     it("should update aria-sort to 'ascending' after first click on a column", () => {
       render(<PointsTable />);
-      fireEvent.click(getColumnHeader("Label"));
+      fireEvent.click(getSortButton("Label"));
       expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
     });
 
     it("should update aria-sort to 'descending' after second click on the same column", () => {
       render(<PointsTable />);
-      fireEvent.click(getColumnHeader("Label"));
-      fireEvent.click(getColumnHeader("Label"));
+      fireEvent.click(getSortButton("Label"));
+      fireEvent.click(getSortButton("Label"));
       expect(getColumnHeader("Label")).toHaveAttribute(
         "aria-sort",
         "descending",
@@ -368,13 +374,13 @@ describe("PointsTable", () => {
 
     it("should sort when Enter is pressed on a column header", () => {
       render(<PointsTable />);
-      fireEvent.keyDown(getColumnHeader("Label"), { key: "Enter" });
+      fireEvent.keyDown(getSortButton("Label"), { key: "Enter" });
       expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
     });
 
     it("should sort when Space is pressed on a column header", () => {
       render(<PointsTable />);
-      fireEvent.keyDown(getColumnHeader("Category"), { key: " " });
+      fireEvent.keyUp(getSortButton("Category"), { key: " " });
       expect(getColumnHeader("Category")).toHaveAttribute(
         "aria-sort",
         "ascending",
@@ -383,14 +389,16 @@ describe("PointsTable", () => {
 
     it("should not sort when other keys are pressed on a column header", () => {
       render(<PointsTable />);
-      fireEvent.keyDown(getColumnHeader("Label"), { key: "Tab" });
-      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "none");
+      fireEvent.keyDown(getSortButton("Category"), { key: "Tab" });
+      expect(getColumnHeader("Category")).toHaveAttribute("aria-sort", "none");
     });
 
-    it("should have tabIndex=0 on all column headers", () => {
+    it("should render a keyboard-focusable sort button in each column header", () => {
       render(<PointsTable />);
       for (const header of screen.getAllByRole("columnheader")) {
-        expect(header).toHaveAttribute("tabIndex", "0");
+        const sortButton = header.querySelector("button");
+        expect(sortButton).toBeInTheDocument();
+        expect(sortButton).toHaveAttribute("type", "button");
       }
     });
 
@@ -457,13 +465,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Relevance"));
 
       // Ascending: highest relevance first
-      fireEvent.click(getColumnHeader("Relevance"));
+      fireEvent.click(getSortButton("Relevance"));
       expect(getRowCellText(0, colIndex)).toBe("High");
       expect(getRowCellText(1, colIndex)).toBe("Moderate");
       expect(getRowCellText(2, colIndex)).toBe("Low");
 
       // Descending: lowest relevance first
-      fireEvent.click(getColumnHeader("Relevance"));
+      fireEvent.click(getSortButton("Relevance"));
       expect(getRowCellText(0, colIndex)).toBe("Low");
       expect(getRowCellText(1, colIndex)).toBe("Moderate");
       expect(getRowCellText(2, colIndex)).toBe("High");
@@ -477,13 +485,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Preparedness"));
 
       // Ascending: most prepared first
-      fireEvent.click(getColumnHeader("Preparedness"));
+      fireEvent.click(getSortButton("Preparedness"));
       expect(getRowCellText(0, colIndex)).toBe("Highly Prepared");
       expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
       expect(getRowCellText(2, colIndex)).toBe("Inadequately Prepared");
 
       // Descending: least prepared first
-      fireEvent.click(getColumnHeader("Preparedness"));
+      fireEvent.click(getSortButton("Preparedness"));
       expect(getRowCellText(0, colIndex)).toBe("Inadequately Prepared");
       expect(getRowCellText(1, colIndex)).toBe("Moderately Prepared");
       expect(getRowCellText(2, colIndex)).toBe("Highly Prepared");
@@ -497,13 +505,13 @@ describe("PointsTable", () => {
         .findIndex((h) => h.textContent?.includes("Likelihood"));
 
       // Ascending: most likely first
-      fireEvent.click(getColumnHeader("Likelihood"));
+      fireEvent.click(getSortButton("Likelihood"));
       expect(getRowCellText(0, colIndex)).toBe("Highly Likely");
       expect(getRowCellText(1, colIndex)).toBe("Likely");
       expect(getRowCellText(2, colIndex)).toBe("Unlikely");
 
       // Descending: least likely first
-      fireEvent.click(getColumnHeader("Likelihood"));
+      fireEvent.click(getSortButton("Likelihood"));
       expect(getRowCellText(0, colIndex)).toBe("Unlikely");
       expect(getRowCellText(1, colIndex)).toBe("Likely");
       expect(getRowCellText(2, colIndex)).toBe("Highly Likely");

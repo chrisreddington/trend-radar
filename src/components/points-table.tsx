@@ -13,6 +13,16 @@ type SortField =
 type SortDirection = "asc" | "desc";
 const ALL_CATEGORIES = "All" as const;
 type CategoryFilter = Category | typeof ALL_CATEGORIES;
+const SORTABLE_COLUMNS: ReadonlyArray<{
+  field: SortField;
+  label: string;
+}> = [
+  { field: "label", label: "Label" },
+  { field: "category", label: "Category" },
+  { field: "relevance", label: "Relevance" },
+  { field: "preparedness", label: "Preparedness" },
+  { field: "likelihood", label: "Likelihood" },
+];
 
 /** Ordinal rank for Likelihood values (lower index = higher likelihood). */
 const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
@@ -67,9 +77,27 @@ export const PointsTable = memo(function PointsTable() {
     setCategoryFilter(ALL_CATEGORIES);
   }, []);
 
-  const handleSortKeyDown = useCallback(
-    (event: React.KeyboardEvent, field: SortField) => {
-      if (event.key === "Enter" || event.key === " ") {
+  const handleSortButtonKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, field: SortField) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSort(field);
+      }
+    },
+    [handleSort],
+  );
+
+  const handleSortButtonKeyUp = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, field: SortField) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === " " || event.key === "Spacebar") {
         event.preventDefault();
         handleSort(field);
       }
@@ -219,31 +247,33 @@ export const PointsTable = memo(function PointsTable() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                {(
-                  [
-                    ["label", "Label"],
-                    ["category", "Category"],
-                    ["relevance", "Relevance"],
-                    ["preparedness", "Preparedness"],
-                    ["likelihood", "Likelihood"],
-                  ] as [SortField, string][]
-                ).map(([field, label]) => (
+                {SORTABLE_COLUMNS.map(({ field, label }) => (
                   <th
                     key={field}
                     scope="col"
-                    onClick={() => handleSort(field)}
-                    onKeyDown={(event) => handleSortKeyDown(event, field)}
-                    tabIndex={0}
                     aria-sort={
                       sortField === field
                         ? (sortDirection === "asc" ? "ascending" : "descending")
                         : "none"
                     }
-                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200"
                   >
-                    {label}{" "}
-                    {sortField === field &&
-                      (sortDirection === "asc" ? "↑" : "↓")}
+                    <button
+                      type="button"
+                      onClick={() => handleSort(field)}
+                      onKeyDown={(event) =>
+                        handleSortButtonKeyDown(event, field)
+                      }
+                      onKeyUp={(event) => handleSortButtonKeyUp(event, field)}
+                      className="flex w-full items-center gap-1 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                    >
+                      <span>{label}</span>
+                      {sortField === field && (
+                        <span aria-hidden="true">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
                 ))}
               </tr>
