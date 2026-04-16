@@ -1,14 +1,14 @@
 "use client";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Preparedness } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 
-export const Legend = () => {
+export const Legend = memo(function Legend() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed((previous) => !previous);
+  }, []);
 
   return (
     <div className="w-full lg:w-80 bg-white shadow-lg rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -139,4 +139,4 @@ export const Legend = () => {
       </div>
     </div>
   );
-};
+});

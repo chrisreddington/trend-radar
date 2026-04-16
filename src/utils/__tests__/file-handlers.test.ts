@@ -115,6 +115,78 @@ describe("File Handlers", () => {
       expect(validateDiagramData(invalidData)).toBe(false);
     });
 
+    it("should accept points with a valid string description", () => {
+      const stateWithDescription: DiagramState = {
+        points: [
+          {
+            ...mockState.points[0],
+            description: "Some context",
+          },
+        ],
+      };
+      const validData = exportDiagram(stateWithDescription);
+      expect(validateDiagramData(validData)).toBe(true);
+    });
+
+    it("should accept points without a description", () => {
+      const validData = exportDiagram(mockState);
+      expect(validateDiagramData(validData)).toBe(true);
+    });
+
+    it("should reject points with a non-string description", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], description: 123 }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid category value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], category: "InvalidCategory" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid likelihood value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], likelihood: "Very Likely" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid relevance value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], relevance: "Critical" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should reject points with an invalid preparedness value", () => {
+      const invalidData = {
+        ...exportDiagram(mockState),
+        points: [{ ...mockState.points[0], preparedness: "Not Prepared" }],
+      };
+      expect(validateDiagramData(invalidData)).toBe(false);
+    });
+
+    it("should accept points with all valid enum values", () => {
+      const validData = exportDiagram({
+        points: [
+          {
+            ...mockState.points[0],
+            category: Category.Economic,
+            likelihood: Likelihood.Likely,
+            relevance: Relevance.Low,
+            preparedness: Preparedness.InadequatelyPrepared,
+          },
+        ],
+      });
+      expect(validateDiagramData(validData)).toBe(true);
+    });
     it("should reject data without metadata", () => {
       const invalidData = {
         ...exportDiagram(mockState),

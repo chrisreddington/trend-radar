@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { Category, Likelihood, Preparedness, Relevance } from "../types";
 
@@ -36,7 +36,7 @@ const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
   [Preparedness.InadequatelyPrepared]: 2,
 };
 
-export const PointsTable = () => {
+export const PointsTable = memo(function PointsTable() {
   const points = useDiagramStore((state) => state.points);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortField, setSortField] = useState<SortField>("label");
@@ -45,26 +45,28 @@ export const PointsTable = () => {
   const [categoryFilter, setCategoryFilter] =
     useState<CategoryFilter>(ALL_CATEGORIES);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed((previous) => !previous);
+  }, []);
 
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (field === sortField) {
+        setSortDirection((previous) => (previous === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    },
+    [sortField],
+  );
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setLabelSearch("");
     setCategoryFilter(ALL_CATEGORIES);
-  };
+  }, []);
 
-  const isFiltered =
-    labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
+  const isFiltered = labelSearch !== "" || categoryFilter !== ALL_CATEGORIES;
 
   const filteredAndSortedPoints = useMemo(
     () =>
@@ -255,7 +257,18 @@ export const PointsTable = () => {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
-                      {point.label}
+                      <span className="inline-flex items-center gap-1">
+                        {point.label}
+                        {point.description && (
+                          <span
+                            title={point.description}
+                            aria-label={`Description: ${point.description}`}
+                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300 text-xs cursor-help flex-shrink-0"
+                          >
+                            ?
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
                       {point.category}
@@ -278,4 +291,4 @@ export const PointsTable = () => {
       </div>
     </div>
   );
-};
+});
