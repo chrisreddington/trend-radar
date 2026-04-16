@@ -11,10 +11,15 @@ import {
 import { vi } from "vitest";
 
 // Mock file handlers
-vi.mock("../../utils/file-handlers", () => ({
-  loadDiagramFromFile: vi.fn(),
-  saveDiagramToFile: vi.fn(),
-}));
+vi.mock("../../utils/file-handlers", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../utils/file-handlers")>();
+  return {
+    ...actual,
+    loadDiagramFromFile: vi.fn(),
+    saveDiagramToFile: vi.fn(),
+  };
+});
 
 describe("useDiagramStore", () => {
   // Set up test data and mocks
