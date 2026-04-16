@@ -2,7 +2,7 @@
   "m": "2026-04",
   "mi": 185,
   "lr": "2026-04-16",
-  "ri": "24486683355",
+  "ri": "24512203977",
   "comments_made": {
     "15": "2026-03-22",
     "17": "2026-03-22"
@@ -40,15 +40,12 @@
     "repo-assist/perf-batch-position-updates-20260406-b26d61977924ee2c": 201,
     "repo-assist/feat-csv-export-20260406-17017c6-654a3f9b17f0dfac": 200,
     "repo-assist/feat-svg-export-20260409-0da0616-f8964977c86d7f0e": 205,
-    "repo-assist/test-ring-diagram-interactions-20260407-0da0616-973bdd0c3e730acd": 203
+    "repo-assist/test-ring-diagram-interactions-20260407-0da0616-973bdd0c3e730acd": 203,
+    "repo-assist/perf-ring-diagram-static-constants-20260408-0da0616-ceb329baeba65d69": 204,
+    "repo-assist/test-legend-and-theme-toggle-20260411-95cdc3d10a13906f": 212
   },
-  "notes": "POLICY_BLOCKED: safeoutputs and github MCP servers blocked by policy in runs 24375530709, 24400915268, 24431211154, 24456480667, 24486683355 (5 consecutive runs). Run 24486683355 (2026-04-16): Task 2: Only user issues are #15 and #17 (no human replies, no new user issues). Task 4: Prepared next 16.2.3->16.2.4 + eslint-config-next 16.2.2->16.2.4 update (changes: package.json next field and eslint-config-next field). Branch was created locally but CANNOT persist (safeoutputs blocked by policy). NEXT RUN: If safeoutputs available, create PR: (1) branch from main, bump next to 16.2.4 and eslint-config-next to 16.2.4 in package.json, run npm install, (2) update monthly summary #185 to add new run entry and add PR to suggested actions.",
+  "notes": "POLICY_BLOCKED: safeoutputs and github MCP servers blocked by policy in runs 24375530709, 24400915268, 24431211154, 24456480667, 24486683355, 24512203977 (6 consecutive runs). Run 24512203977 (2026-04-16): Task 6: Rebased 7 PR branches cleanly onto main (26946f9). Branches rebased: #205(svg-export), #204(ring-diagram-static), #203(test-ring-diagram), #201(perf-batch), #200(csv-export), #198(fix-control-panel), #196(fix-ring-legend). Cannot push because push_to_pull_request_branch tool not available. PR #212 (test-legend) already on latest main. eng-next-16.2.3 PR is superseded (main already has 16.2.3 via #211). Issue #140 has only agentic-workflows label - likely a repo-assist internal issue not requiring user comment. NEXT RUN: If safeoutputs available, push rebased branches for PRs #205, #204, #203, #201, #200, #198, #196 and update monthly summary #185.",
   "issue_cursor": 15,
   "checked_off_items": [],
-  "task4_todo": {
-    "description": "Bump next 16.2.3->16.2.4 and eslint-config-next 16.2.2->16.2.4",
-    "changes": "package.json: next field -> 16.2.4, eslint-config-next -> 16.2.4; then npm install to update package-lock.json",
-    "lint": "passes",
-    "branch_prefix": "repo-assist/eng-next-16.2.4-"
-  }
+  "pr_213_superseded": "eng-next-16.2.3 (PR likely around #213 area) is superseded - main already has next 16.2.3"
 }
