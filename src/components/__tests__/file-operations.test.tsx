@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FileOperations } from "../file-operations";
 import { vi } from "vitest";
+import { RING_DIAGRAM_SVG_ARIA_LABEL } from "../../constants/diagram";
 
 // Mock the entire store module
 vi.mock("../../store/use-diagram-store", async () => {
@@ -182,8 +183,7 @@ describe("FileOperations", () => {
   });
 
   describe("SVG export", () => {
-    const DIAGRAM_ARIA_LABEL =
-      "Ring diagram showing points across different categories and rings";
+    const DIAGRAM_ARIA_LABEL = RING_DIAGRAM_SVG_ARIA_LABEL;
 
     it("renders an Export as SVG button", () => {
       render(<FileOperations />);
