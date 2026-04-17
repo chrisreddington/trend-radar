@@ -1,0 +1,21 @@
+{
+  "m": "2026-04",
+  "mi": 185,
+  "lr": "2026-04-17",
+  "ri": "24542565409",
+  "comments_made": {
+    "15": "2026-03-22",
+    "17": "2026-03-22"
+  },
+  "fix_attempts": {
+    "svg-aria-label": "open",
+    "slider-conversions": "open"
+  },
+  "branch_to_pr": {
+    "repo-assist/fix-svg-export-aria-label-20260417": "TBD",
+    "repo-assist/improve-slider-conversions-utils-20260417": "TBD"
+  },
+  "notes": "Run 24542565409 (2026-04-17): Task 3: Fixed SVG export broken bug - aria-label mismatch between ring-diagram.tsx and file-operations.tsx. Created shared constant in src/constants/aria-labels.ts. Task 5: Extracted 6 slider conversion utility functions from control-panel.tsx to src/utils/slider-conversions.ts with comprehensive tests. Both PRs queued via safeoutputs agents. Monthly summary #185 updated. Previous open PRs (#196, #198, #200, #201, #203, #204, #205, #212) - branches from old runs no longer available in workspace, cannot rebase/push this run.",
+  "issue_cursor": 15,
+  "checked_off_items": []
+}
