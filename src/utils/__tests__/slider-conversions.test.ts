@@ -70,6 +70,12 @@ describe("slider-conversions", () => {
         );
       }
     });
+
+    it("throws for an invalid Likelihood value", () => {
+      expect(() => getValueFromLikelihood("invalid" as unknown as Likelihood)).toThrow(
+        "Invalid Likelihood value: invalid",
+      );
+    });
   });
 
   describe("getRelevanceFromValue", () => {
@@ -109,6 +115,12 @@ describe("slider-conversions", () => {
           relevance,
         );
       }
+    });
+
+    it("throws for an invalid Relevance value", () => {
+      expect(() => getValueFromRelevance("invalid" as unknown as Relevance)).toThrow(
+        "Invalid Relevance value: invalid",
+      );
     });
   });
 
@@ -163,6 +175,12 @@ describe("slider-conversions", () => {
           getPreparednessFromValue(getValueFromPreparedness(preparedness)),
         ).toBe(preparedness);
       }
+    });
+
+    it("throws for an invalid Preparedness value", () => {
+      expect(() =>
+        getValueFromPreparedness("invalid" as unknown as Preparedness),
+      ).toThrow("Invalid Preparedness value: invalid");
     });
   });
 });

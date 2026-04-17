@@ -67,6 +67,8 @@ export function getValueFromLikelihood(likelihood: Likelihood): number {
       return LIKELIHOOD_VALUE_HIGHLY_UNLIKELY;
     }
   }
+
+  throw new Error(`Invalid Likelihood value: ${String(likelihood)}`);
 }
 
 /**
@@ -97,6 +99,8 @@ export function getValueFromRelevance(relevance: Relevance): number {
       return RELEVANCE_VALUE_LOW;
     }
   }
+
+  throw new Error(`Invalid Relevance value: ${String(relevance)}`);
 }
 
 /**
@@ -128,4 +132,6 @@ export function getValueFromPreparedness(preparedness: Preparedness): number {
       return PREPAREDNESS_VALUE_INADEQUATELY_PREPARED;
     }
   }
+
+  throw new Error(`Invalid Preparedness value: ${String(preparedness)}`);
 }
