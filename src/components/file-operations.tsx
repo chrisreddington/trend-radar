@@ -2,9 +2,7 @@
 import { memo, useCallback, useState } from "react";
 import { useDiagramStore } from "../store/use-diagram-store";
 import { downloadSvg } from "../utils/svg-export";
-
-/** aria-label set on the ring diagram SVG element */
-const DIAGRAM_SVG_ARIA_LABEL = "Ring diagram showing points across different categories and rings";
+import { RING_DIAGRAM_SVG_ARIA_LABEL } from "../constants/diagram";
 
 export const FileOperations = memo(function FileOperations() {
   const saveDiagram = useDiagramStore((state) => state.saveDiagram);
@@ -46,7 +44,7 @@ export const FileOperations = memo(function FileOperations() {
     try {
       setError(undefined);
       const svgElement = document.querySelector<SVGSVGElement>(
-        `svg[aria-label="${DIAGRAM_SVG_ARIA_LABEL}"]`,
+        `svg[aria-label="${RING_DIAGRAM_SVG_ARIA_LABEL}"]`,
       );
       if (!svgElement) {
         setError("Diagram not found — please try again");

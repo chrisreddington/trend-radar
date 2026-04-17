@@ -7,6 +7,7 @@ import {
 } from "../store/use-diagram-store";
 import { Category, Preparedness, Relevance, Likelihood, Point } from "../types";
 import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
+import { RING_DIAGRAM_SVG_ARIA_LABEL } from "../constants/diagram";
 import { useResponsiveSize } from "../hooks/use-responsive-size";
 
 /** All category values in definition order. Computed once at module load. */
@@ -406,7 +407,7 @@ export const RingDiagram = () => {
           className="w-full h-auto"
           style={{ display: "block" }} // Ensure SVG is visible
           role="application"
-          aria-label="Interactive trend radar diagram. Use Tab to navigate trend points and Enter or Space to select."
+          aria-label={RING_DIAGRAM_SVG_ARIA_LABEL}
         />
       </div>
     </div>
