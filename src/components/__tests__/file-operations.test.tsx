@@ -211,9 +211,8 @@ describe("FileOperations", () => {
 
     it("shows an error when the diagram SVG element is not found", async () => {
       // Make sure no SVG with the diagram aria-label is present
-      for (const element of document.querySelectorAll(
-        `svg[aria-label="${DIAGRAM_ARIA_LABEL}"]`,
-      )) {
+      const svgSelector = `svg[aria-label="${CSS.escape(DIAGRAM_ARIA_LABEL)}"]`;
+      for (const element of document.querySelectorAll(svgSelector)) {
         element.remove();
       }
 

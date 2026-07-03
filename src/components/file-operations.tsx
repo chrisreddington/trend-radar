@@ -44,7 +44,7 @@ export const FileOperations = memo(function FileOperations() {
     try {
       setError(undefined);
       const svgElement = document.querySelector<SVGSVGElement>(
-        `svg[aria-label="${RING_DIAGRAM_SVG_ARIA_LABEL}"]`,
+        `svg[aria-label="${CSS.escape(RING_DIAGRAM_SVG_ARIA_LABEL)}"]`,
       );
       if (!svgElement) {
         setError("Diagram not found — please try again");
