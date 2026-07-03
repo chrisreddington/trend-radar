@@ -46,6 +46,10 @@ export interface DiagramExport extends DiagramState {
 
 export const CURRENT_VERSION = 1;
 
+function createAbortError(message: string): DOMException {
+  return new DOMException(message, "AbortError");
+}
+
 function isFileSystemAccessSupported(): boolean {
   return (
     typeof globalThis !== "undefined" && "showSaveFilePicker" in globalThis
@@ -216,9 +220,7 @@ export async function loadDiagramFromFile(): Promise<DiagramExport> {
 
       const handleCancel = () => {
         input.remove();
-        const error = new Error("File selection cancelled");
-        error.name = "AbortError";
-        reject(error);
+        reject(createAbortError("File selection cancelled"));
       };
 
       input.addEventListener("change", handleFileSelect);

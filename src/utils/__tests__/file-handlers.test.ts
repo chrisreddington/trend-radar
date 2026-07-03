@@ -253,7 +253,6 @@ describe("File Handlers", () => {
     });
 
     it("should reject non-object values", () => {
-      // eslint-disable-next-line unicorn/no-useless-undefined
       expect(isValidPoint(undefined)).toBe(false);
     });
 
