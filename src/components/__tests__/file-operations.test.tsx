@@ -98,12 +98,9 @@ describe("FileOperations", () => {
   });
 
   it("shows loading state while saving", async () => {
-    let resolveSave!: () => void;
-    mockSaveDiagram.mockReturnValueOnce(
-      new Promise<void>((resolve) => {
-        resolveSave = resolve;
-      }),
-    );
+    const { promise: savePromise, resolve: resolveSave } =
+      Promise.withResolvers<void>();
+    mockSaveDiagram.mockReturnValueOnce(savePromise);
 
     render(<FileOperations />);
 
@@ -121,12 +118,9 @@ describe("FileOperations", () => {
   });
 
   it("shows loading state while loading", async () => {
-    let resolveLoad!: () => void;
-    mockLoadDiagram.mockReturnValueOnce(
-      new Promise<void>((resolve) => {
-        resolveLoad = resolve;
-      }),
-    );
+    const { promise: loadPromise, resolve: resolveLoad } =
+      Promise.withResolvers<void>();
+    mockLoadDiagram.mockReturnValueOnce(loadPromise);
 
     render(<FileOperations />);
 
