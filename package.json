@@ -46,12 +46,12 @@
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-unicorn": "^70.0.0",
+    "eslint-plugin-unicorn": "^71.1.0",
     "playwright": "^1.61.1",
     "prettier": "3.9.5",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^6",
+    "typescript": "^7",
     "typescript-eslint": "^8.63.0",
     "vitest": "^4.0.10"
   }
