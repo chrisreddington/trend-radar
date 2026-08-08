@@ -77,7 +77,7 @@ export const RingDiagram = () => {
 
   // Structural render: rebuilds the full SVG when points data or diagram size change
   useEffect(() => {
-    if (!svgReference.current || size === 0) return;
+    if (size === 0 || !svgReference.current) return;
 
     const svg = select(svgReference.current);
     svg.selectAll("*").remove();
