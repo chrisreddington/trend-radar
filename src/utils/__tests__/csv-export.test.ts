@@ -118,8 +118,8 @@ describe("downloadPointsAsCsv", () => {
   let createObjectUrlSpy: ReturnType<typeof vi.spyOn>;
   let revokeObjectUrlSpy: ReturnType<typeof vi.spyOn>;
   let appendChildSpy: ReturnType<typeof vi.spyOn>;
-  let clickSpy: ReturnType<typeof vi.fn>;
-  let removeSpy: ReturnType<typeof vi.fn>;
+  let clickSpy: ReturnType<typeof vi.fn<() => void>>;
+  let removeSpy: ReturnType<typeof vi.fn<() => void>>;
   let createdAnchor: HTMLAnchorElement;
 
   beforeEach(() => {
@@ -130,8 +130,8 @@ describe("downloadPointsAsCsv", () => {
       .spyOn(URL, "revokeObjectURL")
       .mockImplementation(() => {});
 
-    clickSpy = vi.fn();
-    removeSpy = vi.fn();
+    clickSpy = vi.fn<() => void>();
+    removeSpy = vi.fn<() => void>();
 
     appendChildSpy = vi
       .spyOn(document.body, "append")
