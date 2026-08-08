@@ -24,8 +24,8 @@ vi.mock("../../store/use-diagram-store", () => {
 });
 
 describe("useDiagramPersistence", () => {
-  let mockLoadState: ReturnType<typeof vi.fn>;
-  let mockSaveState: ReturnType<typeof vi.fn>;
+  let mockLoadState: ReturnType<typeof vi.fn<() => void>>;
+  let mockSaveState: ReturnType<typeof vi.fn<() => void>>;
   let mockPoints: unknown[];
   let currentPoints: unknown[];
   let mockSubscribe: ReturnType<typeof vi.fn>;
@@ -35,8 +35,8 @@ describe("useDiagramPersistence", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    mockLoadState = vi.fn();
-    mockSaveState = vi.fn();
+    mockLoadState = vi.fn<() => void>();
+    mockSaveState = vi.fn<() => void>();
     mockPoints = [];
     currentPoints = mockPoints;
     capturedListener = undefined;
