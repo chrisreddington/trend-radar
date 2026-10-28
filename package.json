@@ -10,7 +10,9 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "prettier": "npx prettier --write ."
+    "prettier": "npx prettier --write .",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@types/d3": "^7.4.3",
@@ -32,9 +34,9 @@
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
     "@types/node": "^26",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/browser": "^5.0.3",
     "@vitest/browser-playwright": "^5.0.3",

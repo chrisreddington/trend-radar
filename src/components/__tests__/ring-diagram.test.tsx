@@ -135,7 +135,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -192,7 +192,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -246,7 +246,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -280,7 +280,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
     });
 
@@ -291,7 +291,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -310,7 +310,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -407,7 +407,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);
@@ -437,7 +437,7 @@ describe("RingDiagram", () => {
         selectPoint: mockSelectPoint,
         updatePoint: mockUpdatePoint,
         addPointAtPosition: mockAddPointAtPosition,
-      batchUpdatePositions: mockBatchUpdatePositions,
+        batchUpdatePositions: mockBatchUpdatePositions,
       });
 
       const { container } = render(<RingDiagram />);

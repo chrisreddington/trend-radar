@@ -72,9 +72,9 @@ describe("slider-conversions", () => {
     });
 
     it("throws for an invalid Likelihood value", () => {
-      expect(() => getValueFromLikelihood("invalid" as unknown as Likelihood)).toThrow(
-        "Invalid Likelihood value: invalid",
-      );
+      expect(() =>
+        getValueFromLikelihood("invalid" as unknown as Likelihood),
+      ).toThrow("Invalid Likelihood value: invalid");
     });
   });
 
@@ -118,9 +118,9 @@ describe("slider-conversions", () => {
     });
 
     it("throws for an invalid Relevance value", () => {
-      expect(() => getValueFromRelevance("invalid" as unknown as Relevance)).toThrow(
-        "Invalid Relevance value: invalid",
-      );
+      expect(() =>
+        getValueFromRelevance("invalid" as unknown as Relevance),
+      ).toThrow("Invalid Relevance value: invalid");
     });
   });
 
@@ -164,9 +164,9 @@ describe("slider-conversions", () => {
     });
 
     it("returns 0 for InadequatelyPrepared", () => {
-      expect(
-        getValueFromPreparedness(Preparedness.InadequatelyPrepared),
-      ).toBe(0);
+      expect(getValueFromPreparedness(Preparedness.InadequatelyPrepared)).toBe(
+        0,
+      );
     });
 
     it("round-trips correctly for all Preparedness values", () => {

@@ -48,7 +48,11 @@ export class ErrorBoundary extends Component<
       this.state.retryAfterError &&
       previousProperties.children !== this.props.children
     ) {
-      this.setState({ hasError: false, error: undefined, retryAfterError: false });
+      this.setState({
+        hasError: false,
+        error: undefined,
+        retryAfterError: false,
+      });
     }
   }
 

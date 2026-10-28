@@ -94,7 +94,9 @@ describe("ThemeToggle", () => {
       value: throwingStorage,
     });
     render(<ThemeToggle />);
-    expect(() => fireEvent.click(screen.getByLabelText("Light theme"))).not.toThrow();
+    expect(() =>
+      fireEvent.click(screen.getByLabelText("Light theme")),
+    ).not.toThrow();
   });
 
   it("renders all theme options", () => {

@@ -1,8 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import {
-  RESIZE_DEBOUNCE_MS,
-  useResponsiveSize,
-} from "../use-responsive-size";
+import { RESIZE_DEBOUNCE_MS, useResponsiveSize } from "../use-responsive-size";
 
 /**
 Helper to set the mocked viewport width for tests.
@@ -149,7 +146,10 @@ describe("useResponsiveSize", () => {
     });
 
     it("should remove the resize event listener on unmount", () => {
-      const removeEventListenerSpy = vi.spyOn(globalThis, "removeEventListener");
+      const removeEventListenerSpy = vi.spyOn(
+        globalThis,
+        "removeEventListener",
+      );
       setViewportWidth(1000);
       const { unmount } = renderHook(() => useResponsiveSize());
 

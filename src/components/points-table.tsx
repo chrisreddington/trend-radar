@@ -5,11 +5,7 @@ import { Category, Likelihood, Preparedness, Relevance } from "../types";
 import { downloadPointsAsCsv } from "../utils/csv-export";
 
 type SortField =
-  | "label"
-  | "category"
-  | "relevance"
-  | "preparedness"
-  | "likelihood";
+  "label" | "category" | "relevance" | "preparedness" | "likelihood";
 type SortDirection = "asc" | "desc";
 const ALL_CATEGORIES = "All" as const;
 type CategoryFilter = Category | typeof ALL_CATEGORIES;
@@ -296,7 +292,9 @@ export const PointsTable = memo(function PointsTable() {
                     scope="col"
                     aria-sort={
                       sortField === field
-                        ? (sortDirection === "asc" ? "ascending" : "descending")
+                        ? sortDirection === "asc"
+                          ? "ascending"
+                          : "descending"
                         : "none"
                     }
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200"

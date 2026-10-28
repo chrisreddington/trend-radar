@@ -15,9 +15,9 @@ vi.mock("../../store/use-diagram-store", async () => {
 
 // Mock the csv-export module so we can verify download is triggered
 vi.mock("../../utils/csv-export", async () => {
-  const actual = await vi.importActual<
-    typeof import("../../utils/csv-export")
-  >("../../utils/csv-export");
+  const actual = await vi.importActual<typeof import("../../utils/csv-export")>(
+    "../../utils/csv-export",
+  );
   return {
     ...actual,
     downloadPointsAsCsv: vi.fn(),
@@ -371,7 +371,10 @@ describe("PointsTable", () => {
     it("should update aria-sort to 'ascending' after first click on a column", () => {
       render(<PointsTable />);
       fireEvent.click(getSortButton("Label"));
-      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+      expect(getColumnHeader("Label")).toHaveAttribute(
+        "aria-sort",
+        "ascending",
+      );
     });
 
     it("should update aria-sort to 'descending' after second click on the same column", () => {
@@ -387,7 +390,10 @@ describe("PointsTable", () => {
     it("should sort when Enter is pressed on a column header", () => {
       render(<PointsTable />);
       fireEvent.keyDown(getSortButton("Label"), { key: "Enter" });
-      expect(getColumnHeader("Label")).toHaveAttribute("aria-sort", "ascending");
+      expect(getColumnHeader("Label")).toHaveAttribute(
+        "aria-sort",
+        "ascending",
+      );
     });
 
     it("should sort when Space is pressed on a column header", () => {

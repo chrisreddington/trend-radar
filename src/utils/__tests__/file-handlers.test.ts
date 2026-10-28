@@ -510,17 +510,14 @@ describe("File Handlers - fallback (no File System Access API)", () => {
         remove: vi.fn(),
         addEventListener: vi.fn(
           (event: string, handler: EventListenerOrEventListenerObject) => {
-            if (event === "change")
-              changeListeners.push(handler as () => void);
-            if (event === "cancel")
-              cancelListeners.push(handler as () => void);
+            if (event === "change") changeListeners.push(handler as () => void);
+            if (event === "cancel") cancelListeners.push(handler as () => void);
           },
         ),
       };
       const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
-        if (tag === "input")
-          return mockInput as unknown as HTMLInputElement;
+        if (tag === "input") return mockInput as unknown as HTMLInputElement;
         return originalCreateElement(tag);
       });
       vi.spyOn(document.body, "append").mockImplementation(vi.fn());
@@ -547,15 +544,13 @@ describe("File Handlers - fallback (no File System Access API)", () => {
         remove: vi.fn(),
         addEventListener: vi.fn(
           (event: string, handler: EventListenerOrEventListenerObject) => {
-            if (event === "cancel")
-              cancelListeners.push(handler as () => void);
+            if (event === "cancel") cancelListeners.push(handler as () => void);
           },
         ),
       };
       const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
-        if (tag === "input")
-          return mockInput as unknown as HTMLInputElement;
+        if (tag === "input") return mockInput as unknown as HTMLInputElement;
         return originalCreateElement(tag);
       });
       vi.spyOn(document.body, "append").mockImplementation(vi.fn());
@@ -586,15 +581,13 @@ describe("File Handlers - fallback (no File System Access API)", () => {
         remove: vi.fn(),
         addEventListener: vi.fn(
           (event: string, handler: EventListenerOrEventListenerObject) => {
-            if (event === "change")
-              changeListeners.push(handler as () => void);
+            if (event === "change") changeListeners.push(handler as () => void);
           },
         ),
       };
       const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
-        if (tag === "input")
-          return mockInput as unknown as HTMLInputElement;
+        if (tag === "input") return mockInput as unknown as HTMLInputElement;
         return originalCreateElement(tag);
       });
       vi.spyOn(document.body, "append").mockImplementation(vi.fn());
@@ -619,15 +612,13 @@ describe("File Handlers - fallback (no File System Access API)", () => {
         remove: vi.fn(),
         addEventListener: vi.fn(
           (event: string, handler: EventListenerOrEventListenerObject) => {
-            if (event === "change")
-              changeListeners.push(handler as () => void);
+            if (event === "change") changeListeners.push(handler as () => void);
           },
         ),
       };
       const originalCreateElement = document.createElement.bind(document);
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
-        if (tag === "input")
-          return mockInput as unknown as HTMLInputElement;
+        if (tag === "input") return mockInput as unknown as HTMLInputElement;
         return originalCreateElement(tag);
       });
       vi.spyOn(document.body, "append").mockImplementation(vi.fn());

@@ -51,12 +51,9 @@ describe("Home page", () => {
     });
 
     // Some components call the store with a selector, others without.
-    (
-      useDiagramStore as unknown as ReturnType<typeof vi.fn>
-    ).mockImplementation(
-      (
-        selector?: (s: typeof DEFAULT_STORE_STATE) => unknown,
-      ) => (selector ? selector(DEFAULT_STORE_STATE) : DEFAULT_STORE_STATE),
+    (useDiagramStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector?: (s: typeof DEFAULT_STORE_STATE) => unknown) =>
+        selector ? selector(DEFAULT_STORE_STATE) : DEFAULT_STORE_STATE,
     );
   });
 

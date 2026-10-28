@@ -114,7 +114,9 @@ describe("FileOperations", () => {
     expect(loadButton).toBeDisabled();
 
     resolveSave();
-    expect(await screen.findByRole("button", { name: "Save Diagram" })).toBeEnabled();
+    expect(
+      await screen.findByRole("button", { name: "Save Diagram" }),
+    ).toBeEnabled();
   });
 
   it("shows loading state while loading", async () => {
@@ -129,12 +131,16 @@ describe("FileOperations", () => {
 
     await user.click(loadButton);
 
-    expect(screen.getByRole("button", { name: "Loading…" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Loading…" }),
+    ).toBeInTheDocument();
     expect(saveButton).toBeDisabled();
     expect(loadButton).toBeDisabled();
 
     resolveLoad();
-    expect(await screen.findByRole("button", { name: "Load Diagram" })).toBeEnabled();
+    expect(
+      await screen.findByRole("button", { name: "Load Diagram" }),
+    ).toBeEnabled();
   });
 
   it("re-enables buttons after save fails", async () => {
@@ -143,7 +149,9 @@ describe("FileOperations", () => {
 
     await user.click(screen.getByRole("button", { name: "Save Diagram" }));
 
-    expect(await screen.findByRole("button", { name: "Save Diagram" })).toBeEnabled();
+    expect(
+      await screen.findByRole("button", { name: "Save Diagram" }),
+    ).toBeEnabled();
     expect(screen.getByRole("button", { name: "Load Diagram" })).toBeEnabled();
   });
 
@@ -153,7 +161,9 @@ describe("FileOperations", () => {
 
     await user.click(screen.getByRole("button", { name: "Load Diagram" }));
 
-    expect(await screen.findByRole("button", { name: "Load Diagram" })).toBeEnabled();
+    expect(
+      await screen.findByRole("button", { name: "Load Diagram" }),
+    ).toBeEnabled();
     expect(screen.getByRole("button", { name: "Save Diagram" })).toBeEnabled();
   });
 

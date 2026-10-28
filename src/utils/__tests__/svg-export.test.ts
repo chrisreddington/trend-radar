@@ -64,9 +64,7 @@ describe("resolveCssVariables", () => {
       },
     } as unknown as CSSStyleDeclaration);
 
-    const result = resolveCssVariables(
-      'fill="var(--a)" stroke="var(--b)"',
-    );
+    const result = resolveCssVariables('fill="var(--a)" stroke="var(--b)"');
     expect(result).toBe('fill="#111111" stroke="#222222"');
   });
 

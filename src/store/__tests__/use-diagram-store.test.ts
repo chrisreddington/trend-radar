@@ -364,7 +364,9 @@ describe("useDiagramStore", () => {
 
       it("should not update state when localStorage has valid JSON but no points field", () => {
         useDiagramStore.setState({ points: [mockPoint] });
-        mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ foo: "bar" }));
+        mockLocalStorage.getItem.mockReturnValue(
+          JSON.stringify({ foo: "bar" }),
+        );
 
         const { loadState } = useDiagramStore.getState();
         loadState();

@@ -161,7 +161,12 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
   if (!data || typeof data !== "object") return false;
 
   const exportData = data as Partial<DiagramExport>;
-  if ((typeof exportData.version !== "number") || !Array.isArray(exportData.points) || !exportData.metadata || typeof exportData.metadata !== "object")
+  if (
+    typeof exportData.version !== "number" ||
+    !Array.isArray(exportData.points) ||
+    !exportData.metadata ||
+    typeof exportData.metadata !== "object"
+  )
     return false;
 
   const { metadata } = exportData;

@@ -18,11 +18,16 @@ Unresolved variables are replaced with `#000000` as a safe fallback.
 */
 export function resolveCssVariables(svgString: string): string {
   const computedStyle = getComputedStyle(document.documentElement);
-  return svgString.replaceAll(/var\(([^)]+)\)/g, (match, variableExpression) => {
-    const [variableName] = variableExpression.split(",").map((s: string) => s.trim());
-    const resolved = computedStyle.getPropertyValue(variableName).trim();
-    return resolved || "#000000";
-  });
+  return svgString.replaceAll(
+    /var\(([^)]+)\)/g,
+    (match, variableExpression) => {
+      const [variableName] = variableExpression
+        .split(",")
+        .map((s: string) => s.trim());
+      const resolved = computedStyle.getPropertyValue(variableName).trim();
+      return resolved || "#000000";
+    },
+  );
 }
 
 /**

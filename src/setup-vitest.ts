@@ -20,8 +20,7 @@ const globalProcess =
     : process;
 
 let environment = globalProcess.env as
-  | Record<string, string | undefined>
-  | undefined;
+  Record<string, string | undefined> | undefined;
 
 if (!environment) {
   environment = {} as Record<string, string | undefined>;

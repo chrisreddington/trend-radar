@@ -53,10 +53,7 @@ export const RingDiagram = () => {
   Separated from the structural render so that a selection change avoids a full SVG rebuild.
   */
   const applySelectionHighlight = useCallback(
-    (
-      svgElement: SVGSVGElement,
-      selected: string | undefined,
-    ) => {
+    (svgElement: SVGSVGElement, selected: string | undefined) => {
       select(svgElement)
         .selectAll<SVGCircleElement, unknown>("circle.point")
         .attr("stroke", function () {
@@ -232,9 +229,9 @@ export const RingDiagram = () => {
       const pointSize =
         point.relevance === Relevance.High
           ? 14 * sizeScale
-          : (point.relevance === Relevance.Moderate
+          : point.relevance === Relevance.Moderate
             ? 10 * sizeScale
-            : 7 * sizeScale);
+            : 7 * sizeScale;
 
       // Use existing position if available, otherwise calculate a new one
       let pos: { x: number; y: number } =
@@ -271,9 +268,9 @@ export const RingDiagram = () => {
           "fill",
           point.preparedness === Preparedness.HighlyPrepared
             ? PREPAREDNESS_COLORS.high
-            : (point.preparedness === Preparedness.ModeratelyPrepared
+            : point.preparedness === Preparedness.ModeratelyPrepared
               ? PREPAREDNESS_COLORS.moderate
-              : PREPAREDNESS_COLORS.low),
+              : PREPAREDNESS_COLORS.low,
         )
         .attr("stroke", "none")
         .attr("stroke-width", size < 500 ? 2 : 3)
@@ -393,7 +390,10 @@ export const RingDiagram = () => {
     }
 
     // Apply selection highlight to reflect any current selection after rebuild
-    applySelectionHighlight(svgReference.current, selectedPointReference.current);
+    applySelectionHighlight(
+      svgReference.current,
+      selectedPointReference.current,
+    );
   }, [
     points,
     selectPoint,
