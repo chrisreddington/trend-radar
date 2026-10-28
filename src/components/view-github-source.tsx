@@ -8,15 +8,19 @@ import React from "react";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 interface ViewSourceOnGitHubProperties {
-  /** URL of the GitHub repository or file to view */
+  /**
+  URL of the GitHub repository or file to view
+  */
   repoUrl: string;
-  /** Optional aria-label for the link */
+  /**
+  Optional aria-label for the link
+  */
   ariaLabel?: string;
 }
 
 /**
- * Renders a link to view source on GitHub, switching logos for light/dark mode.
- */
+Renders a link to view source on GitHub, switching logos for light/dark mode.
+*/
 export function ViewSourceOnGitHub({
   repoUrl,
   ariaLabel = "View source on GitHub",

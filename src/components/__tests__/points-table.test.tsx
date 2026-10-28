@@ -53,24 +53,23 @@ const testColumnSorting = (
     );
   };
 
-  const getCellText = (row: HTMLTableRowElement, cellIndex: number) =>
-    row.cells[cellIndex].textContent;
-
   // Initial click for ascending sort
   fireEvent.click(getSortButton(columnName));
 
   let sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
   const cellIndex = getCellIndex();
-  expect(getCellText(sortedRows[0], cellIndex)).toBe(firstValue);
-  expect(getCellText(sortedRows[1], cellIndex)).toBe(secondValue);
+  const getCellText = (row: HTMLTableRowElement) =>
+    row.cells[cellIndex].textContent;
+  expect(getCellText(sortedRows[0])).toBe(firstValue);
+  expect(getCellText(sortedRows[1])).toBe(secondValue);
   expect(getSortButton(columnName)).toHaveTextContent(/↑$/);
 
   // Click again for descending sort
   fireEvent.click(getSortButton(columnName));
 
   sortedRows = screen.getAllByRole("row").slice(1) as HTMLTableRowElement[];
-  expect(getCellText(sortedRows[0], cellIndex)).toBe(secondValue);
-  expect(getCellText(sortedRows[1], cellIndex)).toBe(firstValue);
+  expect(getCellText(sortedRows[0])).toBe(secondValue);
+  expect(getCellText(sortedRows[1])).toBe(firstValue);
   expect(getSortButton(columnName)).toHaveTextContent(/↓$/);
 };
 

@@ -2,9 +2,9 @@
 import React from "react";
 
 /**
- * Theme options for the theme toggle.
- * @enum {string}
- */
+Theme options for the theme toggle.
+@enum {string}
+*/
 export const THEME_OPTIONS = {
   LIGHT: "light",
   DARK: "dark",
@@ -12,33 +12,33 @@ export const THEME_OPTIONS = {
 } as const;
 
 /**
- * Type for allowed theme options.
- * @typedef {"light" | "dark" | "system"} ThemeOption
- */
+Type for allowed theme options.
+@typedef {"light" | "dark" | "system"} ThemeOption
+*/
 export type ThemeOption = (typeof THEME_OPTIONS)[keyof typeof THEME_OPTIONS];
 
 /**
- * LocalStorage key for theme preference.
- * @type {string}
- */
+LocalStorage key for theme preference.
+@type {string}
+*/
 const THEME_STORAGE_KEY = "theme";
 
 const VALID_THEME_OPTIONS = new Set<string>(Object.values(THEME_OPTIONS));
 
 /**
- * Returns true when the value is a recognised ThemeOption.
- * @param {unknown} value - The value to check.
- * @returns {boolean}
- */
+Returns true when the value is a recognised ThemeOption.
+@param {unknown} value - The value to check.
+@returns {boolean}
+*/
 function isValidThemeOption(value: unknown): value is ThemeOption {
   return typeof value === "string" && VALID_THEME_OPTIONS.has(value);
 }
 
 /**
- * Reads the persisted theme from localStorage, returning undefined when the
- * key is absent, the value is unrecognised, or localStorage is inaccessible.
- * @returns {ThemeOption | undefined}
- */
+Reads the persisted theme from localStorage, returning undefined when the
+key is absent, the value is unrecognised, or localStorage is inaccessible.
+@returns {ThemeOption | undefined}
+*/
 function readPersistedTheme(): ThemeOption | undefined {
   try {
     const stored = globalThis.localStorage.getItem(THEME_STORAGE_KEY);
@@ -49,9 +49,9 @@ function readPersistedTheme(): ThemeOption | undefined {
 }
 
 /**
- * Returns the user's OS-level color scheme preference.
- * @returns {ThemeOption}
- */
+Returns the user's OS-level color scheme preference.
+@returns {ThemeOption}
+*/
 function getSystemTheme(): ThemeOption {
   return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
     ? THEME_OPTIONS.DARK
@@ -59,9 +59,9 @@ function getSystemTheme(): ThemeOption {
 }
 
 /**
- * Applies the theme to the <html> element's data-theme attribute.
- * @param {ThemeOption} theme - The theme to apply (light, dark, or system)
- */
+Applies the theme to the <html> element's data-theme attribute.
+@param {ThemeOption} theme - The theme to apply (light, dark, or system)
+*/
 function applyTheme(theme: ThemeOption): void {
   const html = document.documentElement;
   let resolvedTheme = theme;
@@ -72,8 +72,8 @@ function applyTheme(theme: ThemeOption): void {
 }
 
 /**
- * SVG icon for the sun (light theme).
- */
+SVG icon for the sun (light theme).
+*/
 function SunIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -94,8 +94,8 @@ function SunIcon({ className }: { className?: string }) {
 }
 
 /**
- * SVG icon for the moon (dark theme).
- */
+SVG icon for the moon (dark theme).
+*/
 function MoonIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -115,8 +115,8 @@ function MoonIcon({ className }: { className?: string }) {
 }
 
 /**
- * SVG icon for the cog (system theme).
- */
+SVG icon for the cog (system theme).
+*/
 function CogIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -137,9 +137,9 @@ function CogIcon({ className }: { className?: string }) {
 }
 
 /**
- * ThemeToggle component for selecting light, dark, or system theme.
- * @returns {JSX.Element}
- */
+ThemeToggle component for selecting light, dark, or system theme.
+@returns {JSX.Element}
+*/
 export function ThemeToggle() {
   const [theme, setTheme] = React.useState<ThemeOption>(
     () => readPersistedTheme() ?? THEME_OPTIONS.SYSTEM,
@@ -170,9 +170,9 @@ export function ThemeToggle() {
   }, [theme]);
 
   /**
-   * Handles theme selection changes.
-   * @param {ThemeOption} selectedTheme - The selected theme option.
-   */
+  Handles theme selection changes.
+  @param {ThemeOption} selectedTheme - The selected theme option.
+  */
   function handleThemeSelect(selectedTheme: ThemeOption): void {
     setTheme(selectedTheme);
   }

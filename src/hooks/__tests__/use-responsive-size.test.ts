@@ -5,9 +5,9 @@ import {
 } from "../use-responsive-size";
 
 /**
- * Helper to set the mocked viewport width for tests.
- * @param width - Simulated viewport width in pixels.
- */
+Helper to set the mocked viewport width for tests.
+@param width - Simulated viewport width in pixels.
+*/
 function setViewportWidth(width: number) {
   Object.defineProperty(document.documentElement, "clientWidth", {
     configurable: true,

@@ -136,10 +136,10 @@ function isEnumValue<T extends string>(
 }
 
 /**
- * Checks whether `point` is a structurally and semantically valid
- * {@link Point} object, including verified enum values for category,
- * likelihood, relevance, and preparedness.
- */
+Checks whether `point` is a structurally and semantically valid
+{@link Point} object, including verified enum values for category,
+likelihood, relevance, and preparedness.
+*/
 export function isValidPoint(point: unknown): point is Point {
   if (typeof point !== "object" || point === null) return false;
 
@@ -161,9 +161,7 @@ export function validateDiagramData(data: unknown): data is DiagramExport {
   if (!data || typeof data !== "object") return false;
 
   const exportData = data as Partial<DiagramExport>;
-  if (typeof exportData.version !== "number") return false;
-  if (!Array.isArray(exportData.points)) return false;
-  if (!exportData.metadata || typeof exportData.metadata !== "object")
+  if ((typeof exportData.version !== "number") || !Array.isArray(exportData.points) || !exportData.metadata || typeof exportData.metadata !== "object")
     return false;
 
   const { metadata } = exportData;

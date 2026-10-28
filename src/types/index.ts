@@ -1,6 +1,6 @@
 /**
- * Categories for strategic points
- */
+Categories for strategic points
+*/
 export enum Category {
   Technological = "Technological",
   Economic = "Economic",
@@ -9,8 +9,8 @@ export enum Category {
 }
 
 /**
- * Likelihood levels for strategic points
- */
+Likelihood levels for strategic points
+*/
 export enum Likelihood {
   HighlyLikely = "Highly Likely",
   Likely = "Likely",
@@ -20,8 +20,8 @@ export enum Likelihood {
 }
 
 /**
- * Relevance levels for strategic points
- */
+Relevance levels for strategic points
+*/
 export enum Relevance {
   High = "High",
   Moderate = "Moderate",
@@ -29,8 +29,8 @@ export enum Relevance {
 }
 
 /**
- * Preparedness levels for strategic points
- */
+Preparedness levels for strategic points
+*/
 export enum Preparedness {
   HighlyPrepared = "Highly Prepared",
   ModeratelyPrepared = "Moderately Prepared",
@@ -38,35 +38,57 @@ export enum Preparedness {
 }
 
 /**
- * Represents a strategic point on the diagram
- */
+Represents a strategic point on the diagram
+*/
 export interface Point {
-  /** Unique identifier for the point */
+  /**
+  Unique identifier for the point
+  */
   id: string;
-  /** Label/name of the point */
+  /**
+  Label/name of the point
+  */
   label: string;
-  /** Optional free-text description or rationale for the point */
+  /**
+  Optional free-text description or rationale for the point
+  */
   description?: string;
-  /** Category the point belongs to */
+  /**
+  Category the point belongs to
+  */
   category: Category;
-  /** Likelihood of the point occurring */
+  /**
+  Likelihood of the point occurring
+  */
   likelihood: Likelihood;
-  /** Relevance/impact of the point */
+  /**
+  Relevance/impact of the point
+  */
   relevance: Relevance;
-  /** Organization's preparedness for the point */
+  /**
+  Organization's preparedness for the point
+  */
   preparedness: Preparedness;
-  /** X coordinate on the diagram */
+  /**
+  X coordinate on the diagram
+  */
   x: number;
-  /** Y coordinate on the diagram */
+  /**
+  Y coordinate on the diagram
+  */
   y: number;
 }
 
 /**
- * State shape for the diagram store
- */
+State shape for the diagram store
+*/
 export interface DiagramState {
-  /** Array of points on the diagram */
+  /**
+  Array of points on the diagram
+  */
   points: Point[];
-  /** ID of the currently selected point, if any */
+  /**
+  ID of the currently selected point, if any
+  */
   selectedPoint?: string;
 }

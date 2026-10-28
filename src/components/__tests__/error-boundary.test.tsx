@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { ErrorBoundary } from "../error-boundary";
 
-/** A component that throws on first render when `shouldThrow` is true. */
+/**
+A component that throws on first render when `shouldThrow` is true.
+*/
 const ThrowingChild = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) {
     throw new Error("Test render error");

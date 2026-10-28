@@ -24,7 +24,9 @@ const SORTABLE_COLUMNS: ReadonlyArray<{
   { field: "likelihood", label: "Likelihood" },
 ];
 
-/** Ordinal rank for Likelihood values (lower index = higher likelihood). */
+/**
+Ordinal rank for Likelihood values (lower index = higher likelihood).
+*/
 const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
   [Likelihood.HighlyLikely]: 0,
   [Likelihood.Likely]: 1,
@@ -33,14 +35,18 @@ const LIKELIHOOD_ORDER: Record<Likelihood, number> = {
   [Likelihood.HighlyUnlikely]: 4,
 };
 
-/** Ordinal rank for Relevance values (lower index = higher relevance). */
+/**
+Ordinal rank for Relevance values (lower index = higher relevance).
+*/
 const RELEVANCE_ORDER: Record<Relevance, number> = {
   [Relevance.High]: 0,
   [Relevance.Moderate]: 1,
   [Relevance.Low]: 2,
 };
 
-/** Ordinal rank for Preparedness values (lower index = more prepared). */
+/**
+Ordinal rank for Preparedness values (lower index = more prepared).
+*/
 const PREPAREDNESS_ORDER: Record<Preparedness, number> = {
   [Preparedness.HighlyPrepared]: 0,
   [Preparedness.ModeratelyPrepared]: 1,

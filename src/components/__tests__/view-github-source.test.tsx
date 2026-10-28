@@ -4,18 +4,18 @@ import { render, screen } from "@testing-library/react";
 import { ViewSourceOnGitHub } from "../view-github-source";
 
 describe("ViewSourceOnGitHub", () => {
-  const repoUrl = "https://github.com/test/repo";
+  const repositoryUrl = "https://github.com/test/repo";
 
   test("renders link with correct attributes and default aria-label", () => {
-    render(<ViewSourceOnGitHub repoUrl={repoUrl} />);
+    render(<ViewSourceOnGitHub repoUrl={repositoryUrl} />);
     const link = screen.getByRole("link", { name: /view source on github/i });
-    expect(link).toHaveAttribute("href", repoUrl);
+    expect(link).toHaveAttribute("href", repositoryUrl);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   test("renders light and dark mode images with correct src and classes", () => {
-    render(<ViewSourceOnGitHub repoUrl={repoUrl} />);
+    render(<ViewSourceOnGitHub repoUrl={repositoryUrl} />);
     // Select images by alt text now that alt is set on Image components
     const images = screen.getAllByAltText(/GitHub logo/i);
     const [lightImg, darkImg] = images;
@@ -32,7 +32,7 @@ describe("ViewSourceOnGitHub", () => {
   });
 
   test("renders label as part of the link", () => {
-    render(<ViewSourceOnGitHub repoUrl={repoUrl} />);
+    render(<ViewSourceOnGitHub repoUrl={repositoryUrl} />);
     const link = screen.getByRole("link", { name: /view source on github/i });
     expect(link).toHaveTextContent(/view source/i);
   });

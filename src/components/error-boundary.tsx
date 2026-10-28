@@ -3,7 +3,9 @@ import { Component, ErrorInfo } from "react";
 
 interface ErrorBoundaryProperties {
   children: React.ReactNode;
-  /** Optional custom fallback UI. Receives the error and a reset function. */
+  /**
+  Optional custom fallback UI. Receives the error and a reset function.
+  */
   fallback?: (error: Error, reset: () => void) => React.ReactNode;
 }
 
@@ -19,9 +21,9 @@ const DEFAULT_FALLBACK_DESCRIPTION =
 const RETRY_BUTTON_LABEL = "Try again";
 
 /**
- * Catches JavaScript errors anywhere in its child component tree,
- * logs those errors, and displays a fallback UI instead of crashing.
- */
+Catches JavaScript errors anywhere in its child component tree,
+logs those errors, and displays a fallback UI instead of crashing.
+*/
 export class ErrorBoundary extends Component<
   ErrorBoundaryProperties,
   ErrorBoundaryState

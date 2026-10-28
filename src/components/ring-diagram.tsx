@@ -10,10 +10,14 @@ import { RING_COLORS, PREPAREDNESS_COLORS } from "../constants/colors";
 import { RING_DIAGRAM_SVG_ARIA_LABEL } from "../constants/diagram";
 import { useResponsiveSize } from "../hooks/use-responsive-size";
 
-/** All category values in definition order. Computed once at module load. */
+/**
+All category values in definition order. Computed once at module load.
+*/
 const DIAGRAM_CATEGORIES = Object.values(Category);
 
-/** All likelihood values in reverse order (outermost ring first). Computed once at module load. */
+/**
+All likelihood values in reverse order (outermost ring first). Computed once at module load.
+*/
 const DIAGRAM_LIKELIHOODS = Object.values(Likelihood).toReversed();
 
 export const RingDiagram = () => {
@@ -28,7 +32,9 @@ export const RingDiagram = () => {
   } = useDiagramStore();
   const size = useResponsiveSize();
 
-  /** Ring geometry derived from the current diagram size. Re-computed only when size changes. */
+  /**
+  Ring geometry derived from the current diagram size. Re-computed only when size changes.
+  */
   const ringGeometry = useMemo(() => {
     const marginAdjusted = size * 0.08;
     const diagramRadius = size / 2 - marginAdjusted;
@@ -43,9 +49,9 @@ export const RingDiagram = () => {
   selectedPointReference.current = selectedPoint;
 
   /**
-   * Updates stroke, opacity, and aria-pressed on existing point circles to reflect the current selection.
-   * Separated from the structural render so that a selection change avoids a full SVG rebuild.
-   */
+  Updates stroke, opacity, and aria-pressed on existing point circles to reflect the current selection.
+  Separated from the structural render so that a selection change avoids a full SVG rebuild.
+  */
   const applySelectionHighlight = useCallback(
     (
       svgElement: SVGSVGElement,
@@ -94,8 +100,8 @@ export const RingDiagram = () => {
     const { diagramRadius, ringWidth, angleStep } = ringGeometry;
 
     /**
-     * Handle clicks on the diagram to add points at specific coordinates
-     */
+    Handle clicks on the diagram to add points at specific coordinates
+    */
     const handleDiagramClick = (event: Event) => {
       // Check if the click was directly on a ring element (not on a point)
       const clickedElement = event.target as Element;
@@ -129,10 +135,10 @@ export const RingDiagram = () => {
     const MIN_POINT_SPACING = 2;
     const placedPoints: { x: number; y: number; size: number }[] = [];
     /**
-     * Calculates a random position within the specified arc segment and ring.
-     * @param point - The point being positioned.
-     * @returns An object with x and y coordinates.
-     */
+    Calculates a random position within the specified arc segment and ring.
+    @param point - The point being positioned.
+    @returns An object with x and y coordinates.
+    */
     const calculatePointPosition = (point: Point) => {
       const categoryIndex = DIAGRAM_CATEGORIES.indexOf(point.category);
       const likelihoodIndex = DIAGRAM_LIKELIHOODS.indexOf(point.likelihood);

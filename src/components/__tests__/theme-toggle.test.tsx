@@ -4,9 +4,9 @@ import { ThemeToggle, THEME_OPTIONS } from "../theme-toggle";
 import { vi } from "vitest";
 
 /**
- * Helper to mock matchMedia for system theme tests.
- * @param {boolean} matches - Whether the system prefers dark mode.
- */
+Helper to mock matchMedia for system theme tests.
+@param {boolean} matches - Whether the system prefers dark mode.
+*/
 function mockMatchMedia(matches: boolean) {
   Object.defineProperty(globalThis, "matchMedia", {
     writable: true,
