@@ -11,6 +11,8 @@ const unicornRulesForExistingConventions = {
   "unicorn/consistent-class-member-order": "off",
   "unicorn/consistent-function-scoping": "off",
   "unicorn/filename-case": "off",
+  // Conflicts with Prettier, which strips the parentheses this rule adds.
+  "unicorn/no-nested-ternary": "off",
   "unicorn/no-this-outside-of-class": "off",
   "unicorn/no-unnecessary-global-this": "off",
   "unicorn/no-unreadable-for-of-expression": "off",

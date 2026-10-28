@@ -5,12 +5,7 @@ import {
   generateCsvFilename,
   downloadPointsAsCsv,
 } from "../csv-export";
-import {
-  Category,
-  Likelihood,
-  Relevance,
-  Preparedness,
-} from "../../types";
+import { Category, Likelihood, Relevance, Preparedness } from "../../types";
 import type { Point } from "../../types";
 
 const makePoint = (overrides: Partial<Point> = {}): Point => ({
@@ -163,6 +158,8 @@ describe("downloadPointsAsCsv", () => {
 
   it("defaults to a generated filename when none is provided", () => {
     downloadPointsAsCsv([makePoint()]);
-    expect(createdAnchor.download).toMatch(/^trend-radar-\d{4}-\d{2}-\d{2}\.csv$/);
+    expect(createdAnchor.download).toMatch(
+      /^trend-radar-\d{4}-\d{2}-\d{2}\.csv$/,
+    );
   });
 });

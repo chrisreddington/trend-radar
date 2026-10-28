@@ -35,7 +35,8 @@ const DEFAULT_DIAGRAM_DIMENSIONS = getDiagramDimensions();
 Calculate a random position for a point within its category and likelihood segment
 */
 function calculateRandomPosition(point: Omit<Point, "id">) {
-  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = DEFAULT_DIAGRAM_DIMENSIONS;
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } =
+    DEFAULT_DIAGRAM_DIMENSIONS;
 
   const categoryIndex = categories.indexOf(point.category);
   const likelihoodIndex = likelihoods.indexOf(point.likelihood);
@@ -68,7 +69,8 @@ export function coordinatesToCategoryAndLikelihood(
   y: number,
   size = 800,
 ): { category: Category; likelihood: Likelihood } | undefined {
-  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = getDiagramDimensions(size);
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } =
+    getDiagramDimensions(size);
 
   // Calculate radius from center
   const radius = Math.hypot(x, y);
@@ -279,7 +281,9 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
         return state;
       }
 
-      const positionById = new Map(updates.map((update) => [update.id, update]));
+      const positionById = new Map(
+        updates.map((update) => [update.id, update]),
+      );
       let didChange = false;
 
       const nextPoints = state.points.map((point) => {

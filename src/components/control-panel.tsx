@@ -99,8 +99,7 @@ export const ControlPanel = memo(function ControlPanel() {
 
         // Treat empty string and undefined as equivalent for description;
         // always normalise to undefined when the field is blank.
-        const normalisedDescription =
-          editingPoint.description || undefined;
+        const normalisedDescription = editingPoint.description || undefined;
         const normalisedOriginalDescription =
           originalPoint.description || undefined;
         if (normalisedDescription !== normalisedOriginalDescription)
@@ -433,7 +432,10 @@ export const ControlPanel = memo(function ControlPanel() {
               "Update Point",
               true,
             )}
-            <button onClick={handleDeletePoint} className={DELETE_BUTTON_CLASSES}>
+            <button
+              onClick={handleDeletePoint}
+              className={DELETE_BUTTON_CLASSES}
+            >
               Delete Point
             </button>
           </div>

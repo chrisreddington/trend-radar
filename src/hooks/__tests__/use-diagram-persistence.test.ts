@@ -30,8 +30,7 @@ describe("useDiagramPersistence", () => {
   let currentPoints: unknown[];
   let mockSubscribe: ReturnType<typeof vi.fn>;
   let capturedListener:
-    | ((state: { points: unknown[]; saveState: () => void }) => void)
-    | undefined;
+    ((state: { points: unknown[]; saveState: () => void }) => void) | undefined;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -133,9 +132,15 @@ describe("useDiagramPersistence", () => {
 
       capturedListener?.({ points: [{ id: "1" }], saveState: mockSaveState });
       vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
-      capturedListener?.({ points: [{ id: "1" }, { id: "2" }], saveState: mockSaveState });
+      capturedListener?.({
+        points: [{ id: "1" }, { id: "2" }],
+        saveState: mockSaveState,
+      });
       vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
-      capturedListener?.({ points: [{ id: "1" }, { id: "2" }, { id: "3" }], saveState: mockSaveState });
+      capturedListener?.({
+        points: [{ id: "1" }, { id: "2" }, { id: "3" }],
+        saveState: mockSaveState,
+      });
 
       vi.advanceTimersByTime(SAVE_DEBOUNCE_MS - 1);
       expect(mockSaveState).not.toHaveBeenCalled();
@@ -184,9 +189,9 @@ describe("useDiagramPersistence", () => {
   describe("cleanup", () => {
     it("unsubscribes from the store on unmount", () => {
       const mockUnsubscribe = vi.fn();
-      (
-        useDiagramStore.subscribe as ReturnType<typeof vi.fn>
-      ).mockReturnValue(mockUnsubscribe);
+      (useDiagramStore.subscribe as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockUnsubscribe,
+      );
 
       const { unmount } = renderHook(() => useDiagramPersistence());
       unmount();

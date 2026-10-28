@@ -23,9 +23,7 @@ import { useDiagramStore } from "../../store/use-diagram-store";
 Creates a mocked Zustand hook implementation that supports selector callbacks.
 */
 function createMockStoreImplementation<TState>(state: TState) {
-  return function mockSelector(
-    selector?: (storeState: TState) => unknown,
-  ) {
+  return function mockSelector(selector?: (storeState: TState) => unknown) {
     return selector ? selector(state) : state;
   };
 }
@@ -474,7 +472,9 @@ describe("ControlPanel", () => {
 
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(createMockStoreImplementation(getStoreWithPoints("1")));
+        ).mockImplementation(
+          createMockStoreImplementation(getStoreWithPoints("1")),
+        );
         const { rerender } = render(<ControlPanel />);
 
         // Verify first point's label
@@ -492,7 +492,9 @@ describe("ControlPanel", () => {
         // Change selection to second point
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
-        ).mockImplementation(createMockStoreImplementation(getStoreWithPoints("2")));
+        ).mockImplementation(
+          createMockStoreImplementation(getStoreWithPoints("2")),
+        );
         remountControlPanel(rerender, "selected-second-point");
 
         // Verify second point's label
@@ -560,7 +562,9 @@ describe("ControlPanel", () => {
         (
           useDiagramStore as unknown as ReturnType<typeof vi.fn>
         ).mockImplementation(
-          createMockStoreImplementation(getStoreWithUpdatedPoint(originalPoint)),
+          createMockStoreImplementation(
+            getStoreWithUpdatedPoint(originalPoint),
+          ),
         );
         const { rerender } = render(<ControlPanel />);
 

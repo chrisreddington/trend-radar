@@ -18,9 +18,9 @@ dragging points across the diagram.
 Intended to be called once at the application root (e.g. `page.tsx`).
 */
 export function useDiagramPersistence(): void {
-  const saveTimeoutReference = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
+  const saveTimeoutReference = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
 
   useEffect(() => {
     const diagramStoreState = useDiagramStore.getState();

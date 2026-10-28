@@ -30,6 +30,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint || npm run lint:check || npx eslint .
 
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Run tests
         run: npm test
         env:
