@@ -19,7 +19,9 @@ vi.mock("../../store/use-diagram-store", async () => {
 // Import after mocking
 import { useDiagramStore } from "../../store/use-diagram-store";
 
-/** Creates a mocked Zustand hook implementation that supports selector callbacks. */
+/**
+Creates a mocked Zustand hook implementation that supports selector callbacks.
+*/
 function createMockStoreImplementation<TState>(state: TState) {
   return function mockSelector(
     selector?: (storeState: TState) => unknown,
@@ -29,9 +31,9 @@ function createMockStoreImplementation<TState>(state: TState) {
 }
 
 /**
- * Forces the memoized control panel to remount after mocked store data changes.
- * The mocked hook does not notify Zustand subscribers in tests.
- */
+Forces the memoized control panel to remount after mocked store data changes.
+The mocked hook does not notify Zustand subscribers in tests.
+*/
 function remountControlPanel(
   rerender: ReturnType<typeof render>["rerender"],
   instanceKey: string,

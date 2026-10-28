@@ -81,8 +81,8 @@ describe("resolveCssVariables", () => {
 });
 
 /**
- * Creates a minimal SVG element with a deterministic bounding box for testing.
- */
+Creates a minimal SVG element with a deterministic bounding box for testing.
+*/
 function makeSvgElement(
   boundingBoxWidth = 200,
   boundingBoxHeight = 200,

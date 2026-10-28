@@ -25,18 +25,17 @@ function getDiagramDimensions(size = 800) {
 }
 
 /**
- * Cached diagram dimensions for the default size (800).
- * Avoids recomputing derived diagram dimensions and related values
- * (such as angleStep, ringWidth, categories, and likelihoods) on every store action.
- */
+Cached diagram dimensions for the default size (800).
+Avoids recomputing derived diagram dimensions and related values
+(such as angleStep, ringWidth, categories, and likelihoods) on every store action.
+*/
 const DEFAULT_DIAGRAM_DIMENSIONS = getDiagramDimensions();
 
 /**
- * Calculate a random position for a point within its category and likelihood segment
- */
+Calculate a random position for a point within its category and likelihood segment
+*/
 function calculateRandomPosition(point: Omit<Point, "id">) {
-  const dims = DEFAULT_DIAGRAM_DIMENSIONS;
-  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = DEFAULT_DIAGRAM_DIMENSIONS;
 
   const categoryIndex = categories.indexOf(point.category);
   const likelihoodIndex = likelihoods.indexOf(point.likelihood);
@@ -61,16 +60,15 @@ function calculateRandomPosition(point: Omit<Point, "id">) {
 }
 
 /**
- * Convert x,y coordinates to category and likelihood
- * This is the inverse of the positioning logic
- */
+Convert x,y coordinates to category and likelihood
+This is the inverse of the positioning logic
+*/
 export function coordinatesToCategoryAndLikelihood(
   x: number,
   y: number,
   size = 800,
 ): { category: Category; likelihood: Likelihood } | undefined {
-  const dims = getDiagramDimensions(size);
-  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = dims;
+  const { categories, likelihoods, diagramRadius, angleStep, ringWidth } = getDiagramDimensions(size);
 
   // Calculate radius from center
   const radius = Math.hypot(x, y);
@@ -104,12 +102,16 @@ export function coordinatesToCategoryAndLikelihood(
 }
 
 /**
- * Store interface for managing diagram state and actions
- */
+Store interface for managing diagram state and actions
+*/
 interface DiagramStore extends DiagramState {
-  /** Add a new point to the diagram */
+  /**
+  Add a new point to the diagram
+  */
   addPoint: (point: Omit<Point, "id">) => void;
-  /** Add a new point at specific coordinates, deriving category and likelihood from position */
+  /**
+  Add a new point at specific coordinates, deriving category and likelihood from position
+  */
   addPointAtPosition: (
     x: number,
     y: number,
@@ -118,37 +120,55 @@ interface DiagramStore extends DiagramState {
       Omit<Point, "id" | "x" | "y" | "category" | "likelihood">
     >,
   ) => boolean;
-  /** Update an existing point's properties */
+  /**
+  Update an existing point's properties
+  */
   updatePoint: (
     id: string,
     updates: Partial<Point>,
     preservePosition?: boolean,
   ) => void;
-  /** Remove a point from the diagram */
+  /**
+  Remove a point from the diagram
+  */
   removePoint: (id: string) => void;
-  /** Select a point on the diagram */
+  /**
+  Select a point on the diagram
+  */
   selectPoint: (id?: string) => void;
-  /** Import points from file, replacing current points */
+  /**
+  Import points from file, replacing current points
+  */
   importPoints: (points: Point[]) => void;
-  /** Apply x/y position updates to multiple points in a single state update */
+  /**
+  Apply x/y position updates to multiple points in a single state update
+  */
   batchUpdatePositions: (
     updates: ReadonlyArray<{ id: string; x: number; y: number }>,
   ) => void;
-  /** Save current diagram to a file */
+  /**
+  Save current diagram to a file
+  */
   saveDiagram: () => Promise<void>;
-  /** Load diagram from a file */
+  /**
+  Load diagram from a file
+  */
   loadDiagram: () => Promise<void>;
-  /** Save the current diagram state to localStorage */
+  /**
+  Save the current diagram state to localStorage
+  */
   saveState: () => void;
-  /** Load the diagram state from localStorage */
+  /**
+  Load the diagram state from localStorage
+  */
   loadState: () => void;
 }
 
 /**
- * Custom hook for managing the diagram state
- * Provides methods for adding, updating, removing, and selecting points,
- * as well as persisting the state to localStorage
- */
+Custom hook for managing the diagram state
+Provides methods for adding, updating, removing, and selecting points,
+as well as persisting the state to localStorage
+*/
 export const useDiagramStore = create<DiagramStore>((set, get) => ({
   points: [],
   selectedPoint: undefined,

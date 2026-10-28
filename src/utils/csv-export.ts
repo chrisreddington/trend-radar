@@ -10,10 +10,10 @@ const CSV_HEADERS = [
 ] as const;
 
 /**
- * Escapes a value for inclusion in a CSV cell.
- * Wraps values containing commas, double quotes, or newlines in double quotes,
- * and escapes any existing double quotes by doubling them.
- */
+Escapes a value for inclusion in a CSV cell.
+Wraps values containing commas, double quotes, or newlines in double quotes,
+and escapes any existing double quotes by doubling them.
+*/
 export function escapeCsvValue(value: string): string {
   if (/[",\n\r]/.test(value)) {
     return `"${value.replaceAll('"', '""')}"`;
@@ -22,10 +22,10 @@ export function escapeCsvValue(value: string): string {
 }
 
 /**
- * Converts an array of Points to a CSV string.
- * The output includes a header row followed by one row per point.
- * Columns: Label, Description, Category, Likelihood, Relevance, Preparedness.
- */
+Converts an array of Points to a CSV string.
+The output includes a header row followed by one row per point.
+Columns: Label, Description, Category, Likelihood, Relevance, Preparedness.
+*/
 export function pointsToCsv(points: Point[]): string {
   const headerRow = CSV_HEADERS.join(",");
   const dataRows = points.map((point) =>
@@ -42,16 +42,16 @@ export function pointsToCsv(points: Point[]): string {
 }
 
 /**
- * Generates the default CSV filename with today's date.
- */
+Generates the default CSV filename with today's date.
+*/
 export function generateCsvFilename(): string {
   const date = new Date().toISOString().split("T")[0];
   return `trend-radar-${date}.csv`;
 }
 
 /**
- * Triggers a browser download of the given points as a CSV file.
- */
+Triggers a browser download of the given points as a CSV file.
+*/
 export function downloadPointsAsCsv(
   points: Point[],
   filename = generateCsvFilename(),

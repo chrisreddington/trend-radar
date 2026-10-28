@@ -24,9 +24,9 @@ const unicornRulesForExistingConventions = {
 };
 
 /**
- * ESLint configuration
- * Extends recommended configurations and adds custom rules
- */
+ESLint configuration
+Extends recommended configurations and adds custom rules
+*/
 const eslintConfig = [
   {
     ignores: [
@@ -65,6 +65,13 @@ const eslintConfig = [
   eslintPluginUnicorn.configs.recommended,
   {
     rules: unicornRulesForExistingConventions,
+  },
+  {
+    // Tool config files export the result of a factory call by convention.
+    files: ["*.config.{js,mjs,cjs,ts}"],
+    rules: {
+      "unicorn/no-top-level-side-effects": "off",
+    },
   },
   {
     files: [

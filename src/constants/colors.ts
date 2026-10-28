@@ -1,7 +1,7 @@
 /**
- * Colors for diagram rings ordered from innermost (Highly Likely) to outermost (Highly Unlikely).
- * Labels match the Likelihood enum values for consistency with the control panel.
- */
+Colors for diagram rings ordered from innermost (Highly Likely) to outermost (Highly Unlikely).
+Labels match the Likelihood enum values for consistency with the control panel.
+*/
 export const RING_COLORS = [
   {
     fill: "#1e3a8a",
@@ -36,8 +36,8 @@ export const RING_COLORS = [
 ];
 
 /**
- * Colors for preparedness levels
- */
+Colors for preparedness levels
+*/
 export const PREPAREDNESS_COLORS = {
   high: "#22c55e", // green-500
   moderate: "#f59e0b", // amber-500
