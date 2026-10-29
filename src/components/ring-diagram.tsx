@@ -235,9 +235,9 @@ export const RingDiagram = () => {
 
       // Use existing position if available, otherwise calculate a new one
       let pos: { x: number; y: number } =
-        point.x !== 0 || point.y !== 0
-          ? { x: point.x, y: point.y }
-          : calculatePointPosition(point);
+        point.x === 0 && point.y === 0
+          ? calculatePointPosition(point)
+          : { x: point.x, y: point.y };
       if (point.x === 0 && point.y === 0) {
         let attempts = 0;
         const MAX_ATTEMPTS = 10;
