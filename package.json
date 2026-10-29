@@ -17,10 +17,10 @@
   "dependencies": {
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",
-    "next": "16.4.2",
+    "next": "16.4.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "zustand": "^5.0.15"
+    "zustand": "^5.0.16"
   },
   "overrides": {
     "eslint": "$eslint"
